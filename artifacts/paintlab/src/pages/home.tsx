@@ -231,7 +231,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
               <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tighter mb-6">
-                Precision <strong className="text-primary">Commercial</strong> Coating Engineering.
+                Advanced Surface Solutions for <strong className="text-primary">Commercial</strong> Facilities
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-muted-foreground text-lg mb-6 leading-relaxed">
                 We combine precision craftsmanship with a disciplined, systems-driven approach that delivers consistency, accountability, and total predictability from start to finish.
@@ -275,8 +275,8 @@ export default function Home() {
                 <div className="w-12 h-12 bg-background border border-border flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                   {service.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-2">{service.title}</h3>
-                <p className="text-primary text-xs font-mono uppercase tracking-wider mb-4 leading-relaxed">{service.tagline}</p>
+                <h3 className="text-xl font-bold mb-2 min-h-[56px] flex items-start">{service.title}</h3>
+                <p className="text-primary text-xs font-mono uppercase tracking-wider mb-4 leading-relaxed min-h-[32px]">{service.tagline}</p>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-8 flex-grow">{service.desc}</p>
                 <Link href={`/services/${service.slug}`}>
                   <Button
@@ -288,6 +288,22 @@ export default function Home() {
                 </Link>
               </motion.div>
             ))}
+
+            {/* 6th tile — Logo + Contact CTA */}
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+              className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
+            >
+              <div className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground select-none">
+                <div className="w-4 h-4 bg-primary rounded-sm" />
+                PAINTLAB
+              </div>
+              <a href="#quote">
+                <Button className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8">
+                  Contact Us <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </a>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -307,9 +323,9 @@ export default function Home() {
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
                 className="border border-border bg-background p-6 flex flex-col group"
               >
-                <div className="mb-6 min-h-[56px] flex flex-col justify-start">
-                  <h3 className="text-base font-bold uppercase tracking-tight mb-1 text-primary group-hover:text-foreground transition-colors">{sector.title}</h3>
-                  <p className="text-xs text-muted-foreground font-mono">{sector.sub}</p>
+                <div className="mb-6 h-[96px] flex flex-col justify-start overflow-hidden">
+                  <h3 className="text-base font-bold uppercase tracking-tight mb-1.5 text-primary group-hover:text-foreground transition-colors leading-tight">{sector.title}</h3>
+                  <p className="text-xs text-muted-foreground font-mono leading-snug">{sector.sub}</p>
                 </div>
 
                 <div className="mt-auto space-y-4">
