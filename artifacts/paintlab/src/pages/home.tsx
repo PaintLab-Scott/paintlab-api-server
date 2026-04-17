@@ -246,7 +246,7 @@ export default function Home() {
                 <p className="text-muted-foreground text-lg mb-8">
                   The result is a repeatable, predictable experience—projects delivered on time, on budget, and to the exacting standards you expect.
                 </p>
-                <img src="/images/epoxy.png" alt="Industrial epoxy application" className="w-full aspect-square object-cover border border-border filter grayscale" />
+                <img src="/images/painters.png" alt="Commercial painters at work in a large modern facility" className="w-full aspect-square object-cover border border-border filter grayscale" />
               </motion.div>
             </div>
             
