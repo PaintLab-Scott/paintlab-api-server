@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "TrvEdgAbCk9vm_vIN4ogH"
+uri = "file://artifacts/paintlab/src/assets/images/hero.png"
+type = "image"
+title = "Hero commercial painting"
+
+[[generated]]
+id = "ivxDRW_C_Znbcj8S9l1lS"
+uri = "file://artifacts/paintlab/src/assets/images/interior.png"
+type = "image"
+title = "Commercial interior coatings"
+
+[[generated]]
+id = "utGlZyHlpCIvgCUsCM7t8"
+uri = "file://artifacts/paintlab/src/assets/images/epoxy.png"
+type = "image"
+title = "Industrial epoxy floors"
+
+[[generated]]
+id = "Ur6-SyqKpkqfkLqYPWbbf"
+uri = "file://artifacts/paintlab/src/assets/images/exterior.png"
+type = "image"
+title = "Exterior building coatings"

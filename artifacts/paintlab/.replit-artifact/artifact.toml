@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "PaintLab"
+version = "1.0.0"
+id = "artifacts/paintlab"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19495
+
+[services.development]
+run = "pnpm --filter @workspace/paintlab run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/paintlab", "run", "build" ]
+publicDir = "artifacts/paintlab/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19495"
+BASE_PATH = "/"
