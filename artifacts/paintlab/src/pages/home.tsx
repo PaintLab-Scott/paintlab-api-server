@@ -321,20 +321,22 @@ export default function Home() {
               <motion.div
                 key={idx}
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
-                className="border border-border bg-background p-6 flex flex-col group"
+                className="border border-border bg-background flex flex-col overflow-hidden"
               >
-                <div className="mb-6 h-[96px] flex flex-col justify-start overflow-hidden">
-                  <h3 className="text-base font-bold uppercase tracking-tight mb-1.5 text-primary group-hover:text-foreground transition-colors leading-tight">{sector.title}</h3>
-                  <p className="text-xs text-muted-foreground font-mono leading-snug">{sector.sub}</p>
+                {/* Sector header — orange block */}
+                <div className="bg-primary px-6 py-5 h-[100px] flex flex-col justify-center">
+                  <h3 className="text-sm font-black uppercase tracking-tight text-background leading-tight">{sector.title}</h3>
+                  <p className="text-xs text-background/70 font-mono mt-1.5 leading-snug">{sector.sub}</p>
                 </div>
 
-                <div className="mt-auto space-y-4">
+                {/* Interior / Exterior content */}
+                <div className="p-6 flex flex-col flex-grow space-y-4">
                   <div>
-                    <p className="text-xs font-semibold text-foreground uppercase tracking-widest mb-1 border-b border-border pb-1">Interior</p>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1.5 border-b border-border pb-1">Interior</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">{sector.int}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-foreground uppercase tracking-widest mb-1 border-b border-border pb-1">Exterior</p>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1.5 border-b border-border pb-1">Exterior</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">{sector.ext}</p>
                   </div>
                 </div>
