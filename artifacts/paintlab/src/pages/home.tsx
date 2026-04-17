@@ -51,7 +51,7 @@ export default function Home() {
             </motion.h1>
             
             <motion.p variants={fadeInUp} className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed">
-              PaintLab is where commercial painting stops being a risk and becomes a controlled, high-performance outcome. Based in Austin, TX.
+              PaintLab is where commercial painting stops being a risk and becomes a controlled, predictable, high-performance outcome. Based in Austin, TX.
             </motion.p>
             
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
@@ -72,7 +72,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
               <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tighter mb-6">
-                Precision engineering meets professional trades.
+                Precision coating engineering.
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-muted-foreground text-lg mb-6 leading-relaxed">
                 We combine precision craftsmanship with a disciplined, systems-driven approach that delivers consistency, accountability, and total predictability from start to finish.
@@ -93,15 +93,6 @@ export default function Home() {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="relative h-[600px] border border-border">
               <img src="/images/interior.png" alt="Commercial interior coatings" className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700" />
               <div className="absolute inset-0 ring-1 ring-inset ring-white/10 pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 right-0 bg-background/90 backdrop-blur-sm p-6 border-t border-border">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-mono mb-1">System Status</p>
-                    <p className="text-foreground font-semibold">Fully Operational</p>
-                  </div>
-                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
-                </div>
-              </div>
             </motion.div>
           </div>
         </div>
