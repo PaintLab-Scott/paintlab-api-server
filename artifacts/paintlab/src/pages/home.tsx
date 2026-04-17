@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, CheckCircle2, ShieldCheck, Factory, Target, Building2, PaintRoller, Droplets, Wrench, CalendarDays, Check } from "lucide-react";
+import {
+  ArrowRight, ShieldCheck, Factory, Target, Building2, PaintRoller,
+  Droplets, Wrench, CalendarDays, Check, Shield, Zap, Clock, Users
+} from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
@@ -19,80 +23,39 @@ const staggerContainer = {
 
 const services = [
   {
+    slug: "high-traffic-interior",
     icon: <Building2 className="w-6 h-6" />,
     title: "High Traffic Interior Systems",
     tagline: "Durable Finishes Built for Occupied Commercial Spaces",
-    desc: "Interior environments in commercial buildings fail fast under real-world use—tenant traffic, carts, cleaning chemicals, and constant contact. PaintLab interior systems are designed to preserve appearance, reduce repaint frequency, and maintain tenant satisfaction in active spaces.",
-    problem: "Standard finishes degrade rapidly under the demands of occupied commercial spaces—scuffing, staining, and chemical damage that drives up repaint frequency.",
-    solution: "Scuff-resistant, scrub-grade, long-lifecycle interior coating systems executed on night, weekend, and phased schedules to eliminate tenant disruption.",
-    capabilities: [
-      "Scuff-resistant, high-durability interior coatings for corridors and common areas",
-      "Washable, scrub-grade finishes designed for long lifecycle performance",
-      "Antimicrobial and low/zero-VOC coating systems for occupied buildings",
-      "Night, weekend, and phased execution to eliminate tenant disruption",
-      "Color-consistent maintenance systems for property managers and portfolios"
-    ]
+    desc: "Scuff-resistant, scrub-grade systems engineered for constant use, chemical exposure, and long-term lifecycle performance in active commercial environments."
   },
   {
+    slug: "exterior-building-coatings",
     icon: <PaintRoller className="w-6 h-6" />,
     title: "Exterior Building Coatings",
-    tagline: "Long-Term Asset Protection Systems for Texas Commercial Properties",
-    desc: "PaintLab exterior coating systems are engineered to extend building life, reduce maintenance cycles, and protect commercial assets from the extreme Texas climate—UV exposure, heat cycling, moisture intrusion, and structural movement. We don't 'paint buildings.' We install exterior protection systems designed for performance, durability, and long-term ROI.",
-    problem: "UV exposure, heat cycling, moisture intrusion, and structural movement cause premature coating failure and accelerated building degradation in the Texas climate.",
-    solution: "Engineered exterior protection systems—not surface paint—designed to extend building life and reduce long-term maintenance costs.",
-    capabilities: [
-      "UV-resistant exterior coating systems designed for Texas sun exposure",
-      "Elastomeric coatings for crack-bridging and substrate movement",
-      "Integrated waterproofing solutions to prevent moisture intrusion",
-      "Stucco restoration and protective coating systems",
-      "Tilt-wall concrete coatings for commercial and industrial buildings",
-      "Metal substrate coatings for corrosion resistance and longevity"
-    ]
+    tagline: "Long-Term Asset Protection for Texas Commercial Properties",
+    desc: "Engineered exterior protection systems designed to withstand UV exposure, heat cycling, moisture intrusion, and structural movement across the Texas climate."
   },
   {
+    slug: "industrial-protective-coatings",
     icon: <Factory className="w-6 h-6" />,
     title: "Industrial & Protective Coatings",
-    tagline: "Compliance-Driven Asset Protection for Critical Surfaces",
-    desc: "Industrial environments demand more than paint—they require engineered protective systems that resist chemicals, abrasion, moisture, and heavy mechanical wear. PaintLab delivers industrial-grade coatings that protect infrastructure and support compliance standards.",
-    problem: "Chemicals, abrasion, moisture, and heavy mechanical wear destroy standard coatings—creating safety risks, compliance failures, and costly infrastructure damage.",
-    solution: "Industrial-grade protective coating systems engineered for the harshest environments, with OSHA-aligned execution and compliance-grade documentation.",
-    capabilities: [
-      "Epoxy flooring systems for warehouses, mechanical rooms, and facilities",
-      "Urethane topcoats for chemical and abrasion resistance",
-      "OSHA-aligned safety floor markings and coatings",
-      "Concrete sealing systems for dust control and surface protection",
-      "Industrial floor restoration and resurfacing solutions"
-    ]
+    tagline: "Compliance-Driven Protection for Critical Surfaces",
+    desc: "Industrial-grade systems that resist chemicals, abrasion, and mechanical wear—protecting infrastructure and supporting compliance standards."
   },
   {
+    slug: "sealants-waterproofing",
     icon: <Droplets className="w-6 h-6" />,
     title: "Sealants & Waterproofing Systems",
-    tagline: "Building Envelope Defense Against Moisture, Air, and Structural Movement",
-    desc: "Water intrusion is one of the most expensive and recurring failures in commercial buildings. PaintLab sealant and waterproofing systems are designed to reinforce the building envelope, prevent long-term structural damage, and protect interior assets. We treat sealing and waterproofing as a system—not a patch.",
-    problem: "Water intrusion is one of the most expensive and recurring failures in commercial buildings—causing structural damage, mold, and tenant liability.",
-    solution: "System-level sealant and waterproofing designed to reinforce the full building envelope, not just address surface symptoms.",
-    capabilities: [
-      "Expansion joint sealant systems for structural movement",
-      "Crack repair and injection systems for concrete and masonry",
-      "Moisture intrusion prevention across facades and substrates",
-      "Air and water barrier reinforcement systems",
-      "Window, joint, and facade perimeter sealing for full envelope protection"
-    ]
+    tagline: "Building Envelope Defense Against Moisture & Structural Movement",
+    desc: "System-level sealant and waterproofing solutions that reinforce the full building envelope and prevent long-term structural damage."
   },
   {
+    slug: "specialty-coating-services",
     icon: <Wrench className="w-6 h-6" />,
     title: "Specialty Coating Services",
     tagline: "One Partner. No Coordination Headaches.",
-    desc: "Commercial projects often fail at the coordination level—not the execution level. PaintLab eliminates that friction by offering integrated specialty services that support full-scope facility maintenance and tenant improvement workflows under one contractor.",
-    problem: "Multiple contractors, scheduling conflicts, inconsistent quality, and delayed turnovers drain time, budget, and management bandwidth.",
-    solution: "One integrated partner managing surface prep through final walkthrough—eliminating coordination gaps and delivering consistent outcomes across every scope.",
-    capabilities: [
-      "Wallcovering installation and removal for commercial interiors",
-      "Branded graphic and specialty finish applications",
-      "Drywall repair, patching, and light carpentry support",
-      "Pressure washing and soft washing for building exteriors",
-      "Multi-family turn programs and ongoing maintenance painting contracts"
-    ]
+    desc: "Integrated specialty services—wallcovering, graphics, drywall, pressure washing, and maintenance programs—under a single, accountable contractor."
   }
 ];
 
@@ -165,6 +128,47 @@ const projectTypes = [
   { id: "datacenters", label: "Data Centers" },
 ];
 
+const approachSteps = [
+  {
+    num: "01",
+    title: "Strategic Assessment & System Design",
+    desc: "We don't just paint; we specify. We evaluate substrates, environmental conditions, and long-term performance goals to engineer the precise coating system required for your asset."
+  },
+  {
+    num: "02",
+    title: "Structured Planning & Controlled Execution",
+    desc: "Execution without disruption. We align timelines with your operational needs, utilizing phased workflows and maintaining clear, documented communication throughout every phase."
+  },
+  {
+    num: "03",
+    title: "Quality Assurance & Long-Term Performance",
+    desc: "Trust but verify. We validate every detail, conduct rigorous final inspections, and establish a long-term partnership backed by our 2-year guarantee on all work performed."
+  }
+];
+
+const differentiators = [
+  {
+    icon: <Shield className="w-6 h-6" />,
+    title: "Licensed, Insured & Compliant",
+    desc: "Operate with confidence knowing every project is fully licensed, insured, and executed to strict safety and OSHA compliance standards—protecting your asset and minimizing risk."
+  },
+  {
+    icon: <Zap className="w-6 h-6" />,
+    title: "Performance-Engineered Systems",
+    desc: "We don't use off-the-shelf solutions. Our premium coating systems are engineered for durability, protection, and long-term performance in the demanding Central Texas climate."
+  },
+  {
+    icon: <Clock className="w-6 h-6" />,
+    title: "On-Time Execution. Zero Surprises.",
+    desc: "Our disciplined, process-driven approach ensures projects are delivered on schedule, on budget, and with complete transparency from start to finish. Your satisfaction is our #1 priority—backed by a 2-year guarantee on all work."
+  },
+  {
+    icon: <Users className="w-6 h-6" />,
+    title: "Expert Team. Built for Partnership.",
+    desc: "Experienced crews, standardized systems, and a partnership-first mindset—supporting your property or portfolio with consistent results you can rely on long-term."
+  }
+];
+
 export default function Home() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
@@ -227,7 +231,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
               <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tighter mb-6">
-                Precision coating engineering.
+                Precision <strong className="text-primary">Commercial</strong> Coating Engineering.
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-muted-foreground text-lg mb-6 leading-relaxed">
                 We combine precision craftsmanship with a disciplined, systems-driven approach that delivers consistency, accountability, and total predictability from start to finish.
@@ -258,7 +262,7 @@ export default function Home() {
         <div className="container mx-auto px-6 md:px-12">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-16 max-w-3xl">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">Engineered <strong className="text-primary">Commercial</strong> Coating Systems</h2>
-            <p className="text-xl text-muted-foreground">Purpose-built solutions for demanding <strong className="text-foreground">commercial</strong> environments.</p>
+            <p className="text-xl text-muted-foreground">Purpose-built solutions for demanding <strong className="text-foreground">commercial</strong> environments across Austin and Central Texas.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-border">
@@ -266,39 +270,22 @@ export default function Home() {
               <motion.div
                 key={idx}
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
-                className="bg-card p-8 md:p-10 hover:bg-secondary/30 transition-colors group cursor-default flex flex-col"
+                className="bg-card p-8 md:p-10 hover:bg-secondary/30 transition-colors group flex flex-col"
               >
                 <div className="w-12 h-12 bg-background border border-border flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                   {service.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-1">{service.title}</h3>
-                <p className="text-primary text-xs font-mono uppercase tracking-wider mb-4">{service.tagline}</p>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6">{service.desc}</p>
-
-                {/* Problem / Solution */}
-                <div className="space-y-3 mb-6 border-t border-border pt-6">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-destructive">The Problem</span>
-                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{service.problem}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-primary">PaintLab Solution</span>
-                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{service.solution}</p>
-                  </div>
-                </div>
-
-                {/* Capabilities */}
-                <div className="mt-auto border-t border-border pt-6">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-foreground mb-3">Core Capabilities</p>
-                  <ul className="space-y-2">
-                    {service.capabilities.map((cap, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span>{cap}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <h3 className="text-xl font-bold mb-2">{service.title}</h3>
+                <p className="text-primary text-xs font-mono uppercase tracking-wider mb-4 leading-relaxed">{service.tagline}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-8 flex-grow">{service.desc}</p>
+                <Link href={`/services/${service.slug}`}>
+                  <Button
+                    variant="outline"
+                    className="rounded-none border-border hover:border-primary hover:text-primary w-full font-semibold uppercase tracking-wider text-xs h-10 group/btn"
+                  >
+                    View Details <ArrowRight className="ml-2 w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -320,7 +307,7 @@ export default function Home() {
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
                 className="border border-border bg-background p-6 flex flex-col group"
               >
-                <div className="mb-6 min-h-[56px]">
+                <div className="mb-6 min-h-[56px] flex flex-col justify-start">
                   <h3 className="text-base font-bold uppercase tracking-tight mb-1 text-primary group-hover:text-foreground transition-colors">{sector.title}</h3>
                   <p className="text-xs text-muted-foreground font-mono">{sector.sub}</p>
                 </div>
@@ -341,13 +328,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* APPROACH SECTION */}
+      {/* APPROACH & DIFFERENCE SECTION */}
       <section id="approach" className="py-24 bg-background border-b border-border">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-16 max-w-3xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-[1px] w-12 bg-primary"></div>
+              <span className="text-primary font-mono text-xs tracking-widest uppercase">How We Work</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter">The PaintLab Approach & Difference.</h2>
+          </motion.div>
+
+          {/* 3 Process Steps */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
             <div className="lg:col-span-4">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="sticky top-32">
-                <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">The PaintLab Approach & Difference.</h2>
                 <p className="text-muted-foreground text-lg mb-8">
                   The result is a repeatable, predictable experience—projects delivered on time, on budget, and to the exacting standards you expect.
                 </p>
@@ -357,23 +353,7 @@ export default function Home() {
 
             <div className="lg:col-span-8">
               <div className="space-y-12">
-                {[
-                  {
-                    num: "01",
-                    title: "Strategic Assessment & System Design",
-                    desc: "We don't just paint; we specify. We evaluate substrates, environmental conditions, and long-term performance goals to engineer the precise coating system required."
-                  },
-                  {
-                    num: "02",
-                    title: "Structured Planning & Controlled Execution",
-                    desc: "Execution without disruption. We align timelines with your operational needs, utilizing phased workflows and maintaining clear, documented communication throughout."
-                  },
-                  {
-                    num: "03",
-                    title: "Quality Assurance & Long-Term Performance",
-                    desc: "Trust but verify. We validate every detail, conduct rigorous final inspections, and establish a long-term partnership backed by our 2-year guarantee."
-                  }
-                ].map((step, idx) => (
+                {approachSteps.map((step, idx) => (
                   <motion.div
                     key={idx}
                     initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
@@ -391,37 +371,43 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* WHY US SECTION */}
-      <section className="py-24 bg-card border-b border-border">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {[
-              { title: "White-Glove Management", desc: "A single point of contact. Total transparency and rigorous project oversight from assessment through final walkthrough." },
-              { title: "OSHA-Compliant", desc: "Safety is our baseline. Strict adherence to OSHA protocols to protect our team and your facility at all times." },
-              { title: "Texas-Engineered", desc: "Systems selected specifically to withstand Central Texas's intense UV, heat cycling, and humidity. Built for this market." },
-              { title: "On-Time, On-Budget", desc: "Repeatable, predictable outcomes. No surprises, no excuses, just execution to the exacting standards you expect." }
-            ].map((feature, idx) => (
-              <motion.div key={idx} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-                <div className="w-10 h-10 border border-primary text-primary flex items-center justify-center mb-6">
-                  <Target className="w-5 h-5" />
-                </div>
-                <h4 className="text-xl font-bold mb-3">{feature.title}</h4>
-                <p className="text-muted-foreground">{feature.desc}</p>
-              </motion.div>
-            ))}
+          {/* The Difference — 4 differentiator cards */}
+          <div>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-[1px] w-12 bg-primary"></div>
+                <span className="text-primary font-mono text-xs tracking-widest uppercase">The Difference</span>
+              </div>
+              <h3 className="text-2xl md:text-3xl font-bold tracking-tighter">What sets PaintLab apart.</h3>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-px bg-border">
+              {differentiators.map((item, idx) => (
+                <motion.div
+                  key={idx}
+                  initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+                  className="bg-card p-8 flex flex-col"
+                >
+                  <div className="w-10 h-10 border border-primary text-primary flex items-center justify-center mb-6 flex-shrink-0">
+                    {item.icon}
+                  </div>
+                  <h4 className="text-lg font-bold mb-4">{item.title}</h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
+
         </div>
       </section>
 
       {/* CONTACT / CTA SECTION */}
-      <section id="quote" className="py-24 bg-background relative overflow-hidden">
+      <section id="quote" className="py-24 bg-card relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }}></div>
 
         <div className="container relative z-10 mx-auto px-6 md:px-12">
-          <div className="max-w-5xl mx-auto bg-card border border-border grid grid-cols-1 md:grid-cols-5">
+          <div className="max-w-5xl mx-auto bg-background border border-border grid grid-cols-1 md:grid-cols-5">
             <div className="md:col-span-2 p-10 md:p-12 bg-secondary/30 border-b md:border-b-0 md:border-r border-border flex flex-col justify-between">
               <div>
                 <h2 className="text-3xl font-bold tracking-tighter mb-4">Command your outcome.</h2>
@@ -470,7 +456,9 @@ export default function Home() {
 
                 {/* Multi-select Project Type */}
                 <div className="space-y-3">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Type <span className="normal-case font-normal">(select all that apply)</span></label>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Project Type <span className="normal-case font-normal">(select all that apply)</span>
+                  </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-border bg-background p-4">
                     {projectTypes.map((type) => {
                       const checked = selectedTypes.includes(type.id);
@@ -479,7 +467,7 @@ export default function Home() {
                           key={type.id}
                           type="button"
                           onClick={() => toggleType(type.id)}
-                          className="flex items-center gap-3 group text-left w-full"
+                          className="flex items-center gap-3 group text-left w-full py-1"
                         >
                           <span className={`w-4 h-4 flex-shrink-0 border flex items-center justify-center transition-colors ${checked ? "border-primary bg-primary" : "border-border bg-background"}`}>
                             {checked && <Check className="w-3 h-3 text-primary-foreground" />}
