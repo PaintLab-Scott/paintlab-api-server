@@ -29,9 +29,9 @@ export function Navbar() {
       }`}
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold tracking-tighter text-foreground flex items-center gap-2">
-          <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-11 h-11 object-contain" />
-          PAINTLAB
+        <Link href="/" className="text-2xl font-bold tracking-tighter flex items-center gap-1.5">
+          <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-14 h-14 object-contain" />
+          <span className="text-primary font-black">PAINTLAB</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -45,7 +45,7 @@ export function Navbar() {
               {link.name}
             </a>
           ))}
-          <Button asChild className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-semibold uppercase tracking-wider text-xs px-6 py-5">
+          <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-xs px-6 py-5">
             <a href="#quote">Get a Quote</a>
           </Button>
         </nav>
@@ -72,7 +72,7 @@ export function Navbar() {
               {link.name}
             </a>
           ))}
-          <Button asChild className="rounded-none mt-4 bg-primary text-primary-foreground w-full py-6">
+          <Button asChild className="rounded-none mt-4 bg-primary text-background w-full py-6">
             <a href="#quote" onClick={() => setMobileMenuOpen(false)}>Get a Quote</a>
           </Button>
         </div>

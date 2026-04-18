@@ -199,22 +199,17 @@ export default function Home() {
             initial="hidden" animate="visible" variants={staggerContainer}
             className="max-w-4xl"
           >
-            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
-              <div className="h-[1px] w-12 bg-primary"></div>
-              <span className="text-primary font-mono text-sm tracking-widest uppercase font-semibold"><strong>Commercial</strong> Painting Systems</span>
-            </motion.div>
-
             <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[1.05]">
-              Eliminate risk.<br />
-              <span className="text-muted-foreground">Command performance.</span>
+              Premium <strong className="text-primary">COMMERCIAL</strong><br />
+              <span className="text-muted-foreground">Paint Systems.</span>
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed">
-              PaintLab is where <strong className="text-foreground">commercial</strong> painting stops being a risk and becomes a controlled, predictable, high-performance outcome. Based in Austin, TX.
+              <span className="text-primary font-black">PAINTLAB</span> is where <strong className="text-foreground">commercial</strong> painting stops being a risk and becomes a controlled, predictable, high-performance outcome. Based in Austin, TX.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8" asChild>
+              <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8" asChild>
                 <a href="#quote">Get a System Assessment <ArrowRight className="ml-2 w-4 h-4" /></a>
               </Button>
               <Button size="lg" variant="outline" className="rounded-none border-border hover:bg-secondary hover:text-secondary-foreground font-semibold uppercase tracking-wider h-14 px-8" asChild>
@@ -293,12 +288,12 @@ export default function Home() {
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
               className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
             >
-              <div className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground select-none">
-                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-11 h-11 object-contain" />
-                PAINTLAB
+              <div className="flex items-center gap-1.5 text-2xl font-black tracking-tighter select-none">
+                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-14 h-14 object-contain" />
+                <span className="text-primary">PAINTLAB</span>
               </div>
               <a href="#quote">
-                <Button className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8">
+                <Button className="rounded-none bg-transparent text-primary border border-primary hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-12 px-8 transition-colors">
                   Contact Us <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </a>
@@ -310,9 +305,18 @@ export default function Home() {
       {/* SECTORS SECTION */}
       <section id="sectors" className="py-24 bg-card border-b border-border">
         <div className="container mx-auto px-6 md:px-12">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">Sectors & Industries</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl">We deploy specific coating systems tailored to the operational realities of each <strong className="text-foreground">commercial</strong> sector.</p>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-16 flex flex-col md:flex-row md:items-end gap-6 md:gap-0 justify-between">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">Sectors & Industries</h2>
+              <p className="text-xl text-muted-foreground max-w-2xl">We deploy specific coating systems tailored to the operational realities of each <strong className="text-foreground">commercial</strong> sector.</p>
+            </div>
+            <div className="flex-shrink-0">
+              <a href="#quote">
+                <Button variant="outline" className="rounded-none border-primary text-primary bg-transparent hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-11 px-6 transition-colors">
+                  Contact Us <ArrowRight className="ml-2 w-3.5 h-3.5" />
+                </Button>
+              </a>
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -324,7 +328,7 @@ export default function Home() {
               >
                 {/* Sector header — orange block */}
                 <div className="bg-primary px-6 py-5 h-[100px] flex flex-col justify-center">
-                  <h3 className="text-sm font-black uppercase tracking-tight text-background leading-tight">{sector.title}</h3>
+                  <h3 className="text-[17.5px] font-black uppercase tracking-tight text-background leading-tight">{sector.title}</h3>
                   <p className="text-xs text-background/70 font-mono mt-1.5 leading-snug">{sector.sub}</p>
                 </div>
 
@@ -354,7 +358,7 @@ export default function Home() {
               <div className="h-[1px] w-12 bg-primary"></div>
               <span className="text-primary font-mono text-xs tracking-widest uppercase">How We Work</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter">The PaintLab Approach & Difference.</h2>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter">The <span className="text-primary font-black">PAINTLAB</span> Approach & Difference.</h2>
           </motion.div>
 
           {/* 3 Process Steps */}
@@ -396,7 +400,7 @@ export default function Home() {
                 <div className="h-[1px] w-12 bg-primary"></div>
                 <span className="text-primary font-mono text-xs tracking-widest uppercase">The Difference</span>
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold tracking-tighter">What sets PaintLab apart.</h3>
+              <h3 className="text-2xl md:text-3xl font-bold tracking-tighter">What sets <span className="text-primary font-black">PAINTLAB</span> apart.</h3>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-px bg-border">
@@ -429,6 +433,10 @@ export default function Home() {
               <div>
                 <h2 className="text-3xl font-bold tracking-tighter mb-4">Command your outcome.</h2>
                 <p className="text-muted-foreground mb-8">Initiate a coating system assessment and receive a comprehensive specification and proposal for your facility.</p>
+              </div>
+
+              <div className="flex justify-center py-6">
+                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-28 h-28 object-contain opacity-80" />
               </div>
 
               <div className="space-y-6 text-sm">
@@ -513,8 +521,8 @@ export default function Home() {
                   <Textarea placeholder="Square footage, timeline, existing conditions..." className="rounded-none bg-background border-border focus-visible:ring-primary min-h-[120px] resize-none" />
                 </div>
 
-                <Button type="submit" className="w-full rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-semibold uppercase tracking-wider h-14">
-                  Request System Assessment
+                <Button type="submit" className="w-full rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14">
+                  Send
                 </Button>
               </form>
             </div>

@@ -233,7 +233,7 @@ export default function ServiceDetail() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Ready to specify the right system?</h2>
             <p className="text-muted-foreground text-lg mb-8">Initiate a coating system assessment and receive a comprehensive specification and proposal for your facility.</p>
             <Link href="/#quote">
-              <Button size="lg" className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8">
+              <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8">
                 Request a System Assessment <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
