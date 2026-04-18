@@ -30,3 +30,9 @@ id = "RFDm_8GwqDAUfu4E3cnj-"
 uri = "file://artifacts/paintlab/public/images/painters.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "7KLGEYsvFh_Zm5TbCol_Y"
+uri = "file://attached_assets/generated_images/generated_image.png"
+type = "image"
+title = "generated_image"

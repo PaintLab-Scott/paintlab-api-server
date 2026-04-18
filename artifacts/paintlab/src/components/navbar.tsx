@@ -30,7 +30,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold tracking-tighter text-foreground flex items-center gap-2">
-          <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-8 h-8 object-contain" />
+          <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-11 h-11 object-contain" />
           PAINTLAB
         </Link>
 

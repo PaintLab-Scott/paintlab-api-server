@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, ArrowRight } from "lucide-react";
@@ -109,6 +110,10 @@ const serviceData: Record<string, {
 export default function ServiceDetail() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug ?? "";
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [slug]);
   const service = serviceData[slug];
 
   if (!service) {
@@ -141,11 +146,6 @@ export default function ServiceDetail() {
                   Back to Services
                 </button>
               </Link>
-            </motion.div>
-
-            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-5">
-              <div className="h-[1px] w-12 bg-primary"></div>
-              <span className="text-primary font-mono text-xs tracking-widest uppercase">{service.location}</span>
             </motion.div>
 
             <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-4 max-w-4xl">
@@ -189,14 +189,14 @@ export default function ServiceDetail() {
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
               className="bg-card p-10 md:p-14"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-destructive mb-4">The Problem</p>
+              <p className="text-base font-bold uppercase tracking-widest text-destructive mb-4">The Problem</p>
               <p className="text-lg text-muted-foreground leading-relaxed">{service.problem}</p>
             </motion.div>
             <motion.div
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
               className="bg-card p-10 md:p-14 border-l border-border"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-4">PaintLab Solution</p>
+              <p className="text-base font-bold uppercase tracking-widest text-primary mb-4">PaintLab Solution</p>
               <p className="text-lg text-muted-foreground leading-relaxed">{service.solution}</p>
             </motion.div>
           </div>

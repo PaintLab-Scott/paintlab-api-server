@@ -294,11 +294,11 @@ export default function Home() {
               className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
             >
               <div className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground select-none">
-                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-8 h-8 object-contain" />
+                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-11 h-11 object-contain" />
                 PAINTLAB
               </div>
               <a href="#quote">
-                <Button className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8">
+                <Button className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8">
                   Contact Us <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </a>

@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="md:col-span-2">
             <Link href="/" className="text-2xl font-bold tracking-tighter text-foreground flex items-center gap-2 mb-4">
-              <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-8 h-8 object-contain" />
+              <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-11 h-11 object-contain" />
               PAINTLAB
             </Link>
             <p className="text-muted-foreground max-w-sm mb-6 text-sm leading-relaxed">
