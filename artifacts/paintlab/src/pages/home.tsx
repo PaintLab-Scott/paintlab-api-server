@@ -280,8 +280,7 @@ export default function Home() {
                 <p className="text-muted-foreground text-sm leading-relaxed mb-8 flex-grow">{service.desc}</p>
                 <Link href={`/services/${service.slug}`}>
                   <Button
-                    variant="outline"
-                    className="rounded-none border-border hover:border-primary hover:text-primary w-full font-semibold uppercase tracking-wider text-xs h-10 group/btn"
+                    className="rounded-none bg-primary text-background border border-primary hover:bg-background hover:text-foreground hover:border-border w-full font-semibold uppercase tracking-wider text-xs h-10 group/btn transition-colors"
                   >
                     View Details <ArrowRight className="ml-2 w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
@@ -295,7 +294,7 @@ export default function Home() {
               className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
             >
               <div className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground select-none">
-                <div className="w-4 h-4 bg-primary rounded-sm" />
+                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-8 h-8 object-contain" />
                 PAINTLAB
               </div>
               <a href="#quote">
