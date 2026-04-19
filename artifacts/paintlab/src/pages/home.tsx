@@ -131,32 +131,27 @@ const projectTypes = [
 const approachSteps = [
   {
     num: "01",
+    title: "Relentlessly Easy to Work With",
+    desc: "We deliver fast, thoughtful bids with clear scope, timelines, and requirements so you know exactly what to expect from the start. Communication is thoughtful, proactive, professional, and transparent—no chasing updates, no ambiguity, no surprises. We operate with one standard: a seamless, low-friction experience that earns trust and makes working together effortless from day one."
+  },
+  {
+    num: "02",
     title: "Strategic Assessment & System Design",
     desc: "We don't just paint; we specify. We evaluate substrates, environmental conditions, and long-term performance goals to engineer the precise coating system required for your asset."
   },
   {
-    num: "02",
+    num: "03",
     title: "Structured Planning & Controlled Execution",
     desc: "Execution without disruption. We align timelines with your operational needs, utilizing phased workflows and maintaining clear, documented communication throughout every phase."
   },
   {
-    num: "03",
+    num: "04",
     title: "Quality Assurance & Long-Term Performance",
     desc: "Trust but verify. We validate every detail, conduct rigorous final inspections, and establish a long-term partnership backed by our 2-year guarantee on all work performed."
   }
 ];
 
 const differentiators = [
-  {
-    icon: <Shield className="w-6 h-6" />,
-    title: "Licensed, Insured & Compliant",
-    desc: "Operate with confidence knowing every project is fully licensed, insured, and executed to strict safety and OSHA compliance standards—protecting your asset and minimizing risk."
-  },
-  {
-    icon: <Zap className="w-6 h-6" />,
-    title: "Performance-Engineered Systems",
-    desc: "We don't use off-the-shelf solutions. Our premium coating systems are engineered for durability, protection, and long-term performance in the demanding Central Texas climate."
-  },
   {
     icon: <Clock className="w-6 h-6" />,
     title: "On-Time Execution. Zero Surprises.",
@@ -166,6 +161,16 @@ const differentiators = [
     icon: <Users className="w-6 h-6" />,
     title: "Expert Team. Built for Partnership.",
     desc: "Experienced crews, standardized systems, and a partnership-first mindset—supporting your property or portfolio with consistent results you can rely on long-term."
+  },
+  {
+    icon: <Shield className="w-6 h-6" />,
+    title: "Licensed, Insured & Compliant",
+    desc: "Operate with confidence knowing every project is fully licensed, insured, and executed to strict safety and OSHA compliance standards—protecting your asset and minimizing risk."
+  },
+  {
+    icon: <Zap className="w-6 h-6" />,
+    title: "Performance-Engineered Systems",
+    desc: "We don't use off-the-shelf solutions. Our premium coating systems are engineered for durability, protection, and long-term performance in the demanding Central Texas climate."
   }
 ];
 
@@ -288,9 +293,9 @@ export default function Home() {
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
               className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
             >
-              <div className="flex items-center gap-1.5 text-2xl font-black tracking-tighter select-none">
-                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-14 h-14 object-contain" />
-                <span className="text-primary">PAINTLAB</span>
+              <div className="flex items-center gap-0.5 text-2xl font-black tracking-tighter select-none">
+                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-[73px] h-[73px] object-contain" />
+                <span className="text-foreground">PAINTLAB</span>
               </div>
               <a href="#quote">
                 <Button className="rounded-none bg-transparent text-primary border border-primary hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-12 px-8 transition-colors">
@@ -298,53 +303,6 @@ export default function Home() {
                 </Button>
               </a>
             </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTORS SECTION */}
-      <section id="sectors" className="py-24 bg-card border-b border-border">
-        <div className="container mx-auto px-6 md:px-12">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-16 flex flex-col md:flex-row md:items-end gap-6 md:gap-0 justify-between">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">Sectors & Industries</h2>
-              <p className="text-xl text-muted-foreground max-w-2xl">We deploy specific coating systems tailored to the operational realities of each <strong className="text-foreground">commercial</strong> sector.</p>
-            </div>
-            <div className="flex-shrink-0">
-              <a href="#quote">
-                <Button variant="outline" className="rounded-none border-primary text-primary bg-transparent hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-11 px-6 transition-colors">
-                  Contact Us <ArrowRight className="ml-2 w-3.5 h-3.5" />
-                </Button>
-              </a>
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sectors.map((sector, idx) => (
-              <motion.div
-                key={idx}
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
-                className="border border-border bg-background flex flex-col overflow-hidden"
-              >
-                {/* Sector header — orange block */}
-                <div className="bg-primary px-6 py-5 h-[100px] flex flex-col justify-center">
-                  <h3 className="text-[17.5px] font-black uppercase tracking-tight text-background leading-tight">{sector.title}</h3>
-                  <p className="text-xs text-background/70 font-mono mt-1.5 leading-snug">{sector.sub}</p>
-                </div>
-
-                {/* Interior / Exterior content */}
-                <div className="p-6 flex flex-col flex-grow space-y-4">
-                  <div>
-                    <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1.5 border-b border-border pb-1">Interior</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{sector.int}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1.5 border-b border-border pb-1">Exterior</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{sector.ext}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>
@@ -423,6 +381,50 @@ export default function Home() {
         </div>
       </section>
 
+      {/* SECTORS SECTION */}
+      <section id="sectors" className="py-24 bg-card border-b border-border">
+        <div className="container mx-auto px-6 md:px-12">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-16 flex flex-col md:flex-row md:items-end gap-6 md:gap-0 justify-between">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">Sectors & Industries</h2>
+              <p className="text-xl text-muted-foreground max-w-2xl">We deploy specific coating systems tailored to the operational realities of each <strong className="text-foreground">commercial</strong> sector.</p>
+            </div>
+            <div className="flex-shrink-0">
+              <a href="#quote">
+                <Button variant="outline" className="rounded-none border-primary text-primary bg-transparent hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-11 px-6 transition-colors">
+                  Contact Us <ArrowRight className="ml-2 w-3.5 h-3.5" />
+                </Button>
+              </a>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sectors.map((sector, idx) => (
+              <motion.div
+                key={idx}
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+                className="border border-border bg-background flex flex-col overflow-hidden"
+              >
+                <div className="bg-primary px-6 py-5 h-[100px] flex flex-col justify-center">
+                  <h3 className="text-[17.5px] font-black uppercase tracking-tight text-background leading-tight">{sector.title}</h3>
+                  <p className="text-xs text-background/70 font-mono mt-1.5 leading-snug">{sector.sub}</p>
+                </div>
+                <div className="p-6 flex flex-col flex-grow space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1.5 border-b border-border pb-1">Interior</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{sector.int}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1.5 border-b border-border pb-1">Exterior</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{sector.ext}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CONTACT / CTA SECTION */}
       <section id="quote" className="py-24 bg-card relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }}></div>
@@ -436,7 +438,7 @@ export default function Home() {
               </div>
 
               <div className="flex justify-center py-6">
-                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-28 h-28 object-contain opacity-80" />
+                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-56 h-56 object-contain opacity-80" />
               </div>
 
               <div className="space-y-6 text-sm">

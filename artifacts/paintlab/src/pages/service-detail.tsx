@@ -20,6 +20,7 @@ const serviceData: Record<string, {
   title: string;
   location: string;
   tagline: string;
+  image: string;
   overview: string;
   intro?: string;
   problem: string;
@@ -30,6 +31,7 @@ const serviceData: Record<string, {
   "high-traffic-interior": {
     title: "High Traffic Interior Systems",
     location: "Austin & Central Texas",
+    image: "/images/interior.png",
     tagline: "Durable Finishes Built for Occupied Commercial Spaces",
     overview: "Interior environments in commercial buildings fail fast under real-world use—tenant traffic, carts, cleaning chemicals, and constant contact. PaintLab interior systems are designed to preserve appearance, reduce repaint frequency, and maintain tenant satisfaction in active spaces. We prioritize execution in live environments with minimal disruption.",
     problem: "Standard finishes degrade rapidly under the demands of occupied commercial spaces—scuffing, staining, and chemical damage drives up repaint frequency and disrupts tenants.",
@@ -45,6 +47,7 @@ const serviceData: Record<string, {
   "exterior-building-coatings": {
     title: "Exterior Building Coatings",
     location: "Austin & Central Texas",
+    image: "/images/exterior.png",
     tagline: "Long-Term Asset Protection Systems for Texas Commercial Properties",
     overview: "PaintLab exterior coating systems are engineered to extend building life, reduce maintenance cycles, and protect commercial assets from the extreme Texas climate—UV exposure, heat cycling, moisture intrusion, and structural movement.",
     intro: "We don't \"paint buildings.\" We install exterior protection systems designed for performance, durability, and long-term ROI.",
@@ -62,6 +65,7 @@ const serviceData: Record<string, {
   "industrial-protective-coatings": {
     title: "Industrial & Protective Coatings",
     location: "Austin & Central Texas",
+    image: "/images/epoxy.png",
     tagline: "Compliance-Driven Asset Protection for Critical Surfaces",
     overview: "Industrial environments demand more than paint—they require engineered protective systems that resist chemicals, abrasion, moisture, and heavy mechanical wear. PaintLab delivers industrial-grade coatings that protect infrastructure and support compliance standards.",
     problem: "Chemicals, abrasion, moisture, and heavy mechanical wear destroy standard coatings—creating safety risks, compliance failures, and costly infrastructure damage that compounds over time.",
@@ -77,6 +81,7 @@ const serviceData: Record<string, {
   "sealants-waterproofing": {
     title: "Sealants & Waterproofing Systems",
     location: "Austin & Central Texas",
+    image: "/images/sealants.png",
     tagline: "Building Envelope Defense Against Moisture, Air, and Structural Movement",
     overview: "Water intrusion is one of the most expensive and recurring failures in commercial buildings. PaintLab sealant and waterproofing systems are designed to reinforce the building envelope, prevent long-term structural damage, and protect interior assets.",
     intro: "We treat sealing and waterproofing as a system—not a patch.",
@@ -93,6 +98,7 @@ const serviceData: Record<string, {
   "specialty-coating-services": {
     title: "Specialty Coating Services",
     location: "Austin & Central Texas",
+    image: "/images/painters.png",
     tagline: "One Partner. No Coordination Headaches.",
     overview: "Commercial projects often fail at the coordination level—not the execution level. PaintLab eliminates that friction by offering integrated specialty services that support full-scope facility maintenance and tenant improvement workflows under one contractor.",
     problem: "Multiple contractors, scheduling conflicts, inconsistent quality, and delayed turnovers drain time, budget, and management bandwidth—turning routine projects into operational liabilities.",
@@ -152,9 +158,17 @@ export default function ServiceDetail() {
               {service.title}
             </motion.h1>
 
-            <motion.p variants={fadeInUp} className="text-lg text-primary font-mono uppercase tracking-wider">
+            <motion.p variants={fadeInUp} className="text-lg text-primary font-mono uppercase tracking-wider mb-10">
               {service.tagline}
             </motion.p>
+
+            <motion.div variants={fadeInUp} className="w-full max-w-5xl">
+              <img
+                src={service.image}
+                alt={service.title}
+                className="w-full h-[320px] md:h-[420px] object-cover border border-border filter grayscale"
+              />
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -230,7 +244,7 @@ export default function ServiceDetail() {
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
             className="max-w-2xl"
           >
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Ready to specify the right system?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Ready to get started?</h2>
             <p className="text-muted-foreground text-lg mb-8">Initiate a coating system assessment and receive a comprehensive specification and proposal for your facility.</p>
             <Link href="/#quote">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8">
