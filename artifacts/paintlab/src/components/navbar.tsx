@@ -22,7 +22,6 @@ export function Navbar() {
     { name: "Subscriptions", href: "/subscription-portal", isRoute: true },
     { name: "Sectors", href: `${prefix}#sectors` },
     { name: "Approach", href: `${prefix}#approach` },
-    { name: "About", href: `${prefix}#approach` },
   ];
 
   return (

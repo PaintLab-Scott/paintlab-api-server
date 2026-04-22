@@ -16,7 +16,7 @@ const stagger = {
 
 // ─── Residential Constants ──────────────────────────────────────────────────
 const UNIT_SQFT: Record<string, number> = {
-  studio: 1250, oneBD: 1750, twoBD: 2500, threeBD: 3000, fourBD: 3500,
+  studio: 600, oneBD: 900, twoBD: 1150, threeBD: 1500, fourBD: 1800,
 };
 const UNIT_LABELS: Record<string, string> = {
   studio: "Studio", oneBD: "1 Bedroom", twoBD: "2 Bedroom", threeBD: "3 Bedroom", fourBD: "4 Bedroom",
@@ -26,7 +26,7 @@ const UNIT_WALL_RATIO: Record<string, number> = {
 };
 
 const RES_DIST_SQFT: Record<string, number> = {
-  corridors: 200, stairwells: 180, elevatorLandings: 75, wasteRooms: 55,
+  corridors: 1000, stairwells: 200, elevatorLandings: 75, wasteRooms: 55,
 };
 const RES_DIST_LABELS: Record<string, string> = {
   corridors: "Residential Corridors",
@@ -50,6 +50,7 @@ const RES_HUB_LABELS: Record<string, string> = {
 const EXT_ZONE_COST: Record<string, number> = {
   mainFacade: 250, floorSurface: 150, poolDeck: 450,
   doorway: 250, garbageArea: 100, garageEntrance: 175,
+  buildingCladding: 1000,
 };
 const EXT_ZONE_LABELS: Record<string, string> = {
   mainFacade: "Main Entrance Facade",
@@ -58,6 +59,10 @@ const EXT_ZONE_LABELS: Record<string, string> = {
   doorway: "Entries — Walls & Floor Surface",
   garbageArea: "Garbage Area",
   garageEntrance: "Garage Entrance",
+  buildingCladding: "Building Cladding / Siding",
+};
+const EXT_ZONE_INFO: Record<string, string> = {
+  buildingCladding: "Building cladding/siding, Roofs · Pedestrian walkways & sidewalks · Parking garages & lots · Windows & trim — assessed during your complimentary walk-through and quoted separately.",
 };
 
 // ─── Commercial Constants ───────────────────────────────────────────────────
@@ -99,23 +104,23 @@ const FACILITY_LABELS: Record<string, string> = {
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface UnitRow { count: number; turns: number; sqft: number }
-interface ResZoneRow { qty: number; floors: number }
+interface ResZoneRow { qty: number; floors: number; sqft: number }
 interface SingularHubRow { qty: number; sqft: number }
 interface CommZoneRow { qty: number; floors: number; sqft: number }
 interface CommHubRow { qty: number; sqft: number }
 
 const defaultUnitMix = (): Record<string, UnitRow> => ({
-  studio: { count: 0, turns: 0, sqft: 0 },
-  oneBD: { count: 0, turns: 0, sqft: 0 },
-  twoBD: { count: 0, turns: 0, sqft: 0 },
-  threeBD: { count: 0, turns: 0, sqft: 0 },
-  fourBD: { count: 0, turns: 0, sqft: 0 },
+  studio: { count: 0, turns: 0, sqft: 600 },
+  oneBD: { count: 0, turns: 0, sqft: 900 },
+  twoBD: { count: 0, turns: 0, sqft: 1150 },
+  threeBD: { count: 0, turns: 0, sqft: 1500 },
+  fourBD: { count: 0, turns: 0, sqft: 1800 },
 });
 const defaultResDistZones = (): Record<string, ResZoneRow> => ({
-  corridors: { qty: 0, floors: 0 },
-  stairwells: { qty: 0, floors: 0 },
-  elevatorLandings: { qty: 0, floors: 0 },
-  wasteRooms: { qty: 0, floors: 0 },
+  corridors: { qty: 0, floors: 0, sqft: 0 },
+  stairwells: { qty: 0, floors: 0, sqft: 0 },
+  elevatorLandings: { qty: 0, floors: 0, sqft: 0 },
+  wasteRooms: { qty: 0, floors: 0, sqft: 0 },
 });
 const defaultSingularHubs = (): Record<string, SingularHubRow> => ({
   mainLobby: { qty: 0, sqft: 0 },
@@ -129,6 +134,7 @@ const defaultSingularHubs = (): Record<string, SingularHubRow> => ({
 const defaultResExtZones = (): Record<string, boolean> => ({
   mainFacade: false, floorSurface: false, poolDeck: false,
   doorway: false, garbageArea: false, garageEntrance: false,
+  buildingCladding: false,
 });
 const defaultCommDistZones = (): Record<string, CommZoneRow> => ({
   officeHallways: { qty: 0, floors: 0, sqft: 0 },
@@ -179,6 +185,7 @@ export default function SubscriptionLab() {
   const isMultiFamily = typeParam === "multi-family";
   const facilityLabel = FACILITY_LABELS[facilityParam] ?? "Commercial";
 
+  const [extInfoZone, setExtInfoZone] = useState<string | null>(null);
   const [unitMix, setUnitMix] = useState(defaultUnitMix());
   const [resDistZones, setResDistZones] = useState(defaultResDistZones());
   const [singularHubs, setSingularHubs] = useState(defaultSingularHubs());
@@ -201,9 +208,10 @@ export default function SubscriptionLab() {
         const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
         return acc + row.qty * eff;
       }, 0);
-      const touchUpSqFt = Object.entries(resDistZones).reduce(
-        (acc, [zone, row]) => acc + row.qty * row.floors * (RES_DIST_SQFT[zone] ?? 0), 0
-      );
+      const touchUpSqFt = Object.entries(resDistZones).reduce((acc, [zone, row]) => {
+        const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
+        return acc + row.qty * row.floors * eff;
+      }, 0);
       const extCostPerVisit = Object.entries(resExtZones)
         .filter(([, on]) => on)
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
@@ -326,7 +334,10 @@ export default function SubscriptionLab() {
       });
       lines.push(`\nCORRIDOR ZONES:`);
       Object.entries(resDistZones).forEach(([zone, row]) => {
-        if (row.qty > 0) lines.push(`  ${RES_DIST_LABELS[zone]}: ${row.qty} × ${row.floors} floors = ${(row.qty * row.floors * RES_DIST_SQFT[zone]).toLocaleString()} sqft`);
+        if (row.qty > 0) {
+          const eff = row.sqft > 0 ? row.sqft : RES_DIST_SQFT[zone];
+          lines.push(`  ${RES_DIST_LABELS[zone]}: ${row.qty} × ${row.floors} floors × ${eff} sqft/floor = ${(row.qty * row.floors * eff).toLocaleString()} sqft`);
+        }
       });
       lines.push(`\nHUBS:`);
       Object.entries(singularHubs).forEach(([hub, row]) => {
@@ -398,24 +409,41 @@ export default function SubscriptionLab() {
     zones: Record<string, boolean>,
     setter: (fn: (p: Record<string, boolean>) => Record<string, boolean>) => void,
     labels: Record<string, string>,
-    costs: Record<string, number>
+    costs: Record<string, number>,
+    infoMap?: Record<string, string>
   ) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {Object.entries(zones).map(([zone, on]) => (
-        <button
-          key={zone}
-          type="button"
-          onClick={() => setter(p => ({ ...p, [zone]: !p[zone] }))}
-          className={`flex items-center gap-3 p-3 border text-left transition-colors ${on ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary/40"}`}
-        >
-          <div className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center ${on ? "border-primary bg-primary" : "border-muted-foreground"}`}>
-            {on && <span className="text-background text-xs font-bold">✓</span>}
-          </div>
-          <div>
-            <p className="text-sm font-medium">{labels[zone]}</p>
-            <p className="text-xs text-muted-foreground">${costs[zone]}/visit</p>
-          </div>
-        </button>
+        <div key={zone} className="relative">
+          <button
+            type="button"
+            onClick={() => setter(p => ({ ...p, [zone]: !p[zone] }))}
+            className={`w-full flex items-center gap-3 p-3 border text-left transition-colors ${on ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary/40"}`}
+          >
+            <div className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center ${on ? "border-primary bg-primary" : "border-muted-foreground"}`}>
+              {on && <span className="text-background text-xs font-bold">✓</span>}
+            </div>
+            <div className="flex-grow min-w-0">
+              <p className="text-sm font-medium">{labels[zone]}</p>
+              <p className="text-xs text-muted-foreground">${costs[zone].toLocaleString()}/visit</p>
+            </div>
+            {infoMap?.[zone] && (
+              <span
+                role="button"
+                onClick={e => { e.stopPropagation(); setExtInfoZone(extInfoZone === zone ? null : zone); }}
+                className="ml-auto flex-shrink-0 p-1 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Info className="w-4 h-4" />
+              </span>
+            )}
+          </button>
+          {infoMap?.[zone] && extInfoZone === zone && (
+            <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-card border border-primary/40 p-3 shadow-lg text-xs text-muted-foreground leading-relaxed">
+              {infoMap[zone]}
+              <button onClick={() => setExtInfoZone(null)} className="block mt-2 text-primary hover:underline text-[10px]">Dismiss</button>
+            </div>
+          )}
+        </div>
       ))}
     </div>
   );
@@ -471,7 +499,7 @@ export default function SubscriptionLab() {
                         <div />
                         {colHdr("# of Units")}
                         {colHdr("Turns / Mo")}
-                        {colHdr("SqFt ea.", "your est.")}
+                        {colHdr("SqFt each", "your est.")}
                         {colHdr("Paintable Wall Surface", "excl. ceiling")}
                       </div>
                       {Object.entries(unitMix).map(([type, row]) => {
@@ -509,7 +537,7 @@ export default function SubscriptionLab() {
                                 {numInput(row.turns, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], turns: v } })))}
                               </div>
                               <div>
-                                <p className="text-[10px] text-muted-foreground mb-1">SqFt ea.</p>
+                                <p className="text-[10px] text-muted-foreground mb-1">SqFt each</p>
                                 {numInput(row.sqft, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], sqft: v } })), UNIT_SQFT[type].toString())}
                               </div>
                               <div>
@@ -534,23 +562,21 @@ export default function SubscriptionLab() {
                 {/* STEP 2: Distributed Zones */}
                 {sectionCard("Distributed Touch-up Zones", "STEP 2", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4">These zones span multiple floors. Enter quantity of each zone type and the number of floors it covers.</p>
+                    <p className="text-xs text-muted-foreground mb-4">These zones span multiple floors. Enter quantity and floor count — adjust the sqft per floor or leave blank to use the standard estimate.</p>
                     {/* Desktop */}
                     <div className="hidden sm:block">
-                      <div className="grid grid-cols-4 gap-3 mb-2 px-1">
+                      <div className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr] gap-3 mb-2 px-1">
                         <div />
                         {colHdr("Qty")}
                         {colHdr("# of Floors")}
-                        {colHdr("~SqFt", "per floor")}
+                        {colHdr("SqFt / Floor", "enter or use default")}
                       </div>
                       {Object.entries(resDistZones).map(([zone, row]) => (
-                        <div key={zone} className="grid grid-cols-4 gap-3 items-center mb-2">
+                        <div key={zone} className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr] gap-3 items-center mb-2">
                           <p className="text-sm font-medium text-foreground pl-1 leading-tight">{RES_DIST_LABELS[zone]}</p>
                           {numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
                           {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
-                          <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-sm text-muted-foreground">
-                            {RES_DIST_SQFT[zone]} sqft
-                          </div>
+                          {numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}
                         </div>
                       ))}
                     </div>
@@ -569,10 +595,8 @@ export default function SubscriptionLab() {
                               {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
                             </div>
                             <div>
-                              <p className="text-[10px] text-muted-foreground mb-1">SqFt/floor</p>
-                              <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-xs text-muted-foreground">
-                                {RES_DIST_SQFT[zone]}
-                              </div>
+                              <p className="text-[10px] text-muted-foreground mb-1">SqFt / Floor</p>
+                              {numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}
                             </div>
                           </div>
                         </div>
@@ -625,7 +649,7 @@ export default function SubscriptionLab() {
                 {sectionCard("Exterior Power / Soft Wash Zones", "STEP 4", (
                   <div>
                     <p className="text-xs text-muted-foreground mb-4">Select the exterior zones included in your subscription. Wash frequency is determined by your selected tier.</p>
-                    {extToggle(resExtZones, setResExtZones, EXT_ZONE_LABELS, EXT_ZONE_COST)}
+                    {extToggle(resExtZones, setResExtZones, EXT_ZONE_LABELS, EXT_ZONE_COST, EXT_ZONE_INFO)}
                   </div>
                 ))}
               </>
