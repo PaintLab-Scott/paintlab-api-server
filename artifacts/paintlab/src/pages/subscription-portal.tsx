@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { ArrowRight, Building2, Heart, ShoppingBag, Factory, Briefcase, Car, GraduationCap, ChevronRight } from "lucide-react";
+import { ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -8,7 +8,7 @@ const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
 };
-const staggerContainer = {
+const stagger = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.09 } }
 };
@@ -19,76 +19,87 @@ const facilities = [
     label: "Multi-Family Residential",
     sub: "Apartments, Condos, HOAs, Mixed-Use",
     icon: <Building2 className="w-8 h-8" />,
-    desc: "Recurring interior & exterior programs for apartment communities, condo associations, and mixed-use developments. Protect curb appeal and reduce unit turn costs.",
-    accent: "From common areas to unit turns—automated.",
+    desc: "Recurring unit turn programs + common area maintenance for apartment communities, condo associations, and mixed-use developments.",
+    badge: "Residential Autopilot",
+    path: "multi-family",
   },
   {
     id: "medical",
     label: "Medical / Healthcare",
     sub: "Clinics, Hospitals, Dental, Urgent Care",
     icon: <Heart className="w-8 h-8" />,
-    desc: "Infection-resistant coatings and scheduled maintenance for healthcare environments with zero operational disruption—night and weekend scheduling available.",
-    accent: "Compliance-grade coatings. Zero downtime.",
-  },
-  {
-    id: "retail-hospitality",
-    label: "Retail / Hospitality",
-    sub: "Hotels, Restaurants, Retail Centers, Spas",
-    icon: <ShoppingBag className="w-8 h-8" />,
-    desc: "Protect brand aesthetics across high-traffic spaces. Phased repaints that keep your doors open, your guests satisfied, and your property looking premium.",
-    accent: "Brand-consistent. Guest-ready.",
+    desc: "Infection-resistant coatings and hub-based maintenance scheduling for healthcare environments — zero operational disruption.",
+    badge: "Commercial Calculator",
+    path: "commercial",
   },
   {
     id: "industrial",
     label: "Industrial / Warehouse",
     sub: "Distribution, Manufacturing, Cold Storage",
     icon: <Factory className="w-8 h-8" />,
-    desc: "Industrial-grade protective coatings, OSHA safety markings, and epoxy flooring systems maintained on a recurring schedule to protect critical infrastructure.",
-    accent: "Safety markings. Protective systems. On schedule.",
+    desc: "Protective coatings, OSHA safety markings, and transit zone touch-up programs maintained on a recurring schedule.",
+    badge: "Commercial Calculator",
+    path: "commercial",
   },
   {
     id: "office-corporate",
     label: "Office / Corporate",
-    sub: "Class A, B&C Office, Tech Campuses",
+    sub: "Class A/B/C Office, Tech Campuses",
     icon: <Briefcase className="w-8 h-8" />,
-    desc: "Tenant-ready interiors and polished exteriors—maintained year-round so your property competes at the highest level without the capital planning headaches.",
-    accent: "Tenant-ready. Always.",
+    desc: "Tenant-ready interiors and polished common areas — hub repaints and corridor touch-up programs year-round.",
+    badge: "Commercial Calculator",
+    path: "commercial",
   },
   {
     id: "automotive",
     label: "Automotive",
     sub: "Dealerships, Service Centers, Car Washes",
     icon: <Car className="w-8 h-8" />,
-    desc: "Specialty coatings for showroom floors, service bays, and lot structures. Durable, chemical-resistant systems built for the demands of automotive environments.",
-    accent: "Showroom-grade finishes. Service-bay tough.",
+    desc: "Specialty coatings for showroom floors, service bays, and lot structures with chemical-resistant maintenance systems.",
+    badge: "Commercial Calculator",
+    path: "commercial",
   },
   {
     id: "education",
     label: "Education",
     sub: "K-12, Universities, Daycare, Libraries",
     icon: <GraduationCap className="w-8 h-8" />,
-    desc: "Low-VOC, durable interior systems for schools and universities—executed during breaks and weekends so students and faculty are never impacted.",
-    accent: "Summer & break scheduling. Low-VOC systems.",
+    desc: "Low-VOC, durable systems for schools and universities — executed during breaks and weekends, zero disruption.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
+  {
+    id: "retail",
+    label: "Retail",
+    sub: "Shopping Centers, Storefronts, Strip Malls",
+    icon: <ShoppingCart className="w-8 h-8" />,
+    desc: "Brand-consistent, customer-ready interiors and facades across high-traffic retail spaces. Phased repaints keep doors open.",
+    badge: "Commercial Calculator",
+    path: "commercial",
   },
 ];
 
 export default function SubscriptionPortal() {
   const [, setLocation] = useLocation();
 
-  const handleSelect = (id: string) => {
-    sessionStorage.setItem("facilityType", id);
-    setLocation(`/subscription-lab?type=${id}`);
+  const handleSelect = (facility: typeof facilities[0]) => {
+    sessionStorage.setItem("facilityType", facility.id);
+    sessionStorage.setItem("facilityLabel", facility.label);
+    if (facility.path === "multi-family") {
+      setLocation(`/subscription-lab?type=multi-family`);
+    } else {
+      setLocation(`/subscription-lab?type=commercial&facility=${facility.id}`);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
       <Navbar />
 
-      {/* HEADER */}
       <section className="pt-32 pb-20 border-b border-border bg-card relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
         <div className="container mx-auto px-6 md:px-12 relative z-10">
-          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-3xl">
+          <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-3xl">
             <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
               <div className="h-[1px] w-10 bg-primary" />
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Subscription Portal</span>
@@ -97,30 +108,38 @@ export default function SubscriptionPortal() {
               Select Your <span className="text-primary">Facility Type.</span>
             </motion.h1>
             <motion.p variants={fadeInUp} className="text-xl text-muted-foreground leading-relaxed">
-              Choose the category that best describes your property. We'll configure a <strong className="text-foreground">custom subscription plan</strong> built for your specific operational needs.
+              Choose the category that best describes your property. We'll open the right calculator to build your <strong className="text-foreground">custom subscription plan</strong>.
             </motion.p>
           </motion.div>
         </div>
       </section>
 
-      {/* FACILITY CARDS */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-6 md:px-12">
           <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-border"
           >
             {facilities.map((facility) => (
               <motion.button
                 key={facility.id}
                 variants={fadeInUp}
-                onClick={() => handleSelect(facility.id)}
+                onClick={() => handleSelect(facility)}
                 className="bg-card p-8 md:p-10 hover:bg-secondary/40 transition-colors group flex flex-col text-left relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-0 h-[2px] bg-primary group-hover:w-full transition-all duration-300" />
 
-                <div className="w-14 h-14 bg-background border border-border flex items-center justify-center text-primary mb-6 group-hover:scale-110 group-hover:border-primary/50 transition-all duration-300 flex-shrink-0">
-                  {facility.icon}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="w-14 h-14 bg-background border border-border flex items-center justify-center text-primary group-hover:scale-110 group-hover:border-primary/50 transition-all duration-300 flex-shrink-0">
+                    {facility.icon}
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 border ${
+                    facility.path === 'multi-family'
+                      ? 'border-primary text-primary bg-primary/10'
+                      : 'border-border text-muted-foreground'
+                  }`}>
+                    {facility.badge}
+                  </span>
                 </div>
 
                 <h3 className="text-xl font-bold mb-1 tracking-tight">{facility.label}</h3>
@@ -128,8 +147,8 @@ export default function SubscriptionPortal() {
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">{facility.desc}</p>
 
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
-                  <span className="text-xs text-muted-foreground italic">{facility.accent}</span>
-                  <div className="w-8 h-8 rounded-none bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background transition-colors flex-shrink-0">
+                  <span className="text-xs text-muted-foreground">Configure plan →</span>
+                  <div className="w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background transition-colors flex-shrink-0">
                     <ChevronRight className="w-4 h-4" />
                   </div>
                 </div>
@@ -139,11 +158,10 @@ export default function SubscriptionPortal() {
         </div>
       </section>
 
-      {/* BOTTOM CTA */}
       <section className="py-16 bg-card border-t border-border">
         <div className="container mx-auto px-6 md:px-12 text-center">
-          <p className="text-muted-foreground mb-2">Not sure which category fits?</p>
-          <a href="#quote" className="text-primary font-semibold hover:underline inline-flex items-center gap-1">
+          <p className="text-muted-foreground mb-2">Not sure which category fits your property?</p>
+          <a href="/#quote" className="text-primary font-semibold hover:underline inline-flex items-center gap-1">
             Talk to our team <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>

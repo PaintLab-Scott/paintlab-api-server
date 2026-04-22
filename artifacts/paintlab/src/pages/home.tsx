@@ -204,19 +204,22 @@ export default function Home() {
             initial="hidden" animate="visible" variants={staggerContainer}
             className="max-w-4xl"
           >
-            <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[1.05]">
+            <motion.h1 variants={fadeInUp} className="text-4xl md:text-5xl lg:text-[4.25rem] font-bold tracking-tighter mb-3 leading-[1.0]">
               Premium <strong className="text-primary">Commercial</strong><br />
-              <span className="">Repaint Systems.</span><br />
-              <span className="text-muted-foreground text-4xl md:text-5xl lg:text-6xl">Your Property's Aesthetic on Autopilot.</span>
+              Repaint Systems.
             </motion.h1>
 
-            <motion.p variants={fadeInUp} className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed">
+            <motion.p variants={fadeInUp} className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-muted-foreground mb-8 leading-[1.15] max-w-3xl">
+              Your Property's Aesthetic on Autopilot.
+            </motion.p>
+
+            <motion.p variants={fadeInUp} className="text-base md:text-lg text-muted-foreground max-w-2xl mb-10 leading-relaxed">
               Stop bidding. Start subscribing. Austin's first <strong className="text-foreground">fixed-cost painting utility</strong> for diverse commercial assets.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8" asChild>
-                <Link href="/subscription-portal">Explore Subscription Packages <ArrowRight className="ml-2 w-4 h-4" /></Link>
+                <Link href="/subscription-portal">Configure Your Subscription <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-none border-border hover:bg-secondary hover:text-secondary-foreground font-semibold uppercase tracking-wider h-14 px-8" asChild>
                 <a href="#services">Explore Services</a>
