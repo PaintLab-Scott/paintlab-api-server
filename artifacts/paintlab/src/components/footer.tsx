@@ -16,28 +16,35 @@ export default function Footer() {
               AUSTIN, TX
             </div>
           </div>
-          
+
           <div>
             <h4 className="text-foreground font-semibold mb-6 uppercase tracking-wider text-xs">Navigation</h4>
             <ul className="flex flex-col gap-3">
-              <li><a href="#about" className="text-muted-foreground hover:text-primary transition-colors text-sm">About Us</a></li>
-              <li><a href="#services" className="text-muted-foreground hover:text-primary transition-colors text-sm">Services</a></li>
-              <li><a href="#sectors" className="text-muted-foreground hover:text-primary transition-colors text-sm">Sectors</a></li>
-              <li><a href="#approach" className="text-muted-foreground hover:text-primary transition-colors text-sm">Our Approach</a></li>
+              <li><Link href="/subscription-portal" className="text-muted-foreground hover:text-primary transition-colors text-sm">Subscriptions</Link></li>
+              <li><a href="/#services" className="text-muted-foreground hover:text-primary transition-colors text-sm">Services</a></li>
+              <li><a href="/#sectors" className="text-muted-foreground hover:text-primary transition-colors text-sm">Sectors</a></li>
+              <li><a href="/#approach" className="text-muted-foreground hover:text-primary transition-colors text-sm">Our Approach</a></li>
+              <li><a href="/#about" className="text-muted-foreground hover:text-primary transition-colors text-sm">About Us</a></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="text-foreground font-semibold mb-6 uppercase tracking-wider text-xs">Contact</h4>
             <ul className="flex flex-col gap-3 text-sm text-muted-foreground">
-              <li>1-800-PAINTLAB</li>
-              <li>info@paintlab.com</li>
+              <li>
+                <a href="tel:+18007246852" className="hover:text-primary transition-colors">1-800-PAINTLAB</a>
+              </li>
+              <li>
+                <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Interest" className="hover:text-primary transition-colors">hello@paintlabpro.com</a>
+              </li>
               <li>Austin, Texas</li>
-              <li className="mt-4"><a href="#quote" className="text-primary font-semibold hover:underline">Request a Quote →</a></li>
+              <li className="mt-4">
+                <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request" className="text-primary font-semibold hover:underline">Request a Quote →</a>
+              </li>
             </ul>
           </div>
         </div>
-        
+
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} PaintLab Commercial Systems. All rights reserved.

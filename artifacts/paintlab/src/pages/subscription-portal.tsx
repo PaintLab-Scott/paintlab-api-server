@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight, Dumbbell } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -24,9 +24,18 @@ const facilities = [
     path: "multi-family",
   },
   {
+    id: "office-corporate",
+    label: "Office / Corporate",
+    sub: "Class A/B/C Office, Tech Campuses",
+    icon: <Briefcase className="w-8 h-8" />,
+    desc: "Tenant-ready interiors and polished common areas — hub repaints and corridor touch-up programs that keep your building at its best year-round.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
+  {
     id: "medical",
     label: "Medical / Healthcare",
-    sub: "Clinics, Hospitals, Dental, Urgent Care",
+    sub: "Clinics, Hospitals, Dental, Senior Care Facilities",
     icon: <Heart className="w-8 h-8" />,
     desc: "Infection-resistant coatings and hub-based maintenance scheduling for healthcare environments — zero operational disruption.",
     badge: "Commercial Calculator",
@@ -38,15 +47,6 @@ const facilities = [
     sub: "Distribution, Manufacturing, Cold Storage",
     icon: <Factory className="w-8 h-8" />,
     desc: "Protective coatings, OSHA safety markings, and transit zone touch-up programs maintained on a recurring schedule.",
-    badge: "Commercial Calculator",
-    path: "commercial",
-  },
-  {
-    id: "office-corporate",
-    label: "Office / Corporate",
-    sub: "Class A/B/C Office, Tech Campuses",
-    icon: <Briefcase className="w-8 h-8" />,
-    desc: "Tenant-ready interiors and polished common areas — hub repaints and corridor touch-up programs year-round.",
     badge: "Commercial Calculator",
     path: "commercial",
   },
@@ -77,6 +77,15 @@ const facilities = [
     badge: "Commercial Calculator",
     path: "commercial",
   },
+  {
+    id: "gyms-fitness",
+    label: "Gyms & Fitness Centers",
+    sub: "Boutique Studios, Big-Box Gyms, Rec Centers",
+    icon: <Dumbbell className="w-8 h-8" />,
+    desc: "High-moisture, high-traffic environments demand performance-grade coatings. Keep your facility looking sharp between membership cycles with scheduled hub repaints and corridor maintenance.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
 ];
 
 export default function SubscriptionPortal() {
@@ -100,6 +109,15 @@ export default function SubscriptionPortal() {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
         <div className="container mx-auto px-6 md:px-12 relative z-10">
           <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-3xl">
+            <motion.div variants={fadeInUp} className="mb-6">
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Main Page
+              </a>
+            </motion.div>
             <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
               <div className="h-[1px] w-10 bg-primary" />
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Subscription Portal</span>
@@ -161,7 +179,10 @@ export default function SubscriptionPortal() {
       <section className="py-16 bg-card border-t border-border">
         <div className="container mx-auto px-6 md:px-12 text-center">
           <p className="text-muted-foreground mb-2">Not sure which category fits your property?</p>
-          <a href="/#quote" className="text-primary font-semibold hover:underline inline-flex items-center gap-1">
+          <a
+            href="mailto:hello@paintlabpro.com?subject=PaintLab%20Subscription%20Inquiry"
+            className="text-primary font-semibold hover:underline inline-flex items-center gap-1"
+          >
             Talk to our team <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
