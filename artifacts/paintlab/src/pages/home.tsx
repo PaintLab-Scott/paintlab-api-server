@@ -210,7 +210,7 @@ export default function Home() {
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-muted-foreground mb-8 leading-[1.15] max-w-3xl">
-              Your Property's Aesthetic on Autopilot.
+              Your Property's Aesthetic on <span className="text-primary">Autopilot.</span>
             </motion.p>
 
             <motion.p variants={fadeInUp} className="text-base md:text-lg text-muted-foreground max-w-2xl mb-10 leading-relaxed">
@@ -259,7 +259,8 @@ export default function Home() {
           {/* Right: The Subscription */}
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
-            className="px-10 md:px-16 py-20 bg-primary/5 flex flex-col justify-center relative overflow-hidden"
+            whileHover={{ scale: 1.02, transition: { duration: 0.3, ease: "easeOut" } }}
+            className="px-10 md:px-16 py-20 bg-primary/5 flex flex-col justify-center relative overflow-hidden cursor-pointer"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <div className="flex items-center gap-3 mb-6">
@@ -317,7 +318,7 @@ export default function Home() {
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
               className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
             >
-              <img src="/images/pl-logo.png" alt="PaintLab" className="h-14 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
+              <img src="/images/pl-logo.png" alt="PaintLab" className="h-11 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
               <a href="#quote">
                 <Button className="rounded-none bg-transparent text-primary border border-primary hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-12 px-8 transition-colors">
                   Contact Us <ArrowRight className="ml-2 w-4 h-4" />
@@ -459,7 +460,7 @@ export default function Home() {
               </div>
 
               <div className="flex justify-center py-6">
-                <img src="/images/pl-icon-new.png" alt="PaintLab icon" className="w-56 h-56 object-contain opacity-90" style={{ mixBlendMode: "lighten" }} />
+                <img src="/images/pl-icon-new.png" alt="PaintLab icon" className="w-48 h-48 object-contain opacity-90" style={{ mixBlendMode: "lighten" }} />
               </div>
 
               <div className="space-y-6 text-sm">
@@ -479,26 +480,42 @@ export default function Home() {
             </div>
 
             <div className="md:col-span-3 p-10 md:p-12">
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-6" onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget as HTMLFormElement);
+                const name = fd.get("name") || "";
+                const company = fd.get("company") || "";
+                const email = fd.get("email") || "";
+                const phone = fd.get("phone") || "";
+                const date = fd.get("date") || "";
+                const details = fd.get("details") || "";
+                const types = selectedTypes.join(", ") || "Not specified";
+                const body = encodeURIComponent(
+                  `Hi PaintLab Team,\n\nI'd like to request a quote for a commercial painting project.\n\n` +
+                  `Name: ${name}\nCompany: ${company}\nEmail: ${email}\nPhone: ${phone}\n\n` +
+                  `Project Type(s): ${types}\nTarget Start Date: ${date || "Not specified"}\n\nProject Details:\n${details}`
+                );
+                window.open(`mailto:hello@paintlabpro.com?subject=${encodeURIComponent("PaintLab Quote Request")}&body=${body}`, "_blank");
+              }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</label>
-                    <Input placeholder="John Doe" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
+                    <Input name="name" placeholder="John Doe" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Company</label>
-                    <Input placeholder="Acme Logistics" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
+                    <Input name="company" placeholder="Acme Logistics" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</label>
-                    <Input type="email" placeholder="john@example.com" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
+                    <Input name="email" type="email" placeholder="john@example.com" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone</label>
-                    <Input type="tel" placeholder="(555) 123-4567" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
+                    <Input name="phone" type="tel" placeholder="(555) 123-4567" className="rounded-none bg-background border-border focus-visible:ring-primary h-12" />
                   </div>
                 </div>
 
@@ -535,17 +552,18 @@ export default function Home() {
                   </label>
                   <input
                     type="date"
+                    name="date"
                     className="w-full h-12 rounded-none bg-background border border-border text-foreground px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Details</label>
-                  <Textarea placeholder="Square footage, timeline, existing conditions..." className="rounded-none bg-background border-border focus-visible:ring-primary min-h-[120px] resize-none" />
+                  <Textarea name="details" placeholder="Square footage, timeline, existing conditions..." className="rounded-none bg-background border-border focus-visible:ring-primary min-h-[120px] resize-none" />
                 </div>
 
                 <Button type="submit" className="w-full rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14">
-                  Send
+                  Send Quote Request
                 </Button>
               </form>
             </div>

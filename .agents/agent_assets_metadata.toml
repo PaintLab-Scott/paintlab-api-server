@@ -29,10 +29,34 @@ title = "Exterior building coatings"
 id = "RFDm_8GwqDAUfu4E3cnj-"
 uri = "file://artifacts/paintlab/public/images/painters.png"
 type = "image"
-title = "generated_image"
+title = "business partnership meeting"
 
 [[generated]]
 id = "7KLGEYsvFh_Zm5TbCol_Y"
 uri = "file://attached_assets/generated_images/generated_image.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "43Xt3NAzdBy6VbdN4QZUK"
+uri = "file://artifacts/paintlab/public/images/hero.png"
+type = "image"
+title = "modern apartment building hero"
+
+[[generated]]
+id = "h7ZnWGS42sMGRksqqADmJ"
+uri = "file://artifacts/paintlab/public/images/sealants.png"
+type = "image"
+title = "clean sealant application"
+
+[[generated]]
+id = "VIFrc3hgQE4pFExUg0wEc"
+uri = "file://artifacts/paintlab/public/images/exterior.png"
+type = "image"
+title = "modern apartment exterior"
+
+[[generated]]
+id = "THCiK6E_j5DdZ2aWPjMqz"
+uri = "file://artifacts/paintlab/public/images/specialty.png"
+type = "image"
+title = "pressure washing apartment facade"

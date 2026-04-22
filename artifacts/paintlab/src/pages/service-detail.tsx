@@ -98,7 +98,7 @@ const serviceData: Record<string, {
   "specialty-coating-services": {
     title: "Specialty Coating Services",
     location: "Austin & Central Texas",
-    image: "/images/painters.png",
+    image: "/images/specialty.png",
     tagline: "One Partner. No Coordination Headaches.",
     overview: "Commercial projects often fail at the coordination level—not the execution level. PaintLab eliminates that friction by offering integrated specialty services that support full-scope facility maintenance and tenant improvement workflows under one contractor.",
     problem: "Multiple contractors, scheduling conflicts, inconsistent quality, and delayed turnovers drain time, budget, and management bandwidth—turning routine projects into operational liabilities.",

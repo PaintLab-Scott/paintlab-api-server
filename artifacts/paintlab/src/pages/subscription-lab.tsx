@@ -1,11 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { ArrowLeft, CheckCircle2, Phone, MessageSquare, Send, Info } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
-// ─── Animation variants ────────────────────────────────────────────────────
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
@@ -22,6 +21,10 @@ const UNIT_SQFT: Record<string, number> = {
 const UNIT_LABELS: Record<string, string> = {
   studio: "Studio", oneBD: "1 Bedroom", twoBD: "2 Bedroom", threeBD: "3 Bedroom", fourBD: "4 Bedroom",
 };
+const UNIT_WALL_RATIO: Record<string, number> = {
+  studio: 3, oneBD: 3.5, twoBD: 4, threeBD: 4, fourBD: 4,
+};
+
 const RES_DIST_SQFT: Record<string, number> = {
   corridors: 200, stairwells: 180, elevatorLandings: 75, wasteRooms: 55,
 };
@@ -32,15 +35,17 @@ const RES_DIST_LABELS: Record<string, string> = {
   wasteRooms: "Garbage / Waste Rooms",
 };
 const RES_HUB_SQFT: Record<string, number> = {
-  mainLobby: 2500, mailroom: 750, coworking: 1750, gym: 2000, bathrooms: 750, leasingOffice: 1500,
+  mainLobby: 2500, mailroom: 750, coworking: 1750, gym: 2000,
+  bathrooms: 750, leasingOffice: 1500, packageRoom: 400,
 };
 const RES_HUB_LABELS: Record<string, string> = {
   mainLobby: "Main Lobby",
   mailroom: "Mailroom",
   coworking: "Co-working Space",
   gym: "Gym Area",
-  bathrooms: "Shared Bathrooms",
+  bathrooms: "Public Bathrooms",
   leasingOffice: "Leasing Office",
+  packageRoom: "Package Room",
 };
 const EXT_ZONE_COST: Record<string, number> = {
   mainFacade: 250, floorSurface: 150, poolDeck: 450,
@@ -80,7 +85,6 @@ const COMM_EXT_LABELS: Record<string, string> = {
   commGarage: "Garage Entrance",
   commCladding: "Building Cladding / Siding",
 };
-
 const FACILITY_LABELS: Record<string, string> = {
   "multi-family": "Multi-Family Residential",
   medical: "Medical / Healthcare",
@@ -94,17 +98,18 @@ const FACILITY_LABELS: Record<string, string> = {
 };
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-interface UnitRow { count: number; turns: number }
+interface UnitRow { count: number; turns: number; sqft: number }
 interface ResZoneRow { qty: number; floors: number }
+interface SingularHubRow { qty: number; sqft: number }
 interface CommZoneRow { qty: number; floors: number; sqft: number }
 interface CommHubRow { qty: number; sqft: number }
 
 const defaultUnitMix = (): Record<string, UnitRow> => ({
-  studio: { count: 0, turns: 0 },
-  oneBD: { count: 0, turns: 0 },
-  twoBD: { count: 0, turns: 0 },
-  threeBD: { count: 0, turns: 0 },
-  fourBD: { count: 0, turns: 0 },
+  studio: { count: 0, turns: 0, sqft: 0 },
+  oneBD: { count: 0, turns: 0, sqft: 0 },
+  twoBD: { count: 0, turns: 0, sqft: 0 },
+  threeBD: { count: 0, turns: 0, sqft: 0 },
+  fourBD: { count: 0, turns: 0, sqft: 0 },
 });
 const defaultResDistZones = (): Record<string, ResZoneRow> => ({
   corridors: { qty: 0, floors: 0 },
@@ -112,8 +117,14 @@ const defaultResDistZones = (): Record<string, ResZoneRow> => ({
   elevatorLandings: { qty: 0, floors: 0 },
   wasteRooms: { qty: 0, floors: 0 },
 });
-const defaultSingularHubs = (): Record<string, number> => ({
-  mainLobby: 0, mailroom: 0, coworking: 0, gym: 0, bathrooms: 0, leasingOffice: 0,
+const defaultSingularHubs = (): Record<string, SingularHubRow> => ({
+  mainLobby: { qty: 0, sqft: 0 },
+  mailroom: { qty: 0, sqft: 0 },
+  coworking: { qty: 0, sqft: 0 },
+  gym: { qty: 0, sqft: 0 },
+  bathrooms: { qty: 0, sqft: 0 },
+  leasingOffice: { qty: 0, sqft: 0 },
+  packageRoom: { qty: 0, sqft: 0 },
 });
 const defaultResExtZones = (): Record<string, boolean> => ({
   mainFacade: false, floorSurface: false, poolDeck: false,
@@ -140,21 +151,26 @@ const defaultCommExtZones = (): Record<string, boolean> => ({
 function fmt(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 }
+
 function numInput(val: number, onChange: (v: number) => void, placeholder = "0") {
   return (
     <input
       type="number"
+      inputMode="numeric"
+      pattern="[0-9]*"
       min={0}
       value={val === 0 ? "" : val}
       onChange={e => onChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
       placeholder={placeholder}
-      className="w-full h-10 bg-background border border-border px-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors text-center"
+      className="w-full h-10 bg-background border border-border px-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary transition-colors text-center"
     />
   );
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 export default function SubscriptionLab() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   const params = new URLSearchParams(
     typeof window !== "undefined" ? window.location.search : ""
   );
@@ -163,34 +179,28 @@ export default function SubscriptionLab() {
   const isMultiFamily = typeParam === "multi-family";
   const facilityLabel = FACILITY_LABELS[facilityParam] ?? "Commercial";
 
-  // Multi-Family State
   const [unitMix, setUnitMix] = useState(defaultUnitMix());
   const [resDistZones, setResDistZones] = useState(defaultResDistZones());
   const [singularHubs, setSingularHubs] = useState(defaultSingularHubs());
   const [resExtZones, setResExtZones] = useState(defaultResExtZones());
-
-  // Commercial State
   const [commDist, setCommDist] = useState(defaultCommDistZones());
   const [commHubs, setCommHubs] = useState(defaultCommHubs());
   const [commExtZones, setCommExtZones] = useState(defaultCommExtZones());
-
-  // UI State
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", propertyName: "", address: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
 
   // ─── Math Engine ─────────────────────────────────────────────────────────
-  // Multi-Family: per-turn sqft rate climbs each tier (T1→T4: $0.18→$0.21→$0.24→$0.30)
-  // + hub/corridor service at increasing frequency and rates per tier.
-  // Commercial: user-entered sqft drives hub/corridor costs; tiers step up frequency & rates.
   const calc = useMemo(() => {
     if (isMultiFamily) {
-      const unitTurnsSqFt = Object.entries(unitMix).reduce(
-        (acc, [type, row]) => acc + row.turns * (UNIT_SQFT[type] ?? 0), 0
-      );
-      const hubAreaSqFt = Object.entries(singularHubs).reduce(
-        (acc, [hub, qty]) => acc + qty * (RES_HUB_SQFT[hub] ?? 0), 0
-      );
+      const unitTurnsSqFt = Object.entries(unitMix).reduce((acc, [type, row]) => {
+        const eff = row.sqft > 0 ? row.sqft : (UNIT_SQFT[type] ?? 0);
+        return acc + row.turns * eff;
+      }, 0);
+      const hubAreaSqFt = Object.entries(singularHubs).reduce((acc, [hub, row]) => {
+        const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
+        return acc + row.qty * eff;
+      }, 0);
       const touchUpSqFt = Object.entries(resDistZones).reduce(
         (acc, [zone, row]) => acc + row.qty * row.floors * (RES_DIST_SQFT[zone] ?? 0), 0
       );
@@ -199,50 +209,29 @@ export default function SubscriptionLab() {
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
 
       const t1 = Math.round(unitTurnsSqFt * 0.18);
-      const t2 = Math.round(
-        unitTurnsSqFt * 0.21 +
-        (hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 +
-        extCostPerVisit / 12
-      );
-      const t3 = Math.round(
-        unitTurnsSqFt * 0.24 +
-        (hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 +
-        (extCostPerVisit * 4) / 12
-      );
-      const t4 = Math.round(
-        unitTurnsSqFt * 0.30 +
-        hubAreaSqFt * 0.18 +
-        touchUpSqFt * 0.10 +
-        extCostPerVisit
-      );
+      const t2 = Math.round(unitTurnsSqFt * 0.21 + (hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 + extCostPerVisit / 12);
+      const t3 = Math.round(unitTurnsSqFt * 0.24 + (hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 + (extCostPerVisit * 4) / 12);
+      const t4 = Math.round(unitTurnsSqFt * 0.30 + hubAreaSqFt * 0.18 + touchUpSqFt * 0.10 + extCostPerVisit);
       const onboarding = Math.round(t2 * 1.5);
 
       return { unitTurnsSqFt, hubAreaSqFt, touchUpSqFt, extCostPerVisit, onboarding, tiers: [t1, t2, t3, t4] };
     } else {
-      const hubAreaSqFt = Object.values(commHubs).reduce(
-        (acc, row) => acc + row.qty * row.sqft, 0
-      );
-      const touchUpSqFt = Object.values(commDist).reduce(
-        (acc, row) => acc + row.qty * row.floors * row.sqft, 0
-      );
+      const hubAreaSqFt = Object.values(commHubs).reduce((acc, row) => acc + row.qty * row.sqft, 0);
+      const touchUpSqFt = Object.values(commDist).reduce((acc, row) => acc + row.qty * row.floors * row.sqft, 0);
       const extCostPerVisit = Object.entries(commExtZones)
         .filter(([, on]) => on)
         .reduce((acc, [zone]) => acc + (COMM_EXT_COST[zone] ?? 0), 0);
 
       const ct1 = Math.round((hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 + extCostPerVisit / 12);
       const ct2 = Math.round((hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 + (extCostPerVisit * 4) / 12);
-      const ct3 = Math.round(
-        (hubAreaSqFt * 0.17 + touchUpSqFt * 0.10) / 3 +
-        (hubAreaSqFt * 0.04 + touchUpSqFt * 0.02) +
-        (extCostPerVisit * 4) / 12
-      );
+      const ct3 = Math.round((hubAreaSqFt * 0.17 + touchUpSqFt * 0.10) / 3 + (hubAreaSqFt * 0.04 + touchUpSqFt * 0.02) + (extCostPerVisit * 4) / 12);
       const onboarding = Math.round(ct2 * 1.5);
 
       return { hubAreaSqFt, touchUpSqFt, extCostPerVisit, onboarding, tiers: [ct1, ct2, ct3] };
     }
   }, [unitMix, resDistZones, singularHubs, resExtZones, commDist, commHubs, commExtZones, isMultiFamily]);
 
-  // ─── Tier Configs ─────────────────────────────────────────────────────────
+  // ─── Tiers ────────────────────────────────────────────────────────────────
   const resTiers = [
     {
       id: "essential",
@@ -260,7 +249,6 @@ export default function SubscriptionLab() {
         "Annual precision touch-ups of corridors",
         "Annual exterior power/soft wash",
       ],
-      popular: false,
     },
     {
       id: "asset-shield-quarterly",
@@ -292,23 +280,14 @@ export default function SubscriptionLab() {
       id: "annual-shield",
       label: "Tier 1 — Annual Shield",
       sub: "Annual Cycle",
-      features: [
-        "Annual full repaint of all hubs",
-        "Annual corridor touch-ups",
-        "Annual exterior wash",
-      ],
+      features: ["Annual full repaint of all hubs", "Annual corridor touch-ups", "Annual exterior wash"],
       note: "Pay monthly or save 5% with an annual upfront payment.",
     },
     {
       id: "asset-shield-quarterly",
       label: "Tier 2 — Asset Shield",
       sub: "Quarterly Cycle",
-      features: [
-        "Quarterly full repaint of all hubs",
-        "Quarterly corridor touch-ups",
-        "Quarterly exterior wash",
-        "Priority scheduling",
-      ],
+      features: ["Quarterly full repaint of all hubs", "Quarterly corridor touch-ups", "Quarterly exterior wash", "Priority scheduling"],
       popular: true,
     },
     {
@@ -318,7 +297,7 @@ export default function SubscriptionLab() {
       features: [
         "Quarterly full repaint of all hubs",
         "Quarterly corridor touch-ups",
-        "Monthly overall hub & corridor touch-up patrol",
+        "Monthly hub & corridor touch-up patrol",
         "Quarterly exterior wash",
         "Monthly condition reports",
       ],
@@ -327,65 +306,64 @@ export default function SubscriptionLab() {
 
   const activeTiers = isMultiFamily ? resTiers : commTiers;
 
-  // ─── Breakdown Text ───────────────────────────────────────────────────────
+  // ─── Breakdown ────────────────────────────────────────────────────────────
   const buildBreakdown = () => {
     const lines: string[] = [
       `PAINTLAB SUBSCRIPTION CONFIGURATION`,
-      `Facility Type: ${facilityLabel}`,
-      `Calculator: ${isMultiFamily ? "Residential Autopilot" : "Commercial Area-Based"}`,
-      `Selected Tier: ${selectedTier ?? "Not yet selected"}`,
-      `\nONBOARDING FEE (1.5×): ${fmt(calc.onboarding)}`,
-      `\n───────────────────────────────────`,
+      `Facility: ${facilityLabel}`,
+      `Tier: ${selectedTier ?? "Not selected"}`,
+      `\nONBOARDING FEE: ${fmt(calc.onboarding)}`,
+      `\n────────────────────────`,
     ];
-
     if (isMultiFamily) {
-      lines.push(`\nUNIT TURN VOLUME (Monthly):`);
+      lines.push(`\nUNIT TURNS (Monthly):`);
       Object.entries(unitMix).forEach(([type, row]) => {
-        if (row.turns > 0) lines.push(`  ${UNIT_LABELS[type]}: ${row.turns} turns/mo × ${UNIT_SQFT[type]} sqft = ${(row.turns * UNIT_SQFT[type]).toLocaleString()} sqft`);
+        if (row.turns > 0) {
+          const eff = row.sqft > 0 ? row.sqft : UNIT_SQFT[type];
+          const wall = Math.round(eff * UNIT_WALL_RATIO[type]);
+          lines.push(`  ${UNIT_LABELS[type]}: ${row.turns}/mo × ${eff} sqft (wall: ${wall} sqft)`);
+        }
       });
-      lines.push(`  TOTAL: ${(calc as any).unitTurnsSqFt?.toLocaleString() ?? 0} sqft`);
-      lines.push(`\nCORRIDOR / TRANSIT ZONES:`);
+      lines.push(`\nCORRIDOR ZONES:`);
       Object.entries(resDistZones).forEach(([zone, row]) => {
         if (row.qty > 0) lines.push(`  ${RES_DIST_LABELS[zone]}: ${row.qty} × ${row.floors} floors = ${(row.qty * row.floors * RES_DIST_SQFT[zone]).toLocaleString()} sqft`);
       });
-      lines.push(`\nHUB AREAS:`);
-      Object.entries(singularHubs).forEach(([hub, qty]) => {
-        if (qty > 0) lines.push(`  ${RES_HUB_LABELS[hub]}: ${qty} × ${RES_HUB_SQFT[hub]} sqft = ${(qty * RES_HUB_SQFT[hub]).toLocaleString()} sqft`);
+      lines.push(`\nHUBS:`);
+      Object.entries(singularHubs).forEach(([hub, row]) => {
+        if (row.qty > 0) {
+          const eff = row.sqft > 0 ? row.sqft : RES_HUB_SQFT[hub];
+          lines.push(`  ${RES_HUB_LABELS[hub]}: ${row.qty} × ${eff} sqft = ${(row.qty * eff).toLocaleString()} sqft`);
+        }
       });
       const selExt = Object.entries(resExtZones).filter(([, on]) => on).map(([z]) => EXT_ZONE_LABELS[z]);
       lines.push(`\nEXTERIOR ZONES: ${selExt.length > 0 ? selExt.join(", ") : "None"}`);
     } else {
-      lines.push(`\nCORRIDOR / TRANSIT ZONES:`);
+      lines.push(`\nCORRIDOR ZONES:`);
       Object.entries(commDist).forEach(([zone, row]) => {
-        if (row.sqft > 0) lines.push(`  ${COMM_DIST_LABELS[zone]}: ${row.qty} qty × ${row.floors} floors × ${row.sqft} sqft = ${(row.qty * row.floors * row.sqft).toLocaleString()} sqft`);
+        if (row.sqft > 0) lines.push(`  ${COMM_DIST_LABELS[zone]}: ${row.qty} × ${row.floors} floors × ${row.sqft} sqft`);
       });
-      lines.push(`\nHUB AREAS:`);
+      lines.push(`\nHUBS:`);
       Object.entries(commHubs).forEach(([hub, row]) => {
-        if (row.sqft > 0) lines.push(`  ${COMM_HUB_LABELS[hub]}: ${row.qty} × ${row.sqft} sqft = ${(row.qty * row.sqft).toLocaleString()} sqft`);
+        if (row.sqft > 0) lines.push(`  ${COMM_HUB_LABELS[hub]}: ${row.qty} × ${row.sqft} sqft`);
       });
       const selExt = Object.entries(commExtZones).filter(([, on]) => on).map(([z]) => COMM_EXT_LABELS[z]);
       lines.push(`\nEXTERIOR ZONES: ${selExt.length > 0 ? selExt.join(", ") : "None"}`);
     }
-
-    lines.push(`\n───────────────────────────────────`);
-    lines.push(`TIER PRICING:`);
+    lines.push(`\n────────────────────────\nTIER PRICING:`);
     activeTiers.forEach((tier, i) => {
       const mo = calc.tiers[i] ?? 0;
       const annual = Math.round(mo * 12 * 0.95);
-      lines.push(`  ${tier.label}: ${fmt(mo)}/mo  |  ${fmt(annual)}/yr (5% discount)`);
+      lines.push(`  ${tier.label}: ${fmt(mo)}/mo  |  ${fmt(annual)}/yr (5% off)`);
     });
-
     return lines.join("\n");
   };
 
-  // ─── Form Submit ──────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const breakdown = buildBreakdown();
     const body = encodeURIComponent(
-      `Hi PaintLab Team,\n\nI just configured a subscription plan and would like to discuss it.\n\n` +
-      `NAME: ${formData.name}\nPROPERTY: ${formData.propertyName}\nADDRESS: ${formData.address}\nPHONE: ${formData.phone}\n\n` +
-      breakdown
+      `Hi PaintLab Team,\n\nI just configured a subscription plan.\n\n` +
+      `NAME: ${formData.name}\nPROPERTY: ${formData.propertyName}\nADDRESS: ${formData.address}\nPHONE: ${formData.phone}\n\n` + breakdown
     );
     window.open(
       `mailto:hello@paintlabpro.com?subject=${encodeURIComponent(`[PaintLab Subscription] ${formData.propertyName} — ${selectedTier ?? "Inquiry"}`)}&body=${body}`,
@@ -405,14 +383,14 @@ export default function SubscriptionLab() {
         <span className="text-primary font-mono text-xs tracking-widest">{step}</span>
         <h3 className="font-bold text-sm uppercase tracking-wider">{title}</h3>
       </div>
-      <div className="p-6">{content}</div>
+      <div className="p-4 md:p-6">{content}</div>
     </div>
   );
 
   const colHdr = (label: string, hint?: string) => (
     <div className="text-center">
-      <p className="text-xs font-bold uppercase tracking-wider text-foreground">{label}</p>
-      {hint && <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>}
+      <p className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-foreground leading-tight">{label}</p>
+      {hint && <p className="text-[9px] md:text-[10px] text-muted-foreground mt-0.5">{hint}</p>}
     </div>
   );
 
@@ -475,80 +453,176 @@ export default function SubscriptionLab() {
       </section>
 
       {/* CONFIGURATION */}
-      <section className="py-16 bg-background border-b border-border">
-        <div className="container mx-auto px-6 md:px-12">
+      <section className="py-12 md:py-16 bg-background border-b border-border">
+        <div className="container mx-auto px-4 md:px-12">
           <div className="space-y-4">
             {isMultiFamily ? (
               <>
-                {sectionCard("Unit Mix", "STEP 01", (
+                {/* STEP 1: Unit Mix */}
+                {sectionCard("Unit Mix", "STEP 1", (
                   <div>
-                    <div className="grid grid-cols-4 gap-3 mb-3 px-2">
-                      <div />
-                      {colHdr("# of Units", "total")}
-                      {colHdr("Avg Turns / Mo", "per size")}
-                      {colHdr("Paintable SqFt", "standard est.")}
-                    </div>
-                    {Object.entries(unitMix).map(([type, row]) => (
-                      <div key={type} className="grid grid-cols-4 gap-3 items-center mb-2.5">
-                        <p className="text-sm font-semibold text-foreground pl-2">{UNIT_LABELS[type]}</p>
-                        {numInput(row.count, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], count: v } })))}
-                        {numInput(row.turns, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], turns: v } })))}
-                        <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-sm text-muted-foreground">
-                          {UNIT_SQFT[type].toLocaleString()} sqft
-                        </div>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+                      Enter unit counts, monthly turns, and approximate square footage per unit type.
+                      <span className="text-primary ml-1">*</span> Paintable wall surface = floor sqft × ratio (excluding ceiling).
+                    </p>
+                    {/* Desktop grid */}
+                    <div className="hidden sm:block">
+                      <div className="grid grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr_1.1fr] gap-2 mb-2 px-1">
+                        <div />
+                        {colHdr("# of Units")}
+                        {colHdr("Turns / Mo")}
+                        {colHdr("SqFt ea.", "your est.")}
+                        {colHdr("Paintable Wall Surface", "excl. ceiling")}
                       </div>
-                    ))}
-                    {(calc as any).unitTurnsSqFt > 0 && (
+                      {Object.entries(unitMix).map(([type, row]) => {
+                        const effSqFt = row.sqft > 0 ? row.sqft : UNIT_SQFT[type];
+                        const wallSurface = Math.round(effSqFt * UNIT_WALL_RATIO[type]);
+                        return (
+                          <div key={type} className="grid grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr_1.1fr] gap-2 items-center mb-2">
+                            <p className="text-sm font-semibold text-foreground pl-1 whitespace-nowrap">{UNIT_LABELS[type]}</p>
+                            {numInput(row.count, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], count: v } })))}
+                            {numInput(row.turns, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], turns: v } })))}
+                            {numInput(row.sqft, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], sqft: v } })), UNIT_SQFT[type].toString())}
+                            <div className="h-10 border border-primary/30 bg-primary/5 flex items-center justify-center gap-1">
+                              <span className="text-sm font-semibold text-primary">{wallSurface.toLocaleString()}</span>
+                              <span className="text-[10px] text-muted-foreground">sqft ({UNIT_WALL_RATIO[type]}×)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* Mobile cards */}
+                    <div className="sm:hidden space-y-3">
+                      {Object.entries(unitMix).map(([type, row]) => {
+                        const effSqFt = row.sqft > 0 ? row.sqft : UNIT_SQFT[type];
+                        const wallSurface = Math.round(effSqFt * UNIT_WALL_RATIO[type]);
+                        return (
+                          <div key={type} className="border border-border bg-secondary/10 p-3 rounded-none">
+                            <p className="text-sm font-bold mb-3 whitespace-nowrap">{UNIT_LABELS[type]}</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <p className="text-[10px] text-muted-foreground mb-1"># of Units</p>
+                                {numInput(row.count, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], count: v } })))}
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-muted-foreground mb-1">Turns / Mo</p>
+                                {numInput(row.turns, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], turns: v } })))}
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-muted-foreground mb-1">SqFt ea.</p>
+                                {numInput(row.sqft, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], sqft: v } })), UNIT_SQFT[type].toString())}
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-muted-foreground mb-1">Wall Surface ({UNIT_WALL_RATIO[type]}×)</p>
+                                <div className="h-10 border border-primary/30 bg-primary/5 flex items-center justify-center">
+                                  <span className="text-sm font-semibold text-primary">{wallSurface.toLocaleString()} sqft</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {calc.unitTurnsSqFt > 0 && (
                       <div className="mt-4 pt-4 border-t border-border flex justify-end">
-                        <span className="text-sm text-muted-foreground">Total monthly turn sqft: <strong className="text-foreground">{(calc as any).unitTurnsSqFt.toLocaleString()}</strong></span>
+                        <span className="text-sm text-muted-foreground">Total monthly turn sqft: <strong className="text-foreground">{calc.unitTurnsSqFt.toLocaleString()}</strong></span>
                       </div>
                     )}
                   </div>
                 ))}
 
-                {sectionCard("Distributed Touch-up Zones", "STEP 02", (
+                {/* STEP 2: Distributed Zones */}
+                {sectionCard("Distributed Touch-up Zones", "STEP 2", (
                   <div>
                     <p className="text-xs text-muted-foreground mb-4">These zones span multiple floors. Enter quantity of each zone type and the number of floors it covers.</p>
-                    <div className="grid grid-cols-4 gap-3 mb-3 px-2">
-                      <div />
-                      {colHdr("Qty")}
-                      {colHdr("# of Floors")}
-                      {colHdr("~SqFt", "per floor")}
-                    </div>
-                    {Object.entries(resDistZones).map(([zone, row]) => (
-                      <div key={zone} className="grid grid-cols-4 gap-3 items-center mb-2.5">
-                        <p className="text-sm font-medium text-foreground pl-2 leading-tight">{RES_DIST_LABELS[zone]}</p>
-                        {numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
-                        {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
-                        <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-sm text-muted-foreground">
-                          {RES_DIST_SQFT[zone]} sqft
-                        </div>
+                    {/* Desktop */}
+                    <div className="hidden sm:block">
+                      <div className="grid grid-cols-4 gap-3 mb-2 px-1">
+                        <div />
+                        {colHdr("Qty")}
+                        {colHdr("# of Floors")}
+                        {colHdr("~SqFt", "per floor")}
                       </div>
-                    ))}
+                      {Object.entries(resDistZones).map(([zone, row]) => (
+                        <div key={zone} className="grid grid-cols-4 gap-3 items-center mb-2">
+                          <p className="text-sm font-medium text-foreground pl-1 leading-tight">{RES_DIST_LABELS[zone]}</p>
+                          {numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
+                          {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
+                          <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-sm text-muted-foreground">
+                            {RES_DIST_SQFT[zone]} sqft
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Mobile */}
+                    <div className="sm:hidden space-y-3">
+                      {Object.entries(resDistZones).map(([zone, row]) => (
+                        <div key={zone} className="border border-border bg-secondary/10 p-3">
+                          <p className="text-sm font-bold mb-3">{RES_DIST_LABELS[zone]}</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">Qty</p>
+                              {numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">Floors</p>
+                              {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">SqFt/floor</p>
+                              <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-xs text-muted-foreground">
+                                {RES_DIST_SQFT[zone]}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
 
-                {sectionCard("Singular Hubs", "STEP 03", (
+                {/* STEP 3: Singular Hubs */}
+                {sectionCard("Singular Hubs", "STEP 3", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4">Enter the quantity of each hub type in your property.</p>
-                    <div className="grid grid-cols-3 gap-3 mb-3 px-2">
-                      <div />
-                      {colHdr("Qty")}
-                      {colHdr("~SqFt ea.", "standard est.")}
-                    </div>
-                    {Object.entries(singularHubs).map(([hub, qty]) => (
-                      <div key={hub} className="grid grid-cols-3 gap-3 items-center mb-2.5">
-                        <p className="text-sm font-medium text-foreground pl-2">{RES_HUB_LABELS[hub]}</p>
-                        {numInput(qty, v => setSingularHubs(p => ({ ...p, [hub]: v })))}
-                        <div className="h-10 border border-border/40 bg-secondary/20 flex items-center justify-center text-sm text-muted-foreground">
-                          {RES_HUB_SQFT[hub]} sqft
-                        </div>
+                    <p className="text-xs text-muted-foreground mb-4">Enter the quantity of each hub type. If you know the exact size, enter it — otherwise the standard estimate will be used for the calculation.</p>
+                    {/* Desktop */}
+                    <div className="hidden sm:block">
+                      <div className="grid grid-cols-[2fr_0.8fr_1fr] gap-3 mb-2 px-1">
+                        <div />
+                        {colHdr("Qty")}
+                        {colHdr("SqFt ea.", "enter or use default")}
                       </div>
-                    ))}
+                      {Object.entries(singularHubs).map(([hub, row]) => (
+                        <div key={hub} className="grid grid-cols-[2fr_0.8fr_1fr] gap-3 items-center mb-2">
+                          <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
+                          {numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
+                          {numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Mobile */}
+                    <div className="sm:hidden space-y-3">
+                      {Object.entries(singularHubs).map(([hub, row]) => (
+                        <div key={hub} className="border border-border bg-secondary/10 p-3">
+                          <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">Qty</p>
+                              {numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">SqFt ea.</p>
+                              {numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
 
-                {sectionCard("Exterior Power / Soft Wash Zones", "STEP 04", (
+                {/* STEP 4: Exterior Zones */}
+                {sectionCard("Exterior Power / Soft Wash Zones", "STEP 4", (
                   <div>
                     <p className="text-xs text-muted-foreground mb-4">Select the exterior zones included in your subscription. Wash frequency is determined by your selected tier.</p>
                     {extToggle(resExtZones, setResExtZones, EXT_ZONE_LABELS, EXT_ZONE_COST)}
@@ -557,72 +631,110 @@ export default function SubscriptionLab() {
               </>
             ) : (
               <>
-                {sectionCard("Distributed Touch-up Zones", "STEP 01", (
+                {sectionCard("Distributed Touch-up Zones", "STEP 1", (
                   <div>
                     <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-                      Enter quantity, floor count and approximate square footage for each transit zone type. Typical office hallways/circulation space occupy 20%–30% of the total usable office square footage. After submitting your choice, we will schedule a walk-through to confirm details and investment structure.
+                      Enter quantity, floor count and approximate square footage for each transit zone type. Typical office hallways/circulation space occupy 20%–30% of total usable square footage. After submitting, we'll schedule a walk-through to confirm details and investment structure.
                     </p>
-                    <div className="grid grid-cols-5 gap-3 mb-3 px-2">
-                      <div className="col-span-2" />
-                      {colHdr("Qty")}
-                      {colHdr("Floors")}
-                      {colHdr("SqFt / Floor", "your estimate")}
-                    </div>
-                    {Object.entries(commDist).map(([zone, row]) => (
-                      <div key={zone} className="grid grid-cols-5 gap-3 items-center mb-2.5">
-                        <p className="text-sm font-medium text-foreground pl-2 leading-tight col-span-2">{COMM_DIST_LABELS[zone]}</p>
-                        {numInput(row.qty, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
-                        {numInput(row.floors, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
-                        {numInput(row.sqft, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), "sqft")}
+                    <div className="hidden sm:block">
+                      <div className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr] gap-2 mb-2 px-1">
+                        <div />
+                        {colHdr("Qty")}
+                        {colHdr("Floors")}
+                        {colHdr("SqFt / Floor", "your estimate")}
                       </div>
-                    ))}
+                      {Object.entries(commDist).map(([zone, row]) => (
+                        <div key={zone} className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr] gap-2 items-center mb-2">
+                          <p className="text-sm font-medium text-foreground pl-1 leading-tight">{COMM_DIST_LABELS[zone]}</p>
+                          {numInput(row.qty, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
+                          {numInput(row.floors, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
+                          {numInput(row.sqft, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), "sqft")}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="sm:hidden space-y-3">
+                      {Object.entries(commDist).map(([zone, row]) => (
+                        <div key={zone} className="border border-border bg-secondary/10 p-3">
+                          <p className="text-sm font-bold mb-3">{COMM_DIST_LABELS[zone]}</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">Qty</p>
+                              {numInput(row.qty, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">Floors</p>
+                              {numInput(row.floors, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">SqFt/Floor</p>
+                              {numInput(row.sqft, v => setCommDist(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), "sqft")}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                     {Object.values(commDist).some(r => r.sqft > 0) && (
                       <div className="mt-4 pt-4 border-t border-border flex justify-end">
-                        <span className="text-sm text-muted-foreground">
-                          Total zone sqft: <strong className="text-foreground">{Object.values(commDist).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0).toLocaleString()}</strong>
-                        </span>
+                        <span className="text-sm text-muted-foreground">Total zone sqft: <strong className="text-foreground">{Object.values(commDist).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0).toLocaleString()}</strong></span>
                       </div>
                     )}
                   </div>
                 ))}
 
-                {sectionCard("Singular Hubs (Full Repaint Zones)", "STEP 02", (
+                {sectionCard("Singular Hubs (Full Repaint Zones)", "STEP 2", (
                   <div>
                     <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
                       Enter quantity and approximate square footage for each hub type. These receive full repaints at the cycle frequency of your chosen tier.
                     </p>
-                    <div className="grid grid-cols-4 gap-3 mb-3 px-2">
-                      <div className="col-span-2" />
-                      {colHdr("Qty")}
-                      {colHdr("SqFt ea.", "your estimate")}
-                    </div>
-                    {Object.entries(commHubs).map(([hub, row]) => (
-                      <div key={hub} className="grid grid-cols-4 gap-3 items-center mb-2.5">
-                        <p className="text-sm font-medium text-foreground pl-2 col-span-2">{COMM_HUB_LABELS[hub]}</p>
-                        {numInput(row.qty, v => setCommHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
-                        {numInput(row.sqft, v => setCommHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), "sqft")}
+                    <div className="hidden sm:block">
+                      <div className="grid grid-cols-[2fr_0.8fr_1fr] gap-3 mb-2 px-1">
+                        <div />
+                        {colHdr("Qty")}
+                        {colHdr("SqFt ea.", "your estimate")}
                       </div>
-                    ))}
+                      {Object.entries(commHubs).map(([hub, row]) => (
+                        <div key={hub} className="grid grid-cols-[2fr_0.8fr_1fr] gap-3 items-center mb-2">
+                          <p className="text-sm font-medium text-foreground pl-1">{COMM_HUB_LABELS[hub]}</p>
+                          {numInput(row.qty, v => setCommHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
+                          {numInput(row.sqft, v => setCommHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), "sqft")}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="sm:hidden space-y-3">
+                      {Object.entries(commHubs).map(([hub, row]) => (
+                        <div key={hub} className="border border-border bg-secondary/10 p-3">
+                          <p className="text-sm font-bold mb-3">{COMM_HUB_LABELS[hub]}</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">Qty</p>
+                              {numInput(row.qty, v => setCommHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-1">SqFt ea.</p>
+                              {numInput(row.sqft, v => setCommHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), "sqft")}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                     {Object.values(commHubs).some(r => r.sqft > 0) && (
                       <div className="mt-4 pt-4 border-t border-border flex justify-end">
-                        <span className="text-sm text-muted-foreground">
-                          Total hub sqft: <strong className="text-foreground">{Object.values(commHubs).reduce((a, r) => a + r.qty * r.sqft, 0).toLocaleString()}</strong>
-                        </span>
+                        <span className="text-sm text-muted-foreground">Total hub sqft: <strong className="text-foreground">{Object.values(commHubs).reduce((a, r) => a + r.qty * r.sqft, 0).toLocaleString()}</strong></span>
                       </div>
                     )}
                   </div>
                 ))}
 
-                {sectionCard("Exterior Pressure / Soft Wash Services", "STEP 03", (
+                {sectionCard("Exterior Pressure / Soft Wash Services", "STEP 3", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4">Select exterior zones to include in your subscription. Wash frequency is determined by your selected tier.</p>
+                    <p className="text-xs text-muted-foreground mb-4">Select exterior zones to include. Wash frequency is determined by your selected tier.</p>
                     {extToggle(commExtZones, setCommExtZones, COMM_EXT_LABELS, COMM_EXT_COST)}
                     <div className="mt-5 p-4 border border-border/50 bg-secondary/10 flex gap-3">
                       <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs font-bold text-foreground mb-1">Other areas requiring further scope:</p>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Roofs · Pedestrian walkways & sidewalks · Parking garages & lots · Windows & trim · Drive-thrus · Parking curbs — these will be assessed during your complimentary walk-through and quoted separately.
+                          Roofs · Pedestrian walkways & sidewalks · Parking garages & lots · Windows & trim · Drive-thrus · Parking curbs — assessed during your complimentary walk-through and quoted separately.
                         </p>
                       </div>
                     </div>
@@ -661,8 +773,6 @@ export default function SubscriptionLab() {
               const price = calc.tiers[i] ?? 0;
               const annualPrice = price > 0 ? Math.round(price * 12 * 0.95) : 0;
               const isSelected = selectedTier === tier.id;
-              const hasNote = !isMultiFamily && (tier as any).note;
-
               return (
                 <motion.button
                   key={tier.id}
@@ -670,9 +780,7 @@ export default function SubscriptionLab() {
                   onClick={() => setSelectedTier(tier.id)}
                   className={`relative bg-card p-7 flex flex-col text-left transition-all ${isSelected ? "ring-2 ring-primary ring-inset" : "hover:bg-secondary/30"}`}
                 >
-                  {(tier as any).popular && (
-                    <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary" />
-                  )}
+                  {(tier as any).popular && <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary" />}
                   {isSelected && (
                     <div className="absolute top-3 right-3 w-6 h-6 bg-primary flex items-center justify-center">
                       <CheckCircle2 className="w-4 h-4 text-background" />
@@ -680,7 +788,6 @@ export default function SubscriptionLab() {
                   )}
                   <p className="text-xs font-mono uppercase tracking-widest text-primary mb-1">{tier.sub}</p>
                   <h3 className="text-base font-bold mb-1 tracking-tight">{tier.label}</h3>
-
                   <div className="my-4">
                     {price > 0 ? (
                       <>
@@ -688,7 +795,7 @@ export default function SubscriptionLab() {
                           {fmt(price)}<span className="text-base font-normal text-muted-foreground">/mo</span>
                         </div>
                         {!isMultiFamily && (
-                          <div className="mt-2 text-xs text-muted-foreground">
+                          <div className="mt-2 text-xs text-muted-foreground border border-border/50 p-2 bg-secondary/20">
                             <span className="text-primary font-bold">*</span> Or pay <span className="font-semibold text-foreground">{fmt(annualPrice)}</span> upfront and save 5%
                           </div>
                         )}
@@ -697,7 +804,6 @@ export default function SubscriptionLab() {
                       <span className="text-xl text-muted-foreground">Enter data above</span>
                     )}
                   </div>
-
                   <ul className="space-y-2 mb-6 flex-grow">
                     {tier.features.map((f, fi) => (
                       <li key={fi} className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -706,16 +812,7 @@ export default function SubscriptionLab() {
                       </li>
                     ))}
                   </ul>
-
-                  {hasNote && (
-                    <p className="text-[10px] text-muted-foreground mb-4 italic border-t border-border/50 pt-3">
-                      * {(tier as any).note}
-                    </p>
-                  )}
-
-                  <div className={`mt-auto h-9 border text-xs font-bold uppercase tracking-wider flex items-center justify-center transition-colors ${
-                    isSelected ? "bg-primary text-background border-primary" : "border-border text-muted-foreground"
-                  }`}>
+                  <div className={`mt-auto h-9 border text-xs font-bold uppercase tracking-wider flex items-center justify-center transition-colors ${isSelected ? "bg-primary text-background border-primary" : "border-border text-muted-foreground"}`}>
                     {isSelected ? "✓ Selected" : "Select this tier"}
                   </div>
                 </motion.button>
@@ -725,13 +822,13 @@ export default function SubscriptionLab() {
 
           <div className="mt-8 p-5 border border-border/60 bg-secondary/10">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Important:</strong> The PaintLab Subscription covers routine upkeep and precision touch-ups. Should your facility require large-surface repaints or full-wall color changes, these will be scoped as separate, incremental projects to ensure the highest quality results.
+              <strong className="text-foreground">Important:</strong> The PaintLab Subscription covers routine upkeep and precision touch-ups. Large-surface repaints or full-wall color changes will be scoped as separate incremental projects to ensure the highest quality results.
             </p>
           </div>
         </div>
       </section>
 
-      {/* LEAD FORM + CTAs */}
+      {/* LEAD FORM */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-6 md:px-12">
           <div className="max-w-4xl mx-auto">
@@ -748,7 +845,7 @@ export default function SubscriptionLab() {
               <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="border border-primary bg-primary/5 p-10 text-center">
                 <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-2">Your email is ready.</h3>
-                <p className="text-muted-foreground">Your email client should have opened with the full breakdown pre-filled for hello@paintlabpro.com. You can also call or text us directly below.</p>
+                <p className="text-muted-foreground">Your email client should have opened with the full breakdown for hello@paintlabpro.com. You can also call or text us directly below.</p>
                 <button onClick={() => setSubmitted(false)} className="mt-6 text-sm text-primary hover:underline">Edit & re-send</button>
               </motion.div>
             ) : (
@@ -765,6 +862,7 @@ export default function SubscriptionLab() {
                       <input
                         required
                         type={f.key === "phone" ? "tel" : "text"}
+                        inputMode={f.key === "phone" ? "tel" : undefined}
                         value={(formData as any)[f.key]}
                         onChange={e => setFormData(p => ({ ...p, [f.key]: e.target.value }))}
                         placeholder={f.placeholder}
@@ -826,7 +924,7 @@ export default function SubscriptionLab() {
                 TEXT PAINTLAB
               </motion.a>
             </motion.div>
-            <p className="text-xs text-muted-foreground text-center mt-3">(512) 484-3124 · Mon–Fri 8am–6pm CT · Available for emergency dispatch</p>
+            <p className="text-xs text-muted-foreground text-center mt-3">Mon–Fri 8am–6pm CT · Available for emergency dispatch</p>
           </div>
         </div>
       </section>

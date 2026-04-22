@@ -22,7 +22,7 @@ export function Navbar() {
     { name: "Subscriptions", href: "/subscription-portal", isRoute: true },
     { name: "Sectors", href: `${prefix}#sectors` },
     { name: "Approach", href: `${prefix}#approach` },
-    { name: "About", href: `${prefix}#about` },
+    { name: "About", href: `${prefix}#approach` },
   ];
 
   return (
@@ -33,7 +33,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <img src="/images/pl-logo.png" alt="PaintLab" className="h-14 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
+          <img src="/images/pl-logo.png" alt="PaintLab" className="h-9 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
         </Link>
 
         {/* Desktop Nav */}

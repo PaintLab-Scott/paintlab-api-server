@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { ArrowLeft, ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight, Dumbbell } from "lucide-react";
@@ -89,6 +90,7 @@ const facilities = [
 ];
 
 export default function SubscriptionPortal() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const [, setLocation] = useLocation();
 
   const handleSelect = (facility: typeof facilities[0]) => {
