@@ -18,24 +18,24 @@ const stagger = {
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const UNIT_SQFT: Record<string, number> = {
-  studio: 400, oneBD: 580, twoBD: 760, threeBD: 980, fourBD: 1250,
+  studio: 1250, oneBD: 1750, twoBD: 2500, threeBD: 3000, fourBD: 3500,
 };
 const UNIT_LABELS: Record<string, string> = {
   studio: "Studio", oneBD: "1 Bedroom", twoBD: "2 Bedroom", threeBD: "3 Bedroom", fourBD: "4 Bedroom",
 };
 
 const RES_DIST_SQFT: Record<string, number> = {
-  corridors: 120, stairwells: 180, elevatorLandings: 75, wasteRooms: 55,
+  corridors: 200, stairwells: 180, elevatorLandings: 75, wasteRooms: 55,
 };
 const RES_DIST_LABELS: Record<string, string> = {
-  corridors: "Residential Corridors (touch-ups)",
+  corridors: "Residential Corridors",
   stairwells: "Stairwells",
   elevatorLandings: "Elevator Landings",
   wasteRooms: "Garbage / Waste Rooms",
 };
 
 const RES_HUB_SQFT: Record<string, number> = {
-  mainLobby: 550, mailroom: 90, coworking: 380, gym: 750, bathrooms: 140, leasingOffice: 220,
+  mainLobby: 2500, mailroom: 750, coworking: 1750, gym: 2000, bathrooms: 750, leasingOffice: 1500,
 };
 const RES_HUB_LABELS: Record<string, string> = {
   mainLobby: "Main Lobby",
@@ -47,14 +47,14 @@ const RES_HUB_LABELS: Record<string, string> = {
 };
 
 const EXT_ZONE_COST: Record<string, number> = {
-  mainFacade: 200, floorSurface: 150, poolDeck: 250,
-  doorway: 100, garbageArea: 100, garageEntrance: 175,
+  mainFacade: 250, floorSurface: 150, poolDeck: 450,
+  doorway: 250, garbageArea: 100, garageEntrance: 175,
 };
 const EXT_ZONE_LABELS: Record<string, string> = {
   mainFacade: "Main Entrance Facade",
   floorSurface: "Entrance Floor Surface",
   poolDeck: "Pool Deck Area",
-  doorway: "Doorway Entry — Walls & Floor Surface",
+  doorway: "Entries — Walls & Floor Surface",
   garbageArea: "Garbage Area",
   garageEntrance: "Garage Entrance",
 };
@@ -168,6 +168,19 @@ export default function SubscriptionLab() {
   const [submitted, setSubmitted] = useState(false);
 
   // ─── Math Engine ──────────────────────────────────────────────────────────
+  // Pricing model: each tier carries a higher per-sqft turn rate + more frequent hub/corridor service.
+  // This creates a 60–70%+ spread from T1 to T4 even when unit turns dominate.
+  //
+  // Multi-Family rates by tier:
+  //   T1 (turns only):            turns × $0.18/sqft
+  //   T2 (annual hubs/corridors): turns × $0.21/sqft + (hub×$0.10 + corridor×$0.05)/12 + ext/12
+  //   T3 (quarterly + patrol):    turns × $0.24/sqft + (hub×$0.13 + corridor×$0.07)/3  + ext×4/12
+  //   T4 (monthly + signature):   turns × $0.30/sqft + hub×$0.18 + corridor×$0.10      + ext/mo
+  //
+  // Commercial rates by tier:
+  //   T1 (annual):               (hub×$0.10 + corridor×$0.05)/12
+  //   T2 (quarterly ×1.15):      (hub×$0.13 + corridor×$0.07)/3
+  //   T3 (quarterly+patrol ×1.35):(hub×$0.17 + corridor×$0.10)/3  + patrol add-on
   const calc = useMemo(() => {
     if (isMultiFamily) {
       const unitTurnsSqFt = Object.entries(unitMix).reduce(
@@ -183,16 +196,31 @@ export default function SubscriptionLab() {
         .filter(([, on]) => on)
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
 
-      const monthlyBase = unitTurnsSqFt * 0.18 + hubAreaSqFt * 0.06 + touchUpSqFt * 0.03;
-      const onboarding = Math.round(monthlyBase * 1.5);
-
+      // T1: unit turns at base rate
       const t1 = Math.round(unitTurnsSqFt * 0.18);
-      const hubCorridorMonthly = hubAreaSqFt * 0.06 + touchUpSqFt * 0.03;
-      const t2 = Math.round(t1 + hubCorridorMonthly / 12 + extCostPerVisit / 12);
-      const t3 = Math.round(t1 + (hubCorridorMonthly / 3) + (extCostPerVisit * 4) / 12);
-      const t4 = Math.round(t1 + hubCorridorMonthly + extCostPerVisit);
+      // T2: turns at slightly elevated rate + annual hub/corridor cost divided monthly + annual wash
+      const t2 = Math.round(
+        unitTurnsSqFt * 0.21 +
+        (hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 +
+        extCostPerVisit / 12
+      );
+      // T3: turns at premium rate + quarterly hub/corridor (per-visit premium rate) + quarterly wash
+      const t3 = Math.round(
+        unitTurnsSqFt * 0.24 +
+        (hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 +
+        (extCostPerVisit * 4) / 12
+      );
+      // T4: turns at signature rate + full monthly hub/corridor (highest rate) + monthly wash
+      const t4 = Math.round(
+        unitTurnsSqFt * 0.30 +
+        hubAreaSqFt * 0.18 +
+        touchUpSqFt * 0.10 +
+        extCostPerVisit
+      );
 
-      return { unitTurnsSqFt, hubAreaSqFt, touchUpSqFt, extCostPerVisit, monthlyBase: Math.round(monthlyBase), onboarding, tiers: [t1, t2, t3, t4] };
+      const onboarding = Math.round(t2 * 1.5);
+
+      return { unitTurnsSqFt, hubAreaSqFt, touchUpSqFt, extCostPerVisit, onboarding, tiers: [t1, t2, t3, t4] };
     } else {
       const hubAreaSqFt = Object.entries(commHubs).reduce(
         (acc, [hub, qty]) => acc + qty * (COMM_HUB_SQFT[hub] ?? 0), 0
@@ -200,11 +228,16 @@ export default function SubscriptionLab() {
       const touchUpSqFt = Object.entries(commDist).reduce(
         (acc, [zone, row]) => acc + row.qty * row.floors * (COMM_DIST_SQFT[zone] ?? 0), 0
       );
-      const hubCorridorBase = hubAreaSqFt * 0.06 + touchUpSqFt * 0.03;
-      const ct1 = Math.round(hubCorridorBase / 12);
-      const ct2 = Math.round(hubCorridorBase / 3);
-      const ct3 = Math.round(ct2 + hubAreaSqFt * 0.04 + touchUpSqFt * 0.02);
-      const onboarding = Math.round((hubCorridorBase / 3) * 1.5);
+      // T1: annual cycle, base rates
+      const ct1 = Math.round((hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12);
+      // T2: quarterly cycle, premium rates (~4.5× monthly vs T1 annual ÷12)
+      const ct2 = Math.round((hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3);
+      // T3: quarterly at signature rates + monthly patrol add-on
+      const ct3 = Math.round(
+        (hubAreaSqFt * 0.17 + touchUpSqFt * 0.10) / 3 +
+        (hubAreaSqFt * 0.04 + touchUpSqFt * 0.02)
+      );
+      const onboarding = Math.round(ct2 * 1.5);
 
       return { hubAreaSqFt, touchUpSqFt, onboarding, tiers: [ct1, ct2, ct3] };
     }
@@ -233,10 +266,10 @@ export default function SubscriptionLab() {
     },
     {
       id: "asset-shield-quarterly",
-      label: "Tier 3 — Asset Shield",
+      label: "Tier 3 — Asset Shield Plus",
       sub: "Quarterly Cycle",
       features: [
-        "Everything in Tier 1 (Unit Turns)",
+        "Everything in Tier 2 (Annual) + 4× frequency",
         "Quarterly full repaint of all hubs",
         "Quarterly precision touch-ups of corridors",
         "Quarterly exterior power/soft wash",
@@ -249,10 +282,9 @@ export default function SubscriptionLab() {
       label: "Tier 4 — Signature",
       sub: "Monthly Full Cycle",
       features: [
-        "Everything in Tier 3 at monthly frequency",
+        "Everything in Tier 3",
         "Monthly proactive patrol walkthroughs",
         "Priority 24-hr dispatch",
-        "Dedicated site coordinator",
         "Monthly condition reporting dashboard",
       ],
       scope: "Full Monthly Coverage + Proactive Patrol",
@@ -736,7 +768,7 @@ export default function SubscriptionLab() {
                 }}
               >
                 <Phone className="w-5 h-5 flex-shrink-0" />
-                📞 CALL PAINTLAB
+                CALL PAINTLAB
               </motion.a>
               <motion.a
                 variants={fadeInUp}
@@ -752,7 +784,7 @@ export default function SubscriptionLab() {
                 }}
               >
                 <MessageSquare className="w-5 h-5 flex-shrink-0" />
-                📱 TEXT PAINTLAB
+                TEXT PAINTLAB
               </motion.a>
             </motion.div>
             <p className="text-xs text-muted-foreground text-center mt-3">(512) 484-3124 · Mon–Fri 8am–6pm CT · Available for emergency dispatch</p>
