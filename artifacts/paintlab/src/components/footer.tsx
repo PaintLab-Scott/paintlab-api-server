@@ -1,14 +1,13 @@
 import { Link } from "wouter";
 
-export function Footer() {
+export default function Footer() {
   return (
     <footer className="bg-card border-t border-border pt-20 pb-10">
       <div className="container mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="md:col-span-2">
-            <Link href="/" className="text-2xl font-bold tracking-tighter flex items-center gap-0.5 mb-4">
-              <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-[73px] h-[73px] object-contain" />
-              <span className="text-foreground font-black">PAINTLAB</span>
+            <Link href="/" className="flex items-center mb-4">
+              <img src="/images/pl-logo.png" alt="PaintLab" className="h-14 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
             </Link>
             <p className="text-muted-foreground max-w-sm mb-6 text-sm leading-relaxed">
               Where commercial painting stops being a risk and becomes a controlled, high-performance outcome. Precision engineering meets professional trades.

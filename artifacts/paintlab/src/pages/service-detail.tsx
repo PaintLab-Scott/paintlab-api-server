@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import Footer from "@/components/footer";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },

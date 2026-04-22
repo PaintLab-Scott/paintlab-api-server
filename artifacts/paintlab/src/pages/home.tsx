@@ -9,7 +9,7 @@ import {
   Droplets, Wrench, CalendarDays, Check, Shield, Zap, Clock, Users
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import Footer from "@/components/footer";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -205,17 +205,18 @@ export default function Home() {
             className="max-w-4xl"
           >
             <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[1.05]">
-              Premium <strong className="text-primary">COMMERCIAL</strong><br />
-              <span className="text-muted-foreground">Paint Systems.</span>
+              Premium <strong className="text-primary">Commercial</strong><br />
+              <span className="">Repaint Systems.</span><br />
+              <span className="text-muted-foreground text-4xl md:text-5xl lg:text-6xl">Your Property's Aesthetic on Autopilot.</span>
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed">
-              <span className="text-primary font-black">PAINTLAB</span> is where <strong className="text-foreground">commercial</strong> painting stops being a risk and becomes a controlled, predictable, high-performance outcome. Based in Austin, TX.
+              Stop bidding. Start subscribing. Austin's first <strong className="text-foreground">fixed-cost painting utility</strong> for diverse commercial assets.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8" asChild>
-                <a href="#quote">Get a System Assessment <ArrowRight className="ml-2 w-4 h-4" /></a>
+                <Link href="/subscription-portal">Explore Subscription Packages <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-none border-border hover:bg-secondary hover:text-secondary-foreground font-semibold uppercase tracking-wider h-14 px-8" asChild>
                 <a href="#services">Explore Services</a>
@@ -225,35 +226,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ABOUT / TRUST SECTION */}
-      <section id="about" className="py-24 bg-card border-b border-border">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
-              <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tighter mb-6">
-                Advanced Surface Solutions for <strong className="text-primary">Commercial</strong> Facilities
-              </motion.h2>
-              <motion.p variants={fadeInUp} className="text-muted-foreground text-lg mb-6 leading-relaxed">
-                We combine precision craftsmanship with a disciplined, systems-driven approach that delivers consistency, accountability, and total predictability from start to finish.
-              </motion.p>
-              <motion.p variants={fadeInUp} className="text-muted-foreground text-lg mb-10 leading-relaxed">
-                Every project is engineered, planned, and executed to eliminate disruption, protect your asset, and perform in demanding environments like Austin, Texas and throughout the state of Texas.
-              </motion.p>
+      {/* SYSTEM VS SUBSCRIPTION SECTION */}
+      <section id="about" className="py-0 bg-card border-b border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
 
-              <motion.div variants={fadeInUp} className="p-6 border border-primary/30 bg-primary/5 flex items-start gap-4">
-                <ShieldCheck className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="text-foreground font-bold text-lg mb-1">The 2-Year Guarantee</h4>
-                  <p className="text-muted-foreground text-sm">We take our work—and your success—seriously, which is why we stand behind it with a 2-year guarantee on all work performed.</p>
-                </div>
-              </motion.div>
-            </motion.div>
+          {/* Left: The System */}
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+            className="px-10 md:px-16 py-20 border-b lg:border-b-0 lg:border-r border-border flex flex-col justify-center"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-[1px] w-10 bg-border"></div>
+              <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">The System</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Repaint Specialists.</h2>
+            <p className="text-primary font-mono text-xs uppercase tracking-widest mb-6">Expert Commercial Repaints</p>
+            <p className="text-muted-foreground text-lg leading-relaxed mb-8">
+              We specialize in high-durability refinishing for existing assets. No new construction—just <strong className="text-foreground">elite restoration and protection</strong> for commercial properties across Austin and Central Texas.
+            </p>
+            <div className="flex items-start gap-4 p-6 border border-primary/20 bg-primary/5">
+              <ShieldCheck className="w-7 h-7 text-primary flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-foreground font-bold mb-1">2-Year Guarantee on All Work</h4>
+                <p className="text-muted-foreground text-sm">We stand behind every project with a 2-year guarantee—protecting your asset and your budget long after completion.</p>
+              </div>
+            </div>
+          </motion.div>
 
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="relative h-[600px] border border-border">
-              <img src="/images/interior.png" alt="Commercial interior coatings" className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700" />
-              <div className="absolute inset-0 ring-1 ring-inset ring-white/10 pointer-events-none"></div>
-            </motion.div>
-          </div>
+          {/* Right: The Subscription */}
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+            className="px-10 md:px-16 py-20 bg-primary/5 flex flex-col justify-center relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-[1px] w-10 bg-primary"></div>
+              <span className="text-primary font-mono text-xs tracking-widest uppercase">The Subscription</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-2">The <span className="text-primary">PaintLab</span> Autopilot.</h2>
+            <p className="text-primary font-mono text-xs uppercase tracking-widest mb-6">Managed Maintenance</p>
+            <p className="text-muted-foreground text-lg leading-relaxed mb-8">
+              Automated maintenance for <strong className="text-foreground">Multi-Family, Corporate, Retail, Hospitality, Industrial, Medical, Education & Automotive</strong> assets. <strong className="text-foreground">One flat monthly fee.</strong>
+            </p>
+            <Link href="/subscription-portal">
+              <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8 w-fit">
+                Explore Packages <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+          </motion.div>
+
         </div>
       </section>
 
@@ -293,10 +314,7 @@ export default function Home() {
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
               className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-8 border-border"
             >
-              <div className="flex items-center gap-0.5 text-2xl font-black tracking-tighter select-none">
-                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-[73px] h-[73px] object-contain" />
-                <span className="text-foreground">PAINTLAB</span>
-              </div>
+              <img src="/images/pl-logo.png" alt="PaintLab" className="h-14 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
               <a href="#quote">
                 <Button className="rounded-none bg-transparent text-primary border border-primary hover:bg-primary hover:text-background font-semibold uppercase tracking-wider h-12 px-8 transition-colors">
                   Contact Us <ArrowRight className="ml-2 w-4 h-4" />
@@ -438,7 +456,7 @@ export default function Home() {
               </div>
 
               <div className="flex justify-center py-6">
-                <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-56 h-56 object-contain opacity-80" />
+                <img src="/images/pl-icon-new.png" alt="PaintLab icon" className="w-56 h-56 object-contain opacity-90" style={{ mixBlendMode: "lighten" }} />
               </div>
 
               <div className="space-y-6 text-sm">

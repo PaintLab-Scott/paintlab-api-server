@@ -29,9 +29,8 @@ export function Navbar() {
       }`}
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold tracking-tighter flex items-center gap-0.5">
-          <img src="/images/pl-icon.png" alt="PaintLab icon" className="w-[73px] h-[73px] object-contain" />
-          <span className="text-foreground font-black">PAINTLAB</span>
+        <Link href="/" className="flex items-center">
+          <img src="/images/pl-logo.png" alt="PaintLab" className="h-14 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
         </Link>
 
         {/* Desktop Nav */}
