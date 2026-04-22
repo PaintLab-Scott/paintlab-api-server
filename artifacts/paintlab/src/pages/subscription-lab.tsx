@@ -196,6 +196,26 @@ export default function SubscriptionLab() {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", propertyName: "", address: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  const saveDraft = () => {
+    const tierIdx = selectedTier ? activeTiers.findIndex(t => t.id === selectedTier) : -1;
+    const tierLabel = tierIdx >= 0 ? activeTiers[tierIdx].label : "";
+    const monthlyPrice = tierIdx >= 0 ? (calc.tiers[tierIdx] ?? 0) : 0;
+    const draft = {
+      id: `${Date.now()}`,
+      savedAt: new Date().toISOString(),
+      facilityLabel,
+      tierLabel,
+      monthlyPrice,
+      propertyName: formData.propertyName,
+    };
+    const existing = JSON.parse(localStorage.getItem("paintlab_drafts") ?? "[]");
+    existing.unshift(draft);
+    localStorage.setItem("paintlab_drafts", JSON.stringify(existing.slice(0, 10)));
+    setDraftSaved(true);
+    setTimeout(() => setDraftSaved(false), 3000);
+  };
 
   // ─── Math Engine ─────────────────────────────────────────────────────────
   const calc = useMemo(() => {
@@ -203,6 +223,11 @@ export default function SubscriptionLab() {
       const unitTurnsSqFt = Object.entries(unitMix).reduce((acc, [type, row]) => {
         const eff = row.sqft > 0 ? row.sqft : (UNIT_SQFT[type] ?? 0);
         return acc + row.turns * eff;
+      }, 0);
+      // Pricing uses WALL surface (floor × ratio) so per-unit cost scales correctly by unit size
+      const unitTurnsWallSqFt = Object.entries(unitMix).reduce((acc, [type, row]) => {
+        const eff = row.sqft > 0 ? row.sqft : (UNIT_SQFT[type] ?? 0);
+        return acc + row.turns * eff * (UNIT_WALL_RATIO[type] ?? 3);
       }, 0);
       const hubAreaSqFt = Object.entries(singularHubs).reduce((acc, [hub, row]) => {
         const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
@@ -216,10 +241,10 @@ export default function SubscriptionLab() {
         .filter(([, on]) => on)
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
 
-      const t1 = Math.round(unitTurnsSqFt * 0.18);
-      const t2 = Math.round(unitTurnsSqFt * 0.21 + (hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 + extCostPerVisit / 12);
-      const t3 = Math.round(unitTurnsSqFt * 0.24 + (hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 + (extCostPerVisit * 4) / 12);
-      const t4 = Math.round(unitTurnsSqFt * 0.30 + hubAreaSqFt * 0.18 + touchUpSqFt * 0.10 + extCostPerVisit);
+      const t1 = Math.round(unitTurnsWallSqFt * 0.18);
+      const t2 = Math.round(unitTurnsWallSqFt * 0.21 + (hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 + extCostPerVisit / 12);
+      const t3 = Math.round(unitTurnsWallSqFt * 0.24 + (hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 + (extCostPerVisit * 4) / 12);
+      const t4 = Math.round(unitTurnsWallSqFt * 0.30 + hubAreaSqFt * 0.18 + touchUpSqFt * 0.10 + extCostPerVisit);
       const onboarding = Math.round(t2 * 1.5);
 
       return { unitTurnsSqFt, hubAreaSqFt, touchUpSqFt, extCostPerVisit, onboarding, tiers: [t1, t2, t3, t4] };
@@ -917,14 +942,25 @@ export default function SubscriptionLab() {
                   </motion.div>
                 )}
 
-                <motion.button
-                  variants={fadeInUp}
-                  type="submit"
-                  className="w-full h-14 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:bg-primary/90 transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                  Send Full Breakdown to PaintLab
-                </motion.button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <motion.button
+                    variants={fadeInUp}
+                    type="submit"
+                    className="flex-1 h-14 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:bg-primary/90 transition-colors"
+                  >
+                    <Send className="w-4 h-4" />
+                    Send Full Breakdown to PaintLab
+                  </motion.button>
+                  <motion.button
+                    variants={fadeInUp}
+                    type="button"
+                    onClick={saveDraft}
+                    className="h-14 px-6 border border-border text-foreground font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors"
+                  >
+                    {draftSaved ? <CheckCircle2 className="w-4 h-4 text-primary" /> : null}
+                    {draftSaved ? "Draft Saved!" : "Save Draft"}
+                  </motion.button>
+                </div>
               </motion.form>
             )}
 

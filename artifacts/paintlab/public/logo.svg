@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <g transform="translate(0,5)">
+    <path d="M8 4 L24 4 L28 8 L28 20 L8 20 Z" fill="#FF6600"/>
+    <path d="M8 22 L28 22 L28 30 L8 30 Z" fill="#FF6600" opacity="0.4"/>
+    <path d="M8 32 L28 32 L28 48 L8 48 Z" fill="#FF6600" opacity="0.2"/>
+  </g>
+  <text x="38" y="42" font-family="system-ui, sans-serif" font-weight="800" font-size="26" fill="#FFFFFF" letter-spacing="-0.5">PAINTLAB</text>
+</svg>
