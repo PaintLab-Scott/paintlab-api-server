@@ -49,7 +49,7 @@ const RES_HUB_LABELS: Record<string, string> = {
   mainLobby: "Main Lobby", mailroom: "Mailroom", coworking: "Co-working Space",
   gym: "Gym Area", bathrooms: "Public Bathrooms", leasingOffice: "Leasing Office", packageRoom: "Package Room",
 };
-const TU_SURFACE_RATIO = 0.20;
+const TU_SURFACE_RATIO = 0.25;
 
 // Scope-only exterior zones (no per-visit cost — scoped at walkthrough)
 const SCOPED_EXT_ZONES = new Set(["buildingCladding", "commCladding"]);
@@ -388,6 +388,7 @@ export default function SubscriptionLab() {
   );
   const [annualUpfront, setAnnualUpfront] = useState({ t1: false, t2: false, t3: false });
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [optionalExpanded, setOptionalExpanded] = useState(false);
   const [formData, setFormData] = useState({ name: "", propertyName: "", address: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
@@ -485,23 +486,23 @@ export default function SubscriptionLab() {
 
   // ─── Tiers ─────────────────────────────────────────────────────────────────
   const resTiers = [
-    { id: "essential", label: "Tier 1 — Essential", sub: "Unit Turns Only",
+    { id: "essential", tierNum: "Tier 1", label: "Essential", sub: "Unit Turns Only",
       features: ["Full unit turn repaints or touch-ups based on your selection", "Consistent color system applied", "2-year workmanship guarantee"] },
-    { id: "asset-shield-annual", label: "Tier 2 — Asset Shield", sub: "Annual Cycle",
+    { id: "asset-shield-annual", tierNum: "Tier 2", label: "Asset Shield", sub: "Annual Cycle",
       features: ["Everything in Tier 1 (unit turns)", "Annual repaint or touch-ups of selected zones", "Annual exterior paint & cleaning service"] },
-    { id: "asset-shield-quarterly", label: "Tier 3 — Asset Shield Plus", sub: "Quarterly Cycle", popular: true,
+    { id: "asset-shield-quarterly", tierNum: "Tier 3", label: "Asset Shield Plus", sub: "Quarterly Cycle", popular: true,
       features: ["Everything in Tier 1 (unit turns)", "Quarterly repaint or touch-ups of selected zones", "Quarterly exterior paint & cleaning service"] },
-    { id: "signature-monthly", label: "Tier 4 — Signature", sub: "Monthly Full Cycle",
+    { id: "signature-monthly", tierNum: "Tier 4", label: "Signature", sub: "Monthly Full Cycle",
       features: ["Everything in Tier 3", "Monthly proactive patrol walkthroughs and touch-ups in public areas", "Priority 48-hr dispatch", "Monthly condition reporting dashboard"] },
   ];
 
   const commTiers = [
-    { id: "annual-shield", label: "Annual Shield", sub: "Tier 1 · 1 Service Visit / Year",
-      features: ["Annual repaint of selected zones", "Annual precision touch-ups of selected zones", "Selected annual exterior paint & cleaning services", "Pay monthly or save 2% with annual upfront"] },
-    { id: "biannual-shield", label: "Bi-Annual Shield", sub: "Tier 2 · 2 Service Visits / Year", popular: true,
-      features: ["Bi-annual repaint of selected zones", "Spring + fall touch-up zone cycle", "Bi-annual exterior service", "Priority scheduling"] },
-    { id: "quarterly-guard", label: "Quarterly Guard", sub: "Tier 3 · 4 Service Visits / Year",
-      features: ["Quarterly repaint of selected zones", "Quarterly precision touch-up painting", "Quarterly exterior service", "Priority scheduling"] },
+    { id: "annual-shield", tierNum: "Tier 1", label: "Annual Shield", sub: "1 Service Visit/Year",
+      features: ["Annual repaint of selected zones", "Annual precision touch-ups of selected zones", "Annual exterior paint & cleaning services selected", "Pay monthly or save 2% with annual upfront"] },
+    { id: "biannual-shield", tierNum: "Tier 2", label: "Bi-Annual Shield", sub: "2 Service Visits/Year", popular: true,
+      features: ["Bi-annual repaint of selected zones", "Spring + fall precision touch-ups of selected zones", "Bi-annual exterior paint & cleaning services selected", "Priority scheduling"] },
+    { id: "quarterly-guard", tierNum: "Tier 3", label: "Quarterly Guard", sub: "4 Service Visits/Year",
+      features: ["Quarterly repaint of selected zones", "Quarterly precision touch-up painting", "Quarterly exterior paint & cleaning services selected", "Priority scheduling"] },
   ];
 
   const activeTiers = isMultiFamily ? resTiers : commTiers;
@@ -548,7 +549,9 @@ export default function SubscriptionLab() {
   const sectionCard = (title: React.ReactNode, step: string, content: React.ReactNode, headerExtra?: React.ReactNode) => (
     <div className="border border-border bg-card">
       <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-border bg-secondary/20">
-        <span className="text-primary font-mono text-xs tracking-widest flex-shrink-0">{step}</span>
+        <div className="bg-primary px-3 py-1.5 flex-shrink-0">
+          <span className="text-background font-black text-sm tracking-widest uppercase leading-none">{step}</span>
+        </div>
         <h3 className="font-bold text-sm uppercase tracking-wider flex-grow leading-tight">{title}</h3>
         {headerExtra}
       </div>
@@ -680,7 +683,7 @@ export default function SubscriptionLab() {
               </Link>
             </motion.div>
             <motion.h1 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Configure Your Plan.</motion.h1>
-            <motion.p variants={fadeInUp} className="text-muted-foreground">Facility type: <strong className="text-foreground">{facilityLabel}</strong></motion.p>
+            <motion.p variants={fadeInUp} className="text-muted-foreground">Facility type: <strong className="text-primary">{facilityLabel}</strong></motion.p>
             {!isMultiFamily && (
               <motion.div variants={fadeInUp} className="mt-4">
                 <button type="button" onClick={() => setPricingOpen(o => !o)}
@@ -777,14 +780,29 @@ export default function SubscriptionLab() {
                   "STEP 2",
                   (
                     <div>
-                      {/* OPTIONAL banner */}
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 mb-5 p-4 border-2 border-primary/40 bg-primary/5">
-                        <div className="flex-shrink-0 self-start bg-primary text-background text-[10px] font-black uppercase tracking-widest px-2.5 py-1">
-                          OPTIONAL
+                      {/* OPTIONAL banner — collapsible */}
+                      <div className="mb-5 p-4 border-2 border-primary/40 bg-primary/5">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 bg-primary text-background text-[10px] font-black uppercase tracking-widest px-2.5 py-1 mt-px">
+                            OPTIONAL
+                          </div>
+                          <div className="flex-grow">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-xs text-foreground font-medium leading-snug">
+                                This step covers your building's <span className="text-primary">shared public areas only</span>
+                              </p>
+                              <button type="button" onClick={() => setOptionalExpanded(o => !o)}
+                                className="flex-shrink-0 text-primary hover:text-primary/70 transition-colors ml-2">
+                                {optionalExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </button>
+                            </div>
+                            {optionalExpanded && (
+                              <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-primary/20">
+                                Corridors, stairwells, amenity spaces, and building exterior. It is completely optional. <strong className="text-foreground">Tier 1 always covers unit turns</strong> regardless of what you select here. Tiers 2–4 become available once you select at least one zone below.
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          This step covers your building's <strong className="text-foreground">shared public areas only</strong> — corridors, stairwells, amenity spaces, and building exterior. It is completely optional. <strong className="text-foreground">Tier 1 always covers unit turns</strong> regardless of what you select here. Tiers 2–4 become available once you select at least one zone below.
-                        </p>
                       </div>
 
                       <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the quantity of each zone type and select <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> per zone. Repaints receive a complete two-coat repaint and drywall patches at each service cycle. Touch-ups restore appearance with precision spot coating, scuff repair, and color matching.</p>
@@ -800,7 +818,7 @@ export default function SubscriptionLab() {
                         <div className="flex items-center gap-2">
                           <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
                           <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                          <span className="text-[10px] text-muted-foreground">~20% of wall surface, lower rate</span>
+                          <span className="text-[10px] text-muted-foreground">~25% of wall surface, lower rate</span>
                         </div>
                       </div>
 
@@ -809,9 +827,7 @@ export default function SubscriptionLab() {
                         <div className="inline-flex items-center gap-2 bg-primary/15 border-l-[3px] border-primary pl-3 pr-4 py-2">
                           <span className="text-xs font-black text-primary uppercase tracking-widest">Multi-Floor Common Areas</span>
                         </div>
-                        <span className="hidden sm:inline text-[10px] text-muted-foreground ml-3 italic">Corridors, stairwells, shared vertical zones</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mb-3 sm:hidden italic">Corridors, stairwells, shared vertical zones</p>
 
                       {/* Desktop multi-floor */}
                       <div className="hidden sm:block mb-1">
@@ -873,12 +889,10 @@ export default function SubscriptionLab() {
 
                       {/* Amenity section header block */}
                       <div className="flex items-center gap-0 mt-6 mb-3">
-                        <div className="inline-flex items-center gap-2 bg-zinc-800 border-l-[3px] border-zinc-500 pl-3 pr-4 py-2">
-                          <span className="text-xs font-black text-zinc-300 uppercase tracking-widest">Main Floor Shared Amenity Areas</span>
+                        <div className="inline-flex items-center gap-2 bg-primary/15 border-l-[3px] border-primary pl-3 pr-4 py-2">
+                          <span className="text-xs font-black text-primary uppercase tracking-widest">Main Floor Shared Amenity Areas</span>
                         </div>
-                        <span className="hidden sm:inline text-[10px] text-muted-foreground ml-3 italic">Lobbies, gyms, leasing hubs, shared spaces</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mb-3 sm:hidden italic">Lobbies, gyms, leasing hubs, shared spaces</p>
 
                       {/* Desktop hubs */}
                       <div className="hidden sm:block">
@@ -986,7 +1000,7 @@ export default function SubscriptionLab() {
                       <div className="flex items-center gap-2">
                         <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
                         <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                        <span className="text-[10px] text-muted-foreground">~20% of wall surface, lower rate</span>
+                        <span className="text-[10px] text-muted-foreground">~25% of wall surface, lower rate</span>
                       </div>
                     </div>
 
@@ -1090,10 +1104,16 @@ export default function SubscriptionLab() {
                     <div className="absolute top-0 right-0 bg-primary text-background text-[9px] font-bold uppercase tracking-widest px-3 py-1">Most Popular</div>
                   )}
                   <div className="flex-grow p-5 sm:p-6">
-                    <div className="inline-block bg-primary px-3 py-1.5 mb-3">
-                      <span className="text-background font-black text-xs sm:text-sm uppercase tracking-widest leading-none">{tier.label}</span>
+                    {/* Tier number — small white box above orange box */}
+                    <div className="inline-block bg-white px-2 py-0.5 mb-0.5">
+                      <span className="text-zinc-900 font-bold text-[9px] uppercase tracking-widest leading-none">{(tier as any).tierNum}</span>
                     </div>
-                    <p className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase mb-1">{tier.sub}</p>
+                    {/* Main label — orange box */}
+                    <div className="block bg-primary px-3 py-2 mb-2">
+                      <span className="text-background font-black text-sm sm:text-base uppercase tracking-widest leading-none">{tier.label}</span>
+                    </div>
+                    {/* Sub text — below orange box */}
+                    <p className="text-white/60 font-mono text-[10px] tracking-widest uppercase mb-1">{(tier as any).sub ?? tier.sub}</p>
                     {showPrice ? (
                       <div className="mt-3">
                         <div className="flex items-baseline gap-1">
