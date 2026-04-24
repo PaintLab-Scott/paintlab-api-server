@@ -123,21 +123,18 @@ interface FacilityConfig {
 const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
   "office-corporate": {
     touchUpDesc: "Touch-up zones are your spaces that see daily traffic and you'd like phased touch-ups on — not full repaints. We apply precision spot coating, edge blending, and color matching.",
-    hubDesc: "Full repaint zones are your destination spaces — lobbies, conference rooms, and break areas that define your brand. Every hub receives a complete two-coat wall repaint at each service cycle.",
+    hubDesc: "Full repaint zones receive a complete two-coat wall repaint at each service cycle — the destination spaces that define the quality and character of your office.",
     touchUpZones: [
       { key: "hallwaysCorridors", label: "Hallways / Corridors", info: "Primary circulation hallways and corridors throughout your office. Measure length × width per floor. Typical office corridor is 6–10 ft wide. Enter floor sqft of all hallway area per floor.", defaultSqFt: 400 },
-      { key: "mainEntryLobbyTU", label: "Main Entry Lobby / Reception", info: "Your primary arrival and reception area. If you want precision touch-ups rather than a full repaint, enter it here. Touch-ups address scuffs, dings, and paint fade without a full-wall recoat.", defaultSqFt: 1200 },
-      { key: "privateOfficesTU", label: "Private Offices", info: "Individual closed offices. If you want touch-ups between repaint cycles, enter combined floor sqft here. Touch-ups address door-frame marks, corner scuffs, and spot fading.", defaultSqFt: 600 },
+      { key: "mainEntryLobby", label: "Main Entry Lobby / Reception", info: "Your primary arrival and reception area. Includes reception desk surround, accent walls, and feature surfaces.", defaultSqFt: 1200 },
+      { key: "privateOffices", label: "Private Offices", info: "Individual closed offices. Enter combined floor sqft across all private and executive offices.", defaultSqFt: 600 },
       { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter the footprint sqft of the stair shaft per landing. The 3.5× wall multiplier captures the full vertical surface.", defaultSqFt: 80 },
       { key: "elevatorLobbies", label: "Elevator Lobbies", info: "Vestibule areas in front of elevator banks on each floor. Enter sqft of this zone per floor (typical: 8 × 15 ft = 120 sqft).", defaultSqFt: 120 },
     ],
     hubZones: [
-      { key: "hallwaysCorrHub", label: "Hallways / Corridors", info: "Full repaint of all primary hallways and corridors. Includes walls from floor to ceiling, door surrounds, and baseboard transitions. Enter combined floor sqft across all corridors.", defaultSqFt: 400 },
-      { key: "mainLobby", label: "Main Entry Lobby / Reception", info: "Your primary arrival experience — includes reception desk surround, accent walls, and feature surfaces. Full 2-coat repaint at every service cycle.", defaultSqFt: 1200 },
       { key: "conferenceRooms", label: "Conference & Meeting Rooms", info: "Enter total floor sqft for all conference and meeting rooms combined. Full repaint including walls and ceiling perimeter.", defaultSqFt: 800 },
-      { key: "privateOffices", label: "Private Offices", info: "Closed executive and manager offices. Enter combined floor sqft for all private offices. Full repaint delivers a consistent, professional finish.", defaultSqFt: 600 },
-      { key: "breakRoom", label: "Break Room / Kitchen", info: "Staff kitchen and break room. High humidity requires scrubbable finishes. Full repaint at each service cycle.", defaultSqFt: 400 },
-      { key: "bathrooms", label: "Public & Staff Restrooms", info: "All restroom facilities. Moisture-resistant finishes. Full repaint at each cycle.", defaultSqFt: 300 },
+      { key: "breakRoom", label: "Break Room / Kitchen", info: "Staff kitchen and break room. High humidity requires scrubbable finishes.", defaultSqFt: 400 },
+      { key: "bathrooms", label: "Public & Staff Restrooms", info: "All restroom facilities. Moisture-resistant finishes.", defaultSqFt: 300 },
     ],
   },
   medical: {
@@ -293,15 +290,19 @@ const defaultCommExtZones = (): Record<string, boolean> => ({
   commFacade: false, commEntranceFloor: false, commDumpsterPad: false,
   commEntries: false, commGarage: false, commCladding: false,
 });
+function allFacilityZones(cfg: FacilityConfig): ZoneConfig[] {
+  const seen = new Set<string>();
+  return [...cfg.touchUpZones, ...cfg.hubZones].filter(z => {
+    if (seen.has(z.key)) return false;
+    seen.add(z.key);
+    return true;
+  });
+}
 function initCommDist(cfg: FacilityConfig): Record<string, CommZoneRow> {
-  return Object.fromEntries(cfg.touchUpZones.map(z => [z.key, { qty: 0, floors: 1, sqft: 0 }]));
+  return Object.fromEntries(allFacilityZones(cfg).map(z => [z.key, { qty: 0, floors: 1, sqft: 0 }]));
 }
 function initCommHubs(cfg: FacilityConfig): Record<string, CommHubRow> {
-  return Object.fromEntries(cfg.hubZones.map(z => [z.key, { qty: 0, floors: 1, sqft: 0 }]));
-}
-// Hub zones configured as touch-up only (different state than commHubs)
-function initHubsTU(cfg: FacilityConfig): Record<string, CommHubRow> {
-  return Object.fromEntries(cfg.hubZones.map(z => [z.key + "_tu", { qty: 0, floors: 1, sqft: 0 }]));
+  return Object.fromEntries(allFacilityZones(cfg).map(z => [z.key, { qty: 0, floors: 1, sqft: 0 }]));
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -356,7 +357,6 @@ export default function SubscriptionLab() {
 
   const [extInfoZone, setExtInfoZone] = useState<string | null>(null);
   const [pricingOpen, setPricingOpen] = useState(false);
-  const [hubDescOpen, setHubDescOpen] = useState(false);
   const [paintServicesOpen, setPaintServicesOpen] = useState(false);
 
   const [unitMix, setUnitMix] = useState(defaultUnitMix);
@@ -365,7 +365,6 @@ export default function SubscriptionLab() {
   const [resExtZones, setResExtZones] = useState(defaultResExtZones);
   const [commDist, setCommDist] = useState<Record<string, CommZoneRow>>(() => initCommDist(facilityConfig));
   const [commHubs, setCommHubs] = useState<Record<string, CommHubRow>>(() => initCommHubs(facilityConfig));
-  const [hubsTU, setHubsTU] = useState<Record<string, CommHubRow>>(() => initHubsTU(facilityConfig));
   const [commExtZones, setCommExtZones] = useState(defaultCommExtZones);
   const [paintInterest, setPaintInterest] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(COMM_PAINT_SERVICES.map(s => [s.key, false]))
@@ -413,8 +412,7 @@ export default function SubscriptionLab() {
       return { tiers: [t1, t2, t3, t4], tiersRaw: [t1, t2, t3, t4], onboarding: Math.round(t2 * 1.5) };
     } else {
       const distFloor = Object.values(commDist).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0);
-      const hubsTUFloor = Object.values(hubsTU).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0);
-      const touchUpWall = (distFloor + hubsTUFloor) * COMM_WALL_MULTIPLIER;
+      const touchUpWall = distFloor * COMM_WALL_MULTIPLIER;
       const hubFloor = Object.values(commHubs).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0);
       const hubWall = hubFloor * COMM_WALL_MULTIPLIER;
       const extCost = Object.entries(commExtZones)
@@ -430,7 +428,7 @@ export default function SubscriptionLab() {
       const t3 = Math.round(r3 * 0.97);
       return { tiers: [t1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: Math.round(t2 * 1.5) };
     }
-  }, [unitMix, resDistZones, singularHubs, resExtZones, commDist, commHubs, hubsTU, commExtZones, isMultiFamily]);
+  }, [unitMix, resDistZones, singularHubs, resExtZones, commDist, commHubs, commExtZones, isMultiFamily]);
 
   // Discounted display prices
   const displayPrices = useMemo(() => {
@@ -467,15 +465,12 @@ export default function SubscriptionLab() {
   ];
 
   const commTiers = [
-    { id: "annual-shield", label: "Tier 1 — Annual Shield", sub: "1 Service Visit / Year",
-      features: ["Annual repaint of hub zones", "Annual precision touch-ups of selected zones", "Selected annual exterior paint & cleaning services", "Pay monthly or save 2% with annual upfront"],
-      note: "Best for stable, lower-traffic facilities." },
-    { id: "biannual-shield", label: "Tier 2 — Bi-Annual Shield", sub: "2 Service Visits / Year", popular: true,
-      features: ["Bi-annual repaint of hub zones", "Spring + Fall repaint and touch-up cycle", "Bi-annual exterior service", "Priority scheduling"],
-      note: "Recommended for moderate-traffic commercial spaces." },
-    { id: "quarterly-guard", label: "Tier 3 — Quarterly Guard", sub: "4 Service Visits / Year",
-      features: ["Quarterly repaint of hub zones", "Quarterly precision touch-up painting", "Quarterly exterior service", "Priority scheduling"],
-      note: "Most popular for Class A office and healthcare." },
+    { id: "annual-shield", label: "Annual Shield", sub: "Tier 1 · 1 Service Visit / Year",
+      features: ["Annual repaint of selected zones", "Annual precision touch-ups of selected zones", "Selected annual exterior paint & cleaning services", "Pay monthly or save 2% with annual upfront"] },
+    { id: "biannual-shield", label: "Bi-Annual Shield", sub: "Tier 2 · 2 Service Visits / Year", popular: true,
+      features: ["Bi-annual repaint of selected zones", "Spring + fall touch-up zone cycle", "Bi-annual exterior service", "Priority scheduling"] },
+    { id: "quarterly-guard", label: "Quarterly Guard", sub: "Tier 3 · 4 Service Visits / Year",
+      features: ["Quarterly repaint of selected zones", "Quarterly precision touch-up painting", "Quarterly exterior service", "Priority scheduling"] },
   ];
 
   const activeTiers = isMultiFamily ? resTiers : commTiers;
@@ -498,15 +493,13 @@ export default function SubscriptionLab() {
         if (row.turns > 0) { const eff = row.sqft > 0 ? row.sqft : UNIT_SQFT[type]; lines.push(`  ${UNIT_LABELS[type]}: ${row.turns}/mo × ${eff} sqft`); }
       });
     } else {
+      const allZones = allFacilityZones(facilityConfig);
       lines.push(`\nTOUCH-UP ZONES:`);
-      facilityConfig.touchUpZones.forEach(z => {
+      allZones.forEach(z => {
         const r = commDist[z.key]; if (r && r.qty > 0) lines.push(`  ${z.label}: ${r.qty} × ${r.floors}fl × ${r.sqft} sqft = ${Math.round(r.qty * r.floors * r.sqft * 3.5).toLocaleString()} wall sqft`);
       });
-      facilityConfig.hubZones.forEach(z => {
-        const r = hubsTU[z.key + "_tu"]; if (r && r.qty > 0) lines.push(`  ${z.label} (touch-up only): ${r.qty} × ${r.floors}fl × ${r.sqft} sqft`);
-      });
-      lines.push(`\nFULL REPAINT HUBS:`);
-      facilityConfig.hubZones.forEach(z => {
+      lines.push(`\nFULL REPAINT ZONES:`);
+      allZones.forEach(z => {
         const r = commHubs[z.key]; if (r && r.qty > 0) lines.push(`  ${z.label}: ${r.qty} × ${r.floors}fl × ${r.sqft} sqft = ${Math.round(r.qty * r.floors * r.sqft * 3.5).toLocaleString()} wall sqft`);
       });
       const interested = COMM_PAINT_SERVICES.filter(s => paintInterest[s.key]).map(s => s.label);
@@ -664,7 +657,7 @@ export default function SubscriptionLab() {
                 </button>
                 {pricingOpen && (
                   <div className="mt-2 max-w-2xl text-xs text-muted-foreground leading-relaxed border border-border/40 bg-secondary/10 p-4">
-                    All inputs assume 10-ft ceiling height. A 3.5× floor-to-wall-surface multiplier is applied automatically to convert floor sqft to paintable wall surface. Hub zones (full repaint) are priced at a higher rate than touch-up zones (precision spot coating). Actual ceiling heights and square footages are confirmed during your complimentary walk-through — no commitment required before that conversation.
+                    All inputs assume 10-ft ceiling height. A 3.5× floor-to-wall-surface multiplier is applied automatically to convert floor sqft to paintable wall surface. <strong className="text-foreground">Full repaint zones</strong> are priced at a higher rate than <strong className="text-foreground">touch-up zones</strong> (precision spot coating). Actual ceiling heights and square footages are confirmed during your complimentary walk-through — no commitment required before that conversation.
                   </div>
                 )}
               </motion.div>
@@ -829,57 +822,32 @@ export default function SubscriptionLab() {
                       <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-muted-foreground leading-relaxed">{facilityConfig.touchUpDesc}</p>
                     </div>
-                    <div className="mb-5">
-                      {commZoneTableDesktop(facilityConfig.touchUpZones, commDist, setCommDist)}
-                      {commZoneTableMobile(facilityConfig.touchUpZones, commDist, setCommDist)}
-                      {Object.values(commDist).some(r => r.sqft > 0) && (
-                        <div className="mt-3 pt-3 border-t border-border flex justify-end">
-                          <span className="text-xs text-muted-foreground">Touch-up wall surface: <strong className="text-foreground">{Math.round(Object.values(commDist).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0) * 3.5).toLocaleString()} sqft</strong></span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Hub zones as touch-up only */}
-                    <div className="border-t border-dashed border-border/60 pt-5">
-                      <div className="flex items-start gap-2 mb-3 p-3 border border-primary/20 bg-primary/5">
-                        <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-muted-foreground leading-relaxed"><strong className="text-foreground">Touch-up only option:</strong> The zones below are typically full-repaint hubs — but you can configure any of them for touch-up service only. When subscribing with touch-ups only, full repaints remain available as one-time projects. We'll discuss and scope them during the walk-through.</p>
+                    {commZoneTableDesktop(allFacilityZones(facilityConfig), commDist, setCommDist)}
+                    {commZoneTableMobile(allFacilityZones(facilityConfig), commDist, setCommDist)}
+                    {Object.values(commDist).some(r => r.sqft > 0) && (
+                      <div className="mt-3 pt-3 border-t border-border flex justify-end">
+                        <span className="text-xs text-muted-foreground">Touch-up wall surface: <strong className="text-foreground">{Math.round(Object.values(commDist).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0) * 3.5).toLocaleString()} sqft</strong></span>
                       </div>
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Hub Zones — As Touch-Up Only</p>
-                      {commZoneTableDesktop(facilityConfig.hubZones, hubsTU, setHubsTU, k => k + "_tu")}
-                      {commZoneTableMobile(facilityConfig.hubZones, hubsTU, setHubsTU, k => k + "_tu")}
-                    </div>
+                    )}
                   </div>
                 ))}
 
                 {/* ── COMM STEP 2: Full Repaint Zones ── */}
-                {sectionCard(
-                  <><span className="text-primary">FULL REPAINT ZONES</span></>,
-                  "STEP 2",
-                  (
-                    <div>
-                      {hubDescOpen && (
-                        <div className="mb-4 p-3 border border-border/40 bg-secondary/10 text-xs text-muted-foreground leading-relaxed">
-                          {facilityConfig.hubDesc}
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground mb-4">Enter quantity, floors, and floor sqft for each hub. Wall surface = floor sqft × 3.5×. Full repaint rate applies — priced higher than touch-up zones.</p>
-                      {commZoneTableDesktop(facilityConfig.hubZones, commHubs, setCommHubs, k => k, true)}
-                      {commZoneTableMobile(facilityConfig.hubZones, commHubs, setCommHubs, k => k, true)}
-                      {Object.values(commHubs).some(r => r.sqft > 0) && (
-                        <div className="mt-3 pt-3 border-t border-border flex justify-end">
-                          <span className="text-xs text-muted-foreground">Full repaint wall surface: <strong className="text-primary">{Math.round(Object.values(commHubs).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0) * 3.5).toLocaleString()} sqft</strong></span>
-                        </div>
-                      )}
+                {sectionCard(<>Select <span className="text-primary">FULL REPAINT ZONES</span></>, "STEP 2", (
+                  <div>
+                    <div className="mb-4 p-3 border border-border/40 bg-secondary/10 flex gap-2">
+                      <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-muted-foreground leading-relaxed">{facilityConfig.hubDesc}</p>
                     </div>
-                  ),
-                  <button type="button" onClick={() => setHubDescOpen(o => !o)}
-                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors flex-shrink-0 whitespace-nowrap">
-                    <span className="w-4 h-4 rounded-full border border-muted-foreground/60 text-[9px] flex items-center justify-center">i</span>
-                    <span className="hidden sm:inline">Full repaint spaces</span>
-                    {hubDescOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                  </button>
-                )}
+                    {commZoneTableDesktop(allFacilityZones(facilityConfig), commHubs, setCommHubs, k => k, true)}
+                    {commZoneTableMobile(allFacilityZones(facilityConfig), commHubs, setCommHubs, k => k, true)}
+                    {Object.values(commHubs).some(r => r.sqft > 0) && (
+                      <div className="mt-3 pt-3 border-t border-border flex justify-end">
+                        <span className="text-xs text-muted-foreground">Full repaint wall surface: <strong className="text-primary">{Math.round(Object.values(commHubs).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0) * 3.5).toLocaleString()} sqft</strong></span>
+                      </div>
+                    )}
+                  </div>
+                ))}
 
                 {/* ── COMM STEP 3: Exterior ── */}
                 {sectionCard("Exterior Paint & Cleaning Services", "STEP 3", (
@@ -958,8 +926,8 @@ export default function SubscriptionLab() {
                     <div className="absolute top-0 right-0 bg-primary text-background text-[9px] font-bold uppercase tracking-widest px-3 py-1">Most Popular</div>
                   )}
                   <div className="flex-grow p-5 sm:p-6">
-                    <p className="text-primary font-mono text-xs tracking-widest uppercase mb-1">{tier.sub}</p>
-                    <h3 className="font-bold text-sm sm:text-base leading-tight">{tier.label}</h3>
+                    <p className="text-primary font-mono text-[10px] tracking-widest uppercase mb-2">{tier.sub}</p>
+                    <h3 className="font-black text-xl sm:text-2xl leading-tight tracking-tight text-foreground">{tier.label}</h3>
                     {price > 0 ? (
                       <div className="mt-3">
                         <div className="flex items-baseline gap-1">
@@ -991,9 +959,6 @@ export default function SubscriptionLab() {
                         </li>
                       ))}
                     </ul>
-                    {"note" in tier && (tier as any).note && (
-                      <p className="text-[10px] text-muted-foreground italic mt-4 pt-3 border-t border-border/50">{(tier as any).note}</p>
-                    )}
                   </div>
 
                   {/* Discount controls */}
@@ -1019,7 +984,7 @@ export default function SubscriptionLab() {
 
           <div className="mt-6 sm:mt-8 p-4 sm:p-5 border border-border/60 bg-secondary/10">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Important:</strong> The PaintLab Subscription covers routine upkeep and precision touch-ups for touch-up zones, and full repaints for hub zones at the selected tier frequency. Large-surface color changes or specialty coatings will be scoped as separate projects to ensure the highest quality results.
+              <strong className="text-foreground">Important:</strong> The PaintLab Subscription covers precision touch-ups for your selected touch-up zones and full repaints for your selected full repaint zones at the chosen tier frequency. Large-surface color changes or specialty coatings will be scoped as separate projects to ensure the highest quality results.
             </p>
           </div>
         </div>
