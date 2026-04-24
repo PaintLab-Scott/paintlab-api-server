@@ -130,7 +130,10 @@ export default function About() {
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="h-[1px] w-8 bg-primary" />
-                  <span className="text-primary text-xs font-mono tracking-widest uppercase">PaintLab</span>
+                  <div>
+                    <p className="text-primary text-xs font-mono tracking-widest uppercase">Scott Gendelman</p>
+                    <p className="text-muted-foreground text-[10px] font-mono tracking-wider uppercase mt-0.5">Founder &amp; Managing Director</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -206,29 +209,24 @@ export default function About() {
               variants={fadeInUp}
               className="relative"
             >
-              {/* Decorative frame offset */}
+              {/* Decorative frame offset — sized to the photo */}
               <div className="absolute -top-3 -left-3 w-full h-full border border-primary/25 pointer-events-none" />
 
-              <div className="relative overflow-hidden aspect-[4/5] bg-zinc-900">
+              {/* Cap width so we never upscale beyond the source resolution */}
+              <div className="relative overflow-hidden max-w-sm bg-zinc-900">
                 <img
                   src="/images/scott-gendelman.jpeg"
                   alt="Scott Gendelman — Founder, PAINTLAB"
-                  className="w-full h-full object-cover object-center"
-                  style={{ filter: "contrast(1.08) saturate(0.9) brightness(0.92)" }}
+                  className="w-full h-auto block"
+                  style={{ filter: "contrast(1.05) saturate(0.85) brightness(0.95)" }}
                 />
                 {/* Subtle dark gradient overlay at bottom */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/55 via-transparent to-transparent pointer-events-none" />
 
                 {/* Name plate at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between">
-                  <div>
-                    <p className="text-white font-bold text-base tracking-tight leading-tight">Scott Gendelman</p>
-                    <p className="text-primary text-xs font-mono tracking-widest uppercase mt-0.5">Founder, PAINTLAB</p>
-                  </div>
-                  {/* Small PL icon badge */}
-                  <div className="w-9 h-9 flex items-center justify-center bg-primary">
-                    <img src="/images/pl-icon.png" alt="PL" className="w-5 h-5 object-contain" style={{ filter: "invert(1)" }} />
-                  </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-white font-bold text-sm tracking-tight leading-tight">Scott Gendelman</p>
+                  <p className="text-primary text-[10px] font-mono tracking-widest uppercase mt-0.5">Founder &amp; Managing Director, PAINTLAB</p>
                 </div>
               </div>
             </motion.div>
@@ -245,7 +243,7 @@ export default function About() {
                 Scott Gendelman
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-primary font-mono text-xs tracking-widest uppercase mb-8">
-                Founder & Principal — Austin, TX
+                Founder &amp; Managing Director — Austin, TX
               </motion.p>
 
               <motion.div variants={stagger} className="space-y-5 text-muted-foreground text-sm leading-relaxed">
