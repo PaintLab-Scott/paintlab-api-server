@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { ArrowLeft, ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight, Dumbbell } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight, Dumbbell, Phone, Mail } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -21,7 +21,7 @@ const facilities = [
     sub: "Apartments, Condos, HOAs, Mixed-Use",
     icon: <Building2 className="w-8 h-8" />,
     desc: "Recurring unit turn programs + common area maintenance for apartment communities, condo associations, and mixed-use developments.",
-    badge: "Residential Autopilot",
+    badge: "Multi-Family Autopilot",
     path: "multi-family",
   },
   {
@@ -174,6 +174,29 @@ export default function SubscriptionPortal() {
                 </div>
               </motion.button>
             ))}
+
+            {/* Filler cell — logo + contact (fills empty 9th slot in 3-col grid) */}
+            <motion.div variants={fadeInUp} className="bg-card p-8 md:p-10 flex flex-col justify-between border-l-0 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
+              <div className="relative z-10 flex flex-col h-full">
+                <img src="/logo.svg" alt="PaintLab" className="h-10 w-auto object-contain mb-6 opacity-90" />
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">
+                  Not sure which plan fits? Our team will walk you through the right configuration for your property — no commitment required.
+                </p>
+                <div className="mt-auto space-y-3">
+                  <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Subscription%20Inquiry"
+                    className="flex items-center gap-3 w-full px-4 py-3 bg-primary text-background text-sm font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors">
+                    <Mail className="w-4 h-4 flex-shrink-0" />
+                    hello@paintlabpro.com
+                  </a>
+                  <a href="tel:+15124843124"
+                    className="flex items-center gap-3 w-full px-4 py-3 border border-border text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <Phone className="w-4 h-4 flex-shrink-0" />
+                    (512) 484-3124
+                  </a>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>

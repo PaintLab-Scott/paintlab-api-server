@@ -25,13 +25,21 @@ const UNIT_WALL_RATIO: Record<string, number> = {
   studio: 3, oneBD: 3.5, twoBD: 4, threeBD: 4, fourBD: 4,
 };
 const RES_DIST_SQFT: Record<string, number> = {
-  corridors: 1000, stairwells: 200, elevatorLandings: 75, wasteRooms: 55,
+  corridors: 1000, stairwells: 200, elevatorLandings: 75, wasteRooms: 55, publicDoors: 25,
 };
 const RES_DIST_LABELS: Record<string, string> = {
   corridors: "Residential Corridors",
   stairwells: "Stairwells",
   elevatorLandings: "Elevator Landings",
   wasteRooms: "Garbage / Waste Rooms",
+  publicDoors: "Public Entry / Exit Doors",
+};
+const RES_DIST_INFO: Record<string, string> = {
+  corridors: "Shared hallways serving resident units on each floor. Enter the total floor sqft of all corridor area on a typical floor. Typically 6–8 ft wide — measure total hallway length × width.",
+  stairwells: "Interior stairwells including stair walls, landing walls, and soffits. Enter the footprint sqft of the stair shaft per landing; the 3.5× multiplier captures the full vertical wall surface.",
+  elevatorLandings: "Vestibule areas in front of elevator doors on each floor. Typically 8–12 ft wide × 10–15 ft deep. Enter floor sqft per landing.",
+  wasteRooms: "Dedicated garbage, recycling, and waste rooms located on each floor. High-moisture, high-contact surfaces require scrubbable finishes. Enter floor sqft per room.",
+  publicDoors: "Non-stairwell public entry and exit doors in corridors and common areas — door frames, surrounds, and adjacent wall panels. Enter the count of door openings as QTY and approximate sqft of the door + surround area per unit.",
 };
 const RES_HUB_SQFT: Record<string, number> = {
   mainLobby: 2500, mailroom: 750, coworking: 1750, gym: 2000,
@@ -259,28 +267,37 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
 };
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-interface UnitRow { count: number; turns: number; sqft: number }
-interface ResZoneRow { qty: number; floors: number; sqft: number }
-interface SingularHubRow { qty: number; sqft: number }
+interface UnitRow { count: number; turns: number; sqft: number; repaintPct: number }
+interface ResZoneRow { qty: number; floors: number; sqft: number; service: "touch-up" | "repaint" }
+interface SingularHubRow { qty: number; sqft: number; service: "touch-up" | "repaint" }
 interface CommZoneRow { qty: number; floors: number; sqft: number }
 interface CommHubRow { qty: number; floors: number; sqft: number }
 
+// Touch-up pricing applies only to 20% of paintable wall surface (spot coat, edges, damage only)
+const TU_SURFACE_RATIO = 0.20;
+
 const defaultUnitMix = (): Record<string, UnitRow> => ({
-  studio: { count: 0, turns: 0, sqft: 600 },
-  oneBD: { count: 0, turns: 0, sqft: 900 },
-  twoBD: { count: 0, turns: 0, sqft: 1150 },
-  threeBD: { count: 0, turns: 0, sqft: 1500 },
-  fourBD: { count: 0, turns: 0, sqft: 1800 },
+  studio: { count: 0, turns: 0, sqft: 600, repaintPct: 100 },
+  oneBD: { count: 0, turns: 0, sqft: 900, repaintPct: 100 },
+  twoBD: { count: 0, turns: 0, sqft: 1150, repaintPct: 100 },
+  threeBD: { count: 0, turns: 0, sqft: 1500, repaintPct: 100 },
+  fourBD: { count: 0, turns: 0, sqft: 1800, repaintPct: 100 },
 });
 const defaultResDistZones = (): Record<string, ResZoneRow> => ({
-  corridors: { qty: 0, floors: 1, sqft: 0 },
-  stairwells: { qty: 0, floors: 1, sqft: 0 },
-  elevatorLandings: { qty: 0, floors: 1, sqft: 0 },
-  wasteRooms: { qty: 0, floors: 1, sqft: 0 },
+  corridors: { qty: 0, floors: 1, sqft: 0, service: "touch-up" },
+  stairwells: { qty: 0, floors: 1, sqft: 0, service: "touch-up" },
+  elevatorLandings: { qty: 0, floors: 1, sqft: 0, service: "touch-up" },
+  wasteRooms: { qty: 0, floors: 1, sqft: 0, service: "touch-up" },
+  publicDoors: { qty: 0, floors: 1, sqft: 0, service: "touch-up" },
 });
 const defaultSingularHubs = (): Record<string, SingularHubRow> => ({
-  mainLobby: { qty: 0, sqft: 0 }, mailroom: { qty: 0, sqft: 0 }, coworking: { qty: 0, sqft: 0 },
-  gym: { qty: 0, sqft: 0 }, bathrooms: { qty: 0, sqft: 0 }, leasingOffice: { qty: 0, sqft: 0 }, packageRoom: { qty: 0, sqft: 0 },
+  mainLobby: { qty: 0, sqft: 0, service: "repaint" },
+  mailroom: { qty: 0, sqft: 0, service: "touch-up" },
+  coworking: { qty: 0, sqft: 0, service: "repaint" },
+  gym: { qty: 0, sqft: 0, service: "repaint" },
+  bathrooms: { qty: 0, sqft: 0, service: "repaint" },
+  leasingOffice: { qty: 0, sqft: 0, service: "repaint" },
+  packageRoom: { qty: 0, sqft: 0, service: "touch-up" },
 });
 const defaultResExtZones = (): Record<string, boolean> => ({
   mainFacade: false, floorSurface: false, poolDeck: false,
@@ -390,25 +407,40 @@ export default function SubscriptionLab() {
   // ─── Math Engine ─────────────────────────────────────────────────────────
   const calc = useMemo(() => {
     if (isMultiFamily) {
-      const unitTurnsWallSqFt = Object.entries(unitMix).reduce((acc, [type, row]) => {
+      // Unit turns: weight by repaintPct — full repaint @ $0.18/wall sqft, touch-up @ $0.07/wall sqft
+      const unitTurnsCostBase = Object.entries(unitMix).reduce((acc, [type, row]) => {
         const eff = row.sqft > 0 ? row.sqft : (UNIT_SQFT[type] ?? 0);
-        return acc + row.turns * eff * (UNIT_WALL_RATIO[type] ?? 3);
+        const wall = eff * (UNIT_WALL_RATIO[type] ?? 3);
+        const rp = (row.repaintPct ?? 100) / 100;
+        return acc + row.turns * wall * (rp * 0.18 + (1 - rp) * 0.07);
       }, 0);
-      const hubAreaSqFt = Object.entries(singularHubs).reduce((acc, [hub, row]) => {
-        const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
-        return acc + row.qty * eff;
-      }, 0);
-      const touchUpSqFt = Object.entries(resDistZones).reduce((acc, [zone, row]) => {
-        const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
-        return acc + row.qty * row.floors * eff;
-      }, 0);
+      // Scale for higher tiers (T2: 1.17×, T3: 1.33×, T4: 1.67× unit turn cost)
+      // Zone costs: each zone uses its service type to determine rate and effective surface
+      // Touch-up: 20% of wall sqft × touch-up rate; Repaint: 100% of wall sqft × repaint rate
+      const zoneCostPerYear = (repaintRate: number, tuRate: number) => {
+        const distCost = Object.entries(resDistZones).reduce((acc, [zone, row]) => {
+          const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
+          const wall = row.qty * row.floors * eff * 3.5;
+          return acc + (row.service === "repaint" ? wall * repaintRate : wall * TU_SURFACE_RATIO * tuRate);
+        }, 0);
+        const hubCost = Object.entries(singularHubs).reduce((acc, [hub, row]) => {
+          const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
+          const wall = row.qty * eff * 3.5;
+          return acc + (row.service === "repaint" ? wall * repaintRate : wall * TU_SURFACE_RATIO * tuRate);
+        }, 0);
+        return distCost + hubCost;
+      };
       const extCostPerVisit = Object.entries(resExtZones)
         .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
-      const t1 = Math.round(unitTurnsWallSqFt * 0.18);
-      const t2 = Math.round(unitTurnsWallSqFt * 0.21 + (hubAreaSqFt * 0.10 + touchUpSqFt * 0.05) / 12 + extCostPerVisit / 12);
-      const t3 = Math.round(unitTurnsWallSqFt * 0.24 + (hubAreaSqFt * 0.13 + touchUpSqFt * 0.07) / 3 + (extCostPerVisit * 4) / 12);
-      const t4 = Math.round(unitTurnsWallSqFt * 0.30 + hubAreaSqFt * 0.18 + touchUpSqFt * 0.10 + extCostPerVisit);
+      // T1: unit turns only (no zone or exterior subscription)
+      const t1 = Math.round(unitTurnsCostBase);
+      // T2: unit turns + annual zones (1×/yr) + annual exterior (1 visit/yr)
+      const t2 = Math.round(unitTurnsCostBase * 1.17 + zoneCostPerYear(0.10, 0.05) / 12 + extCostPerVisit / 12);
+      // T3: unit turns + quarterly zones (4×/yr) + quarterly exterior (4 visits/yr)
+      const t3 = Math.round(unitTurnsCostBase * 1.33 + zoneCostPerYear(0.13, 0.07) * 4 / 12 + extCostPerVisit * 4 / 12);
+      // T4: unit turns + monthly zones + monthly exterior
+      const t4 = Math.round(unitTurnsCostBase * 1.67 + zoneCostPerYear(0.18, 0.10) * 12 / 12 + extCostPerVisit);
       return { tiers: [t1, t2, t3, t4], tiersRaw: [t1, t2, t3, t4], onboarding: Math.round(t2 * 1.5) };
     } else {
       const distFloor = Object.values(commDist).reduce((a, r) => a + r.qty * r.floors * r.sqft, 0);
@@ -454,14 +486,14 @@ export default function SubscriptionLab() {
 
   // ─── Tiers ─────────────────────────────────────────────────────────────────
   const resTiers = [
-    { id: "essential", label: "Tier 1 — Essential", sub: "100% Unit Turns Only",
-      features: ["Full interior repaint for every unit turn", "Consistent color system applied", "2-year workmanship guarantee"] },
+    { id: "essential", label: "Tier 1 — Essential", sub: "Unit Turns Only",
+      features: ["Full unit turn repaints or touch-ups based on your selection", "Consistent color system applied", "2-year workmanship guarantee"] },
     { id: "asset-shield-annual", label: "Tier 2 — Asset Shield", sub: "Annual Cycle",
-      features: ["Everything in Tier 1 (Unit Turns)", "Annual full repaint of all hubs", "Annual precision touch-ups of corridors", "Annual exterior power/soft wash"] },
+      features: ["Everything in Tier 1 (unit turns)", "Annual repaint or touch-ups of selected zones", "Annual exterior paint & cleaning service"] },
     { id: "asset-shield-quarterly", label: "Tier 3 — Asset Shield Plus", sub: "Quarterly Cycle", popular: true,
-      features: ["Everything in Tier 2 + 4× frequency", "Quarterly full repaint of all hubs", "Quarterly precision touch-ups of corridors", "Quarterly exterior power/soft wash"] },
+      features: ["Everything in Tier 1 (unit turns)", "Quarterly repaint or touch-ups of selected zones", "Quarterly exterior paint & cleaning service"] },
     { id: "signature-monthly", label: "Tier 4 — Signature", sub: "Monthly Full Cycle",
-      features: ["Everything in Tier 3", "Monthly proactive patrol walkthroughs", "Priority 24-hr dispatch", "Monthly condition reporting dashboard"] },
+      features: ["Everything in Tier 3", "Monthly proactive patrol walkthroughs and touch-ups in public areas", "Priority 48-hr dispatch", "Monthly condition reporting dashboard"] },
   ];
 
   const commTiers = [
@@ -676,19 +708,27 @@ export default function SubscriptionLab() {
                 {/* ── MF STEP 1: Unit Mix ── */}
                 {sectionCard("Unit Mix", "STEP 1", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the count of each unit type and the average number of turns per month. Override sqft if you know your actual unit sizes — otherwise our defaults are used.</p>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the count of each unit type, turns per month, and the percentage of turns that require a <strong className="text-foreground">full repaint</strong> vs. touch-up only. Override sqft if you know your actual unit sizes.</p>
                     <div className="hidden sm:block">
-                      <div className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr_1fr] gap-2 mb-2 px-1">
-                        <div />{colHdr("Units")}{colHdr("Turns/Mo")}{colHdr("SQFT EACH", "enter or use default")}{colHdr("Paintable Wall Surface", "auto-calculated")}
+                      <div className="grid grid-cols-[2fr_0.7fr_0.7fr_0.9fr_1fr_1fr] gap-2 mb-2 px-1">
+                        <div />{colHdr("Units")}{colHdr("Turns/Mo")}{colHdr("% Full Repaint", "vs touch-up")}{colHdr("SQFT EACH", "enter or use default")}{colHdr("Wall Surface", "auto-calc")}
                       </div>
                       {Object.entries(unitMix).map(([type, row]) => {
                         const eff = row.sqft > 0 ? row.sqft : UNIT_SQFT[type];
                         const wall = Math.round(eff * UNIT_WALL_RATIO[type]);
                         return (
-                          <div key={type} className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr_1fr] gap-2 items-center mb-2">
+                          <div key={type} className="grid grid-cols-[2fr_0.7fr_0.7fr_0.9fr_1fr_1fr] gap-2 items-center mb-2">
                             <p className="text-sm font-medium text-foreground pl-1">{UNIT_LABELS[type]}</p>
                             {numInput(row.count, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], count: v } })))}
                             {numInput(row.turns, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], turns: v } })))}
+                            <div className="relative h-10 flex items-center">
+                              <input type="number" inputMode="numeric" min={0} max={100}
+                                value={row.repaintPct === 0 ? "" : row.repaintPct}
+                                placeholder="100"
+                                onChange={e => setUnitMix(p => ({ ...p, [type]: { ...p[type], repaintPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) } }))}
+                                className="w-full h-10 bg-background border border-border text-center text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary transition-colors pr-5" />
+                              <span className="absolute right-2 text-xs text-muted-foreground pointer-events-none">%</span>
+                            </div>
                             {numInput(row.sqft, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], sqft: v } })), UNIT_SQFT[type].toString())}
                             <div className="h-10 bg-secondary/30 border border-border flex items-center justify-center">
                               <span className="text-xs font-mono text-muted-foreground">{row.turns > 0 ? `${wall.toLocaleString()} sqft` : "—"}</span>
@@ -704,9 +744,18 @@ export default function SubscriptionLab() {
                         return (
                           <div key={type} className="border border-border bg-secondary/10 p-3">
                             <p className="text-sm font-bold mb-3">{UNIT_LABELS[type]}</p>
-                            <div className="grid grid-cols-3 gap-2 mb-2">
+                            <div className="grid grid-cols-2 gap-2 mb-2">
                               <div><p className="text-[10px] text-muted-foreground mb-1">Units</p>{numInput(row.count, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], count: v } })))}</div>
                               <div><p className="text-[10px] text-muted-foreground mb-1">Turns/Mo</p>{numInput(row.turns, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], turns: v } })))}</div>
+                              <div><p className="text-[10px] text-muted-foreground mb-1">% Full Repaint</p>
+                                <div className="relative">
+                                  <input type="number" inputMode="numeric" min={0} max={100}
+                                    value={row.repaintPct === 0 ? "" : row.repaintPct} placeholder="100"
+                                    onChange={e => setUnitMix(p => ({ ...p, [type]: { ...p[type], repaintPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) } }))}
+                                    className="w-full h-10 bg-background border border-border text-center text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary transition-colors pr-5" />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">%</span>
+                                </div>
+                              </div>
                               <div><p className="text-[10px] text-muted-foreground mb-1">SQFT Each</p>{numInput(row.sqft, v => setUnitMix(p => ({ ...p, [type]: { ...p[type], sqft: v } })), UNIT_SQFT[type].toString())}</div>
                             </div>
                             {row.turns > 0 && <div className="h-8 bg-secondary/30 border border-border flex items-center justify-center"><span className="text-xs font-mono text-muted-foreground">{wall.toLocaleString()} wall sqft</span></div>}
@@ -717,70 +766,137 @@ export default function SubscriptionLab() {
                   </div>
                 ))}
 
-                {/* ── MF STEP 2: Touch-up Zones ── */}
-                {sectionCard(<>Select <span className="text-primary">TOUCH-UP ZONES</span></>, "STEP 2", (
+                {/* ── MF STEP 2: Select Paint Zones ── */}
+                {sectionCard(<>Select <span className="text-primary">PAINT ZONES</span></>, "STEP 2", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Shared circulation areas — corridors, stairwells, elevator landings. We apply precision spot coating, scuff repair, and color matching. These zones are <strong className="text-foreground">not fully repainted</strong> — touch-ups restore appearance only.</p>
-                    <div className="hidden sm:block">
-                      <div className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr] gap-3 mb-2 px-1">
-                        <div />{colHdr("QTY", "per floor")}{colHdr("Floors")}{colHdr("SQFT EACH", "enter or use default")}
-                      </div>
-                      {Object.entries(resDistZones).map(([zone, row]) => (
-                        <div key={zone} className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr] gap-3 items-center mb-2">
-                          <p className="text-sm font-medium text-foreground pl-1">{RES_DIST_LABELS[zone]}</p>
-                          {numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
-                          {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
-                          {numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}
-                        </div>
-                      ))}
+                    <p className="text-xs text-muted-foreground mb-5 leading-relaxed">Enter the quantity of each zone type and select <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> based on your averages and estimates. Repaints receive a complete, two-coat repaint and drywall patches at each service cycle. Touch-ups restore appearance only and receive precision spot coating, scuff repair, drywall patches, and color matching.</p>
+
+                    {/* Service toggle legend */}
+                    <div className="flex items-center gap-4 mb-4 p-3 border border-border/40 bg-secondary/10">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Service type:</span>
+                      <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 bg-primary flex-shrink-0" /><span className="text-xs text-foreground font-medium">Full Repaint</span><span className="text-[10px] text-muted-foreground ml-1">— 100% wall surface, higher rate</span></span>
+                      <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 bg-secondary border border-border flex-shrink-0" /><span className="text-xs text-foreground font-medium">Touch-Up</span><span className="text-[10px] text-muted-foreground ml-1">— ~20% of wall surface, lower rate</span></span>
                     </div>
-                    <div className="sm:hidden space-y-3">
-                      {Object.entries(resDistZones).map(([zone, row]) => (
-                        <div key={zone} className="border border-border bg-secondary/10 p-3">
-                          <p className="text-sm font-bold mb-3">{RES_DIST_LABELS[zone]}</p>
-                          <div className="grid grid-cols-3 gap-2">
-                            <div><p className="text-[10px] text-muted-foreground mb-1">QTY/floor</p>{numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}</div>
-                            <div><p className="text-[10px] text-muted-foreground mb-1">Floors</p>{numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}</div>
-                            <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}</div>
+
+                    {/* Multi-floor spaces */}
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Multi-Floor Common Areas</p>
+                    {/* Desktop multi-floor */}
+                    <div className="hidden sm:block mb-1">
+                      <div className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 mb-2 px-1">
+                        <div />{colHdr("QTY", "per floor")}{colHdr("Floors")}{colHdr("SQFT EACH", "avg floor sqft")}{colHdr("Wall Surface", "×3.5 auto")}{colHdr("Service")}
+                      </div>
+                      {Object.entries(resDistZones).map(([zone, row]) => {
+                        const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
+                        const totalWall = row.qty * row.floors * eff * 3.5;
+                        const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                        return (
+                          <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
+                            <div className="flex items-center pl-1">
+                              <p className="text-sm font-medium text-foreground leading-tight">{RES_DIST_LABELS[zone]}</p>
+                              <InfoTip text={RES_DIST_INFO[zone] ?? ""} />
+                            </div>
+                            {numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}
+                            {numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}
+                            {numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}
+                            <div className={`h-10 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
+                              <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>{effectiveWall > 0 ? Math.round(effectiveWall).toLocaleString() : "—"}</span>
+                            </div>
+                            <button type="button" onClick={() => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], service: p[zone].service === "repaint" ? "touch-up" : "repaint" } }))}
+                              className={`h-10 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50"}`}>
+                              {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                            </button>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
+                    </div>
+                    {/* Mobile multi-floor */}
+                    <div className="sm:hidden space-y-3 mb-1">
+                      {Object.entries(resDistZones).map(([zone, row]) => {
+                        const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
+                        const totalWall = row.qty * row.floors * eff * 3.5;
+                        const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                        return (
+                          <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
+                            <div className="flex items-center gap-1 mb-3">
+                              <p className="text-sm font-bold flex-grow">{RES_DIST_LABELS[zone]}</p>
+                              <InfoTip text={RES_DIST_INFO[zone] ?? ""} />
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 mb-2">
+                              <div><p className="text-[10px] text-muted-foreground mb-1">QTY/floor</p>{numInput(row.qty, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], qty: v } })))}</div>
+                              <div><p className="text-[10px] text-muted-foreground mb-1">Floors</p>{numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}</div>
+                              <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button type="button" onClick={() => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], service: p[zone].service === "repaint" ? "touch-up" : "repaint" } }))}
+                                className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
+                                {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                              </button>
+                              {effectiveWall > 0 && <span className="text-[10px] text-muted-foreground">{Math.round(effectiveWall).toLocaleString()} wall sqft</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="my-6 border-t border-dashed border-border/60 relative">
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-background px-3 text-[10px] text-muted-foreground uppercase tracking-widest">Amenity & Common Spaces</span>
+                    </div>
+
+                    {/* Desktop hubs */}
+                    <div className="hidden sm:block">
+                      <div className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 mb-2 px-1">
+                        <div />{colHdr("Qty")}{colHdr("SQFT EACH", "enter or use default")}{colHdr("Wall Surface", "×3.5 auto")}{colHdr("Service")}
+                      </div>
+                      {Object.entries(singularHubs).map(([hub, row]) => {
+                        const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
+                        const totalWall = row.qty * eff * 3.5;
+                        const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                        return (
+                          <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
+                            <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
+                            {numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
+                            {numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}
+                            <div className={`h-10 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
+                              <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>{effectiveWall > 0 ? Math.round(effectiveWall).toLocaleString() : "—"}</span>
+                            </div>
+                            <button type="button" onClick={() => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], service: p[hub].service === "repaint" ? "touch-up" : "repaint" } }))}
+                              className={`h-10 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50"}`}>
+                              {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* Mobile hubs */}
+                    <div className="sm:hidden space-y-3">
+                      {Object.entries(singularHubs).map(([hub, row]) => {
+                        const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
+                        const totalWall = row.qty * eff * 3.5;
+                        const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                        return (
+                          <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
+                            <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
+                            <div className="grid grid-cols-2 gap-2 mb-2">
+                              <div><p className="text-[10px] text-muted-foreground mb-1">Qty</p>{numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}</div>
+                              <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button type="button" onClick={() => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], service: p[hub].service === "repaint" ? "touch-up" : "repaint" } }))}
+                                className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
+                                {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                              </button>
+                              {effectiveWall > 0 && <span className="text-[10px] text-muted-foreground">{Math.round(effectiveWall).toLocaleString()} wall sqft</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
 
-                {/* ── MF STEP 3: Full Repaint Zones ── */}
-                {sectionCard(<>Select <span className="text-primary">FULL REPAINT ZONES</span></>, "STEP 3", (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-4">Enter the quantity of each hub type. Hubs receive a complete, two-coat repaint at each service cycle.</p>
-                    <div className="hidden sm:block">
-                      <div className="grid grid-cols-[2fr_0.8fr_1fr] gap-3 mb-2 px-1">
-                        <div />{colHdr("Qty")}{colHdr("SQFT EACH", "enter or use default")}
-                      </div>
-                      {Object.entries(singularHubs).map(([hub, row]) => (
-                        <div key={hub} className="grid grid-cols-[2fr_0.8fr_1fr] gap-3 items-center mb-2">
-                          <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
-                          {numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}
-                          {numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="sm:hidden space-y-3">
-                      {Object.entries(singularHubs).map(([hub, row]) => (
-                        <div key={hub} className="border border-border bg-secondary/10 p-3">
-                          <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div><p className="text-[10px] text-muted-foreground mb-1">Qty</p>{numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}</div>
-                            <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                {/* ── MF STEP 4: Exterior ── */}
-                {sectionCard("Exterior Paint & Cleaning Services", "STEP 4", (
+                {/* ── MF STEP 3: Exterior ── */}
+                {sectionCard("Exterior Paint & Cleaning Services", "STEP 3", (
                   <div>
                     <p className="text-xs font-bold text-foreground uppercase tracking-wider mb-1">Pressure / Soft Wash Services</p>
                     <p className="text-xs text-muted-foreground mb-4">Select exterior wash zones to include. Wash frequency is determined by your selected tier. Costs shown are placeholders and will be more accurately scoped and confirmed after the walkthrough.</p>
@@ -900,7 +1016,7 @@ export default function SubscriptionLab() {
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Select Your Tier</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">
-              {isMultiFamily ? "4-Tier Residential Autopilot Plan" : "3-Tier Commercial Maintenance Plan"}
+              {isMultiFamily ? "4-Tier Multi-Family Autopilot Plan" : "3-Tier Commercial Maintenance Plan"}
             </h2>
             {calc.onboarding > 0 && (
               <p className="text-muted-foreground text-sm mt-2">
@@ -926,8 +1042,10 @@ export default function SubscriptionLab() {
                     <div className="absolute top-0 right-0 bg-primary text-background text-[9px] font-bold uppercase tracking-widest px-3 py-1">Most Popular</div>
                   )}
                   <div className="flex-grow p-5 sm:p-6">
-                    <p className="text-primary font-mono text-[10px] tracking-widest uppercase mb-2">{tier.sub}</p>
-                    <h3 className="font-black text-xl sm:text-2xl leading-tight tracking-tight text-foreground">{tier.label}</h3>
+                    <div className="inline-block bg-primary px-3 py-1.5 mb-3">
+                      <span className="text-background font-black text-xs sm:text-sm uppercase tracking-widest leading-none">{tier.label}</span>
+                    </div>
+                    <p className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase mb-1">{tier.sub}</p>
                     {price > 0 ? (
                       <div className="mt-3">
                         <div className="flex items-baseline gap-1">
