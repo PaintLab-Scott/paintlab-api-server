@@ -11,6 +11,7 @@ import ServiceDetail from "@/pages/service-detail";
 import SubscriptionPortal from "@/pages/subscription-portal";
 import SubscriptionLab from "@/pages/subscription-lab";
 import MemberPortal from "@/pages/member-portal";
+import About from "@/pages/about";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +144,7 @@ function Router() {
       <Route path="/services/:slug" component={ServiceDetail} />
       <Route path="/subscription-portal" component={SubscriptionPortal} />
       <Route path="/subscription-lab" component={SubscriptionLab} />
+      <Route path="/about" component={About} />
       <Route path="/member-portal" component={ProtectedMemberPortal} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />

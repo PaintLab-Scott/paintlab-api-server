@@ -1,0 +1,346 @@
+import { motion } from "framer-motion";
+import { Navbar } from "@/components/navbar";
+import Footer from "@/components/footer";
+import { ShieldCheck, Repeat2, Users2, Target } from "lucide-react";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+};
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+};
+
+const pillars = [
+  {
+    icon: <Target className="w-5 h-5" />,
+    title: "Systems, Not Projects",
+    desc: "Every scope is designed for consistency, durability, and repeatable execution—not one-off bids that disappear after closeout.",
+  },
+  {
+    icon: <ShieldCheck className="w-5 h-5" />,
+    title: "Operator-First Mindset",
+    desc: "We think like operators because we've worked as operators. Predictable costs, clear timelines, and zero surprises are the baseline—not the exception.",
+  },
+  {
+    icon: <Repeat2 className="w-5 h-5" />,
+    title: "Repeatable Execution",
+    desc: "Clearly defined scopes, disciplined crews, and accountability at every step. Quality doesn't waver whether it's your first building or your fifteenth.",
+  },
+  {
+    icon: <Users2 className="w-5 h-5" />,
+    title: "Long-Term Partnership",
+    desc: "We don't disappear after the job. We operate as embedded partners with a vested interest in the long-term performance of your asset.",
+  },
+];
+
+export default function About() {
+  return (
+    <div className="bg-background text-foreground min-h-screen">
+      <Navbar />
+
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden pt-40 pb-24 sm:pb-32">
+        {/* Large PL icon watermark */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden select-none">
+          <img
+            src="/images/pl-icon-new.png"
+            alt=""
+            aria-hidden
+            className="opacity-[0.04] w-[560px] sm:w-[720px] max-w-none translate-x-24 sm:translate-x-32"
+            style={{ mixBlendMode: "lighten" }}
+          />
+        </div>
+
+        <div className="relative container mx-auto px-6 md:px-12">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={stagger}
+            className="max-w-3xl"
+          >
+            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
+              <div className="h-[1px] w-10 bg-primary" />
+              <span className="text-primary font-mono text-xs tracking-widest uppercase">About PAINTLAB</span>
+            </motion.div>
+
+            <motion.h1
+              variants={fadeInUp}
+              className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-none mb-6"
+            >
+              We Engineer<br />
+              <span className="text-primary">Outcomes.</span>
+            </motion.h1>
+
+            <motion.p
+              variants={fadeInUp}
+              className="text-muted-foreground text-lg sm:text-xl leading-relaxed max-w-2xl"
+            >
+              PAINTLAB exists to fix what's broken in commercial painting—unpredictable
+              pricing, unreliable timelines, uneven quality, and constant rebidding. That
+              doesn't work for operators managing real assets, real budgets, and real expectations.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── WHAT WE FIX ──────────────────────────────────────────────────────── */}
+      <section className="py-20 bg-card border-y border-border">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={stagger}
+            >
+              <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-4">
+                <div className="h-[1px] w-8 bg-primary" />
+                <span className="text-primary font-mono text-xs tracking-widest uppercase">The Problem</span>
+              </motion.div>
+              <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-black tracking-tighter mb-6">
+                The industry runs on<br />inconsistency.
+              </motion.h2>
+              <motion.div variants={stagger} className="space-y-4">
+                {[
+                  "Unpredictable pricing that changes after the contract",
+                  "Vendors who disappear the moment the last coat dries",
+                  "Quality that varies crew to crew, job to job",
+                  "Constant rebidding instead of trusted partnerships",
+                ].map((item, i) => (
+                  <motion.div key={i} variants={fadeInUp} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0 mt-2" />
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="relative"
+            >
+              <div className="border-l-2 border-primary/40 pl-8">
+                <p className="text-xl sm:text-2xl font-bold tracking-tight leading-snug text-foreground mb-6">
+                  "This isn't about painting walls. It's about creating a dependable, scalable way to maintain and elevate your asset—without the friction."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-[1px] w-8 bg-primary" />
+                  <span className="text-primary text-xs font-mono tracking-widest uppercase">PaintLab</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW WE'RE DIFFERENT ──────────────────────────────────────────────── */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-6 md:px-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="mb-12"
+          >
+            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-4">
+              <div className="h-[1px] w-8 bg-primary" />
+              <span className="text-primary font-mono text-xs tracking-widest uppercase">Our Approach</span>
+            </motion.div>
+            <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-black tracking-tighter">
+              We built PAINTLAB to be different.
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-0 border border-border"
+          >
+            {pillars.map((p, i) => (
+              <motion.div
+                key={i}
+                variants={fadeInUp}
+                className={`p-6 sm:p-8 bg-card ${i < pillars.length - 1 ? "border-r border-border" : ""} group hover:bg-primary/5 transition-colors`}
+              >
+                <div className="w-9 h-9 bg-primary/10 border border-primary/30 flex items-center justify-center text-primary mb-5 group-hover:bg-primary group-hover:text-background transition-colors">
+                  {p.icon}
+                </div>
+                <h3 className="font-bold text-sm uppercase tracking-wider mb-3">{p.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{p.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── LEADERSHIP ───────────────────────────────────────────────────────── */}
+      <section className="py-20 bg-card border-y border-border">
+        <div className="container mx-auto px-6 md:px-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="mb-12"
+          >
+            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-4">
+              <div className="h-[1px] w-8 bg-primary" />
+              <span className="text-primary font-mono text-xs tracking-widest uppercase">Leadership</span>
+            </motion.div>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-start">
+            {/* Photo column */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="relative"
+            >
+              {/* Decorative frame offset */}
+              <div className="absolute -top-3 -left-3 w-full h-full border border-primary/25 pointer-events-none" />
+
+              <div className="relative overflow-hidden aspect-[4/5] bg-zinc-900">
+                <img
+                  src="/images/scott-gendelman.jpeg"
+                  alt="Scott Gendelman — Founder, PAINTLAB"
+                  className="w-full h-full object-cover object-center"
+                  style={{ filter: "contrast(1.08) saturate(0.9) brightness(0.92)" }}
+                />
+                {/* Subtle dark gradient overlay at bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent" />
+
+                {/* Name plate at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between">
+                  <div>
+                    <p className="text-white font-bold text-base tracking-tight leading-tight">Scott Gendelman</p>
+                    <p className="text-primary text-xs font-mono tracking-widest uppercase mt-0.5">Founder, PAINTLAB</p>
+                  </div>
+                  {/* Small PL icon badge */}
+                  <div className="w-9 h-9 flex items-center justify-center bg-primary">
+                    <img src="/images/pl-icon.png" alt="PL" className="w-5 h-5 object-contain" style={{ filter: "invert(1)" }} />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Bio column */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={stagger}
+              className="pt-2"
+            >
+              <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-black tracking-tighter mb-2">
+                Scott Gendelman
+              </motion.h2>
+              <motion.p variants={fadeInUp} className="text-primary font-mono text-xs tracking-widest uppercase mb-8">
+                Founder & Principal — Austin, TX
+              </motion.p>
+
+              <motion.div variants={stagger} className="space-y-5 text-muted-foreground text-sm leading-relaxed">
+                <motion.p variants={fadeInUp}>
+                  PAINTLAB was founded by Scott Gendelman, a commercial operator with over{" "}
+                  <strong className="text-foreground">20 years of experience</strong> across
+                  technology, business development, operations, and marketing.
+                </motion.p>
+                <motion.p variants={fadeInUp}>
+                  Having lived in Austin for over 14 years, Scott understands firsthand how
+                  competitive and fast-moving the commercial and multifamily real estate market
+                  is—and the level of execution it demands. Property managers, asset owners, and
+                  facilities leaders don't have room for inconsistency.
+                </motion.p>
+                <motion.p variants={fadeInUp}>
+                  Throughout his career, he saw the same challenges repeat: unreliable vendors,
+                  uneven quality, unclear pricing, and constant friction in execution.
+                </motion.p>
+                <motion.p variants={fadeInUp}>
+                  PAINTLAB was built to solve that. By applying a{" "}
+                  <strong className="text-foreground">systems-driven, operator-first mindset</strong>,
+                  Scott set out to redefine how paint and coating systems are delivered—bringing
+                  predictability, accountability, and long-term partnership to an industry that has
+                  historically lacked all three.
+                </motion.p>
+              </motion.div>
+
+              <motion.div variants={fadeInUp} className="mt-10 pt-8 border-t border-border">
+                <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-3">Contact Scott directly</p>
+                <a
+                  href="mailto:hello@paintlabpro.com"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+                >
+                  hello@paintlabpro.com →
+                </a>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CLOSING CTA QUOTE ────────────────────────────────────────────────── */}
+      <section className="relative py-24 bg-background overflow-hidden">
+        {/* PL icon watermark, left side this time */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-start overflow-hidden select-none">
+          <img
+            src="/images/pl-icon-new.png"
+            alt=""
+            aria-hidden
+            className="opacity-[0.04] w-[480px] sm:w-[600px] max-w-none -translate-x-16 sm:-translate-x-24"
+            style={{ mixBlendMode: "lighten" }}
+          />
+        </div>
+
+        <div className="relative container mx-auto px-6 md:px-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="max-w-3xl mx-auto text-center"
+          >
+            <motion.div variants={fadeInUp} className="flex items-center justify-center gap-3 mb-8">
+              <div className="h-[1px] w-10 bg-primary" />
+              <img src="/images/pl-icon-new.png" alt="PL" className="h-5 w-auto opacity-70" style={{ mixBlendMode: "lighten" }} />
+              <div className="h-[1px] w-10 bg-primary" />
+            </motion.div>
+
+            <motion.blockquote
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight text-foreground mb-10"
+            >
+              "If you're looking for a partner that engineers outcomes—not just applies paint—
+              <span className="text-primary"> PAINTLAB is built for that.</span>"
+            </motion.blockquote>
+
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request"
+                className="inline-flex items-center justify-center px-8 py-4 bg-primary text-background font-bold uppercase tracking-widest text-xs hover:bg-primary/90 transition-colors"
+              >
+                Get a Quote
+              </a>
+              <a
+                href="/subscription-portal"
+                className="inline-flex items-center justify-center px-8 py-4 border border-primary/40 text-foreground font-bold uppercase tracking-widest text-xs hover:border-primary transition-colors"
+              >
+                View Subscriptions
+              </a>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
