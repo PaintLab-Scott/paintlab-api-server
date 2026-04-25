@@ -62,10 +62,6 @@ export default defineConfig({
     port: Number(process.env.PORT) || 5173,
     host: "0.0.0.0",
     allowedHosts: true,
-    fs: {
-      strict: true,
-      deny: ["**/.**"],
-    },
   },
   preview: {
     port: Number(process.env.PORT) || 5173,
