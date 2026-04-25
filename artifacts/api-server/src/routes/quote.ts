@@ -1,10 +1,10 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import nodemailer from "nodemailer";
 import { logger } from "../lib/logger";
 
 const router = Router();
 
-router.post("/send-quote", async (req, res) => {
+router.post("/send-quote", async (req: Request, res: Response) => {
   const { form, breakdown, facilityType, selectedTier } = req.body;
 
   const smtpUser = process.env["SMTP_USER"];

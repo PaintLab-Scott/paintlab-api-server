@@ -1,10 +1,8 @@
-import { Router, type IRouter } from "express";
+import { Router, type Request, type Response } from "express";
 import healthRouter from "./health";
-import quoteRouter from "./quote";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.use(healthRouter);
-router.use(quoteRouter);
+router.use("/health", healthRouter);
 
 export default router;
