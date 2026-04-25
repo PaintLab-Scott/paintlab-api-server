@@ -62,3 +62,8 @@ externalPort = 5000
 [[ports]]
 localPort = 19499
 externalPort = 6000
+
+[userenv]
+
+[userenv.shared]
+VITE_API_URL = "https://paintlab-api-server.vercel.app"
