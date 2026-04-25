@@ -1,11 +1,10 @@
-import { Router, Request, Response } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
+import { Router, type Request, type Response } from "express";
 
-const router: IRouter = Router();
+const router = Router();
 
+// Notice the : Request and : Response tags below - those are what Vercel wants!
 router.get("/", (req: Request, res: Response) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 export default router;
