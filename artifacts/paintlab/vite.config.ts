@@ -59,16 +59,16 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port,
+    port: Number(process.env.PORT) || 5173,
     host: "0.0.0.0",
     allowedHosts: true,
     fs: {
       strict: true,
-      deny: ["**/.*"],
+      deny: ["**/.**"],
     },
   },
   preview: {
-    port,
+    port: Number(process.env.PORT) || 5173,
     host: "0.0.0.0",
     allowedHosts: true,
   },
