@@ -127,9 +127,9 @@ function getAdjustedRate(
   paintableSqFt: number,
 ): number {
   let multiplier = 1.0;
-  if (inputs.occupancy === "occupied")   multiplier += 0.15;
-  if (inputs.height    === "high")       multiplier += 0.20;
-  if (inputs.access    === "tight")      multiplier += 0.15;
+  if (inputs.occupancy === "occupied")    multiplier += 0.15;
+  if (inputs.height    === "high")        multiplier += 0.20;
+  if (inputs.access    === "tight")       multiplier += 0.15;
   if (inputs.schedule  === "after_hours") multiplier += 0.25;
 
   let adjusted = baseRate * multiplier;
@@ -138,6 +138,29 @@ function getAdjustedRate(
   if (paintableSqFt < MIN_JOB_SQFT) adjusted *= 1.25;
 
   return adjusted;
+}
+
+// ─── MF Turn Engine ──────────────────────────────────────────────────────────
+interface MFUnit {
+  count: number;
+  avgSqFt: number;
+  turnRate: number;       // % of units turning per month
+  repaintPercent: number; // % of those turns that are full repaints
+}
+
+function calculateMultifamilyMonthlyPSSF(units: MFUnit[]): number {
+  let totalMonthlyPSSF = 0;
+  units.forEach(unit => {
+    const { count, avgSqFt, turnRate, repaintPercent } = unit;
+    const monthlyTurns   = count * (turnRate / 100);
+    const repaintUnits   = monthlyTurns * (repaintPercent / 100);
+    const touchupUnits   = monthlyTurns - repaintUnits;
+    const pssf           = avgSqFt * 3.5;          // paintable wall sqft per unit
+    const repaintPSSF    = repaintUnits * pssf;
+    const touchupPSSF    = touchupUnits * pssf * 0.5; // touch-up covers 50% of surface
+    totalMonthlyPSSF    += repaintPSSF + touchupPSSF;
+  });
+  return totalMonthlyPSSF;
 }
 
 const COMM_PAINT_SERVICES = [
@@ -467,12 +490,23 @@ export default function SubscriptionLab() {
   // ─── Math Engine ─────────────────────────────────────────────────────────
   const calc = useMemo(() => {
     if (isMultiFamily) {
-      const unitTurnsCostBase = Object.entries(unitMix).reduce((acc, [type, row]) => {
-        const eff = row.sqft > 0 ? row.sqft : (UNIT_SQFT[type] ?? 0);
-        const wall = eff * (UNIT_WALL_RATIO[type] ?? 3);
-        const rp = (row.repaintPct ?? 100) / 100;
-        return acc + row.turns * wall * (rp * 0.18 + (1 - rp) * 0.07);
-      }, 0);
+      // ── MF Turn Engine ────────────────────────────────────────────────────
+      // Map existing unitMix rows → MFUnit[].
+      // UI `turns` = monthly turn count; turnRate % = (turns / count) × 100,
+      // which collapses back to monthlyTurns = row.turns inside the function.
+      const mfUnits: MFUnit[] = Object.entries(unitMix)
+        .filter(([, row]) => row.count > 0)
+        .map(([type, row]) => ({
+          count:          row.count,
+          avgSqFt:        row.sqft > 0 ? row.sqft : (UNIT_SQFT[type] ?? 0),
+          turnRate:       row.count > 0 ? (row.turns / row.count) * 100 : 0,
+          repaintPercent: row.repaintPct ?? 100,
+        }));
+
+      const totalMonthlyPSSF = calculateMultifamilyMonthlyPSSF(mfUnits);
+      const mfBaseRate       = BASE_RATES["multifamily"]; // $1.00/paintable sqft
+      const mfAdjRate        = getAdjustedRate(mfBaseRate, {}, totalMonthlyPSSF);
+      const interiorMonthly  = totalMonthlyPSSF * mfAdjRate;
       const zoneCostPerYear = (repaintRate: number, tuRate: number) => {
         const distCost = Object.entries(resDistZones).reduce((acc, [zone, row]) => {
           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
@@ -489,10 +523,10 @@ export default function SubscriptionLab() {
       const extCostPerVisit = Object.entries(resExtZones)
         .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
-      const t1 = Math.round(unitTurnsCostBase);
-      const t2 = Math.round(unitTurnsCostBase * 1.17 + zoneCostPerYear(0.10, 0.05) / 12 + extCostPerVisit / 12);
-      const t3 = Math.round(unitTurnsCostBase * 1.33 + zoneCostPerYear(0.13, 0.07) * 4 / 12 + extCostPerVisit * 4 / 12);
-      const t4 = Math.round(unitTurnsCostBase * 1.67 + zoneCostPerYear(0.18, 0.10) * 12 / 12 + extCostPerVisit);
+      const t1 = Math.round(interiorMonthly);
+      const t2 = Math.round(interiorMonthly * 1.17 + zoneCostPerYear(0.10, 0.05) / 12 + extCostPerVisit / 12);
+      const t3 = Math.round(interiorMonthly * 1.33 + zoneCostPerYear(0.13, 0.07) * 4 / 12 + extCostPerVisit * 4 / 12);
+      const t4 = Math.round(interiorMonthly * 1.67 + zoneCostPerYear(0.18, 0.10) * 12 / 12 + extCostPerVisit);
       return { tiers: [t1, t2, t3, t4], tiersRaw: [t1, t2, t3, t4], onboarding: 250 };
     } else {
       const repaintFloor = Object.values(commZones)
