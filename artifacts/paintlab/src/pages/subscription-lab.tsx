@@ -152,6 +152,33 @@ function calculateCommercialMaintenance(sf: number, condition: string): number {
   return sf * 3.5 * factor; // paintable sqft for one maintenance cycle
 }
 
+// ─── Scoped Area Mode ────────────────────────────────────────────────────────
+interface ScopedAreaInput { quantity: number; squareFeet: number; }
+interface ScopedCommercialInputs { totalSqFt: number; condition: string; areas: ScopedAreaInput[]; }
+
+function calculateScopedCommercialPSSF(inputs: ScopedCommercialInputs): number {
+  const factor = CONDITION_FACTORS[inputs.condition] ?? 0.45;
+
+  let scopedTotalSqFt = 0;
+
+  if (inputs.areas && inputs.areas.length > 0) {
+    inputs.areas.forEach(area => {
+      const qty = area.quantity || 0;
+      const sqft = area.squareFeet || 0;
+      if (qty > 0 && sqft > 0) {
+        scopedTotalSqFt += qty * sqft;
+      }
+    });
+  }
+
+  // If user entered scoped areas → use them; otherwise fall back to total building
+  if (scopedTotalSqFt > 0) {
+    return scopedTotalSqFt * 3.5 * factor;
+  }
+
+  return inputs.totalSqFt * 3.5 * factor;
+}
+
 // ─── MF Turn Engine ──────────────────────────────────────────────────────────
 interface MFUnit {
   count: number;
@@ -452,6 +479,7 @@ export default function SubscriptionLab() {
   const [resExtZones, setResExtZones] = useState(defaultResExtZones);
   const [commTotalSqFt, setCommTotalSqFt] = useState(0);
   const [commCondition, setCommCondition] = useState<"light" | "moderate" | "heavy">("moderate");
+  const [commScopedZones, setCommScopedZones] = useState<Record<string, { qty: number; sqft: number }>>({});
   const [commExtZones, setCommExtZones] = useState(defaultCommExtZones);
   const [paintInterest, setPaintInterest] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(COMM_PAINT_SERVICES.map(s => [s.key, false]))
@@ -459,6 +487,7 @@ export default function SubscriptionLab() {
   const [annualUpfront, setAnnualUpfront] = useState({ t1: false, t2: false, t3: false });
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [optionalExpanded, setOptionalExpanded] = useState(false);
+  const [commScopedOpen, setCommScopedOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", propertyName: "", address: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
@@ -527,7 +556,23 @@ export default function SubscriptionLab() {
       // ── Commercial Simplification Layer ────────────────────────────────────
       const rateKey     = FACILITY_RATE_KEY[facilityParam] ?? "office";
       const baseRate    = BASE_RATES[rateKey] ?? 1.0;
-      const paintableSqFt = calculateCommercialMaintenance(commTotalSqFt, commCondition);
+
+      // Build scoped area list from existing FACILITY_CONFIGS zones
+      const facilityConfigData = FACILITY_CONFIGS[facilityParam] ?? FACILITY_CONFIGS["commercial"];
+      const allFacilityZoneList = [
+        ...(facilityConfigData?.touchUpZones ?? []),
+        ...(facilityConfigData?.hubZones ?? []),
+      ];
+      const scopedAreas: ScopedAreaInput[] = allFacilityZoneList.map(z => ({
+        quantity:    commScopedZones[z.key]?.qty  ?? 0,
+        squareFeet:  commScopedZones[z.key]?.sqft ?? 0,
+      }));
+
+      const paintableSqFt = calculateScopedCommercialPSSF({
+        totalSqFt: commTotalSqFt,
+        condition:  commCondition,
+        areas:      scopedAreas,
+      });
       // Complexity inputs wired in a future phase (UI toggles)
       const adjRate     = getAdjustedRate(baseRate, {}, paintableSqFt);
       // Cost per service visit
@@ -545,7 +590,7 @@ export default function SubscriptionLab() {
       const t3 = Math.round(r3 * 0.97);
       return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250 };
     }
-  }, [unitMix, resDistZones, singularHubs, resExtZones, commTotalSqFt, commCondition, commExtZones, isMultiFamily, facilityParam]);
+  }, [unitMix, resDistZones, singularHubs, resExtZones, commTotalSqFt, commCondition, commScopedZones, commExtZones, isMultiFamily, facilityParam]);
 
   // Discounted display prices
   const displayPrices = useMemo(() => {
@@ -1049,12 +1094,16 @@ export default function SubscriptionLab() {
                     </div>
 
                     {/* Paintable scope summary */}
-                    {commTotalSqFt > 0 && (
+                    {(commTotalSqFt > 0 || Object.values(commScopedZones).some(r => r.qty > 0 && r.sqft > 0)) && (
                       <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
                         <span className="text-xs text-muted-foreground">
                           Paintable scope / visit:&nbsp;
                           <strong className="text-primary">
-                            {Math.round(calculateCommercialMaintenance(commTotalSqFt, commCondition)).toLocaleString()} sqft
+                            {Math.round(calculateScopedCommercialPSSF({
+                              totalSqFt: commTotalSqFt,
+                              condition: commCondition,
+                              areas: Object.values(commScopedZones).map(r => ({ quantity: r.qty, squareFeet: r.sqft })),
+                            })).toLocaleString()} sqft
                           </strong>
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -1063,6 +1112,128 @@ export default function SubscriptionLab() {
                         </span>
                       </div>
                     )}
+
+                    {/* ── Scoped Area Mode ── */}
+                    {(() => {
+                      const facilityZoneData = FACILITY_CONFIGS[facilityParam] ?? FACILITY_CONFIGS["commercial"];
+                      const allScopedZones = [
+                        ...(facilityZoneData?.touchUpZones ?? []),
+                        ...(facilityZoneData?.hubZones ?? []),
+                      ];
+                      const hasScopedAreas = allScopedZones.some(z => {
+                        const row = commScopedZones[z.key];
+                        return (row?.qty ?? 0) > 0 && (row?.sqft ?? 0) > 0;
+                      });
+                      const scopedTotal = allScopedZones.reduce((sum, z) => {
+                        const row = commScopedZones[z.key];
+                        const qty = row?.qty ?? 0;
+                        const sqft = row?.sqft ?? 0;
+                        return (qty > 0 && sqft > 0) ? sum + qty * sqft : sum;
+                      }, 0);
+                      return (
+                        <div className="border border-border/40 bg-secondary/5">
+                          {/* Header toggle */}
+                          <button type="button" onClick={() => setCommScopedOpen(o => !o)}
+                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/10 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                                Scope Specific Areas
+                              </span>
+                              <span className="text-[10px] text-muted-foreground font-normal">Optional</span>
+                              {hasScopedAreas && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-background text-[10px] font-bold uppercase tracking-wider">
+                                  Scoped Mode Active
+                                </span>
+                              )}
+                            </div>
+                            {commScopedOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                          </button>
+
+                          {commScopedOpen && (
+                            <div className="px-4 pb-4 space-y-3">
+                              <p className="text-xs text-muted-foreground leading-relaxed pt-1">
+                                Enter quantities and square footage for specific areas to price only those zones. Leave all blank to use your total facility square footage above.
+                              </p>
+
+                              {/* Mode indicator banner */}
+                              {hasScopedAreas ? (
+                                <div className="flex flex-wrap gap-4 py-2 px-3 border border-primary/30 bg-primary/5">
+                                  <span className="text-xs text-muted-foreground">
+                                    Pricing based on:&nbsp;
+                                    <strong className="text-primary">{scopedTotal.toLocaleString()} scoped sqft</strong>
+                                    &nbsp;(not total building)
+                                  </span>
+                                  <button type="button"
+                                    onClick={() => setCommScopedZones({})}
+                                    className="text-[10px] text-muted-foreground hover:text-primary underline transition-colors">
+                                    Clear all areas
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="py-2 px-3 border border-border/30 bg-secondary/5">
+                                  <span className="text-[10px] text-muted-foreground">
+                                    Fallback mode — using total facility sqft ({commTotalSqFt > 0 ? commTotalSqFt.toLocaleString() : "not entered"} sqft)
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Column headers */}
+                              <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr] gap-2 px-1">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Area / Zone</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center">Qty</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center">SqFt Each</span>
+                              </div>
+
+                              {/* Touch-up zones */}
+                              {(facilityZoneData?.touchUpZones ?? []).length > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 px-1">Circulation / Touch-Up Zones</p>
+                                  <div className="space-y-1.5">
+                                    {(facilityZoneData?.touchUpZones ?? []).map(z => {
+                                      const row = commScopedZones[z.key] ?? { qty: 0, sqft: 0 };
+                                      const active = row.qty > 0 && row.sqft > 0;
+                                      return (
+                                        <div key={z.key} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 items-center px-1 py-1.5 ${active ? "bg-primary/5 border border-primary/20" : "border border-transparent hover:border-border/30"} transition-colors`}>
+                                          <div className="flex items-center min-w-0">
+                                            <span className={`text-xs font-medium leading-tight ${active ? "text-foreground" : "text-muted-foreground"}`}>{z.label}</span>
+                                            <InfoTip text={z.info} />
+                                          </div>
+                                          {numInput(row.qty, v => setCommScopedZones(p => ({ ...p, [z.key]: { ...p[z.key] ?? { qty: 0, sqft: 0 }, qty: v } })))}
+                                          {numInput(row.sqft, v => setCommScopedZones(p => ({ ...p, [z.key]: { ...p[z.key] ?? { qty: 0, sqft: 0 }, sqft: v } })), z.defaultSqFt ? String(z.defaultSqFt) : "sqft")}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Hub / repaint zones */}
+                              {(facilityZoneData?.hubZones ?? []).length > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 px-1">Destination / Repaint Zones</p>
+                                  <div className="space-y-1.5">
+                                    {(facilityZoneData?.hubZones ?? []).map(z => {
+                                      const row = commScopedZones[z.key] ?? { qty: 0, sqft: 0 };
+                                      const active = row.qty > 0 && row.sqft > 0;
+                                      return (
+                                        <div key={z.key} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 items-center px-1 py-1.5 ${active ? "bg-primary/5 border border-primary/20" : "border border-transparent hover:border-border/30"} transition-colors`}>
+                                          <div className="flex items-center min-w-0">
+                                            <span className={`text-xs font-medium leading-tight ${active ? "text-foreground" : "text-muted-foreground"}`}>{z.label}</span>
+                                            <InfoTip text={z.info} />
+                                          </div>
+                                          {numInput(row.qty, v => setCommScopedZones(p => ({ ...p, [z.key]: { ...p[z.key] ?? { qty: 0, sqft: 0 }, qty: v } })))}
+                                          {numInput(row.sqft, v => setCommScopedZones(p => ({ ...p, [z.key]: { ...p[z.key] ?? { qty: 0, sqft: 0 }, sqft: v } })), z.defaultSqFt ? String(z.defaultSqFt) : "sqft")}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* Full Repaint — scoped separately */}
                     <div className="border border-border/60 bg-secondary/10 p-4 flex gap-3">
