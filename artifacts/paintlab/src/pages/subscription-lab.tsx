@@ -88,6 +88,58 @@ const COMM_EXT_INFO: Record<string, string> = {
   commCladding: "Scope assessed during your complimentary walk-through and priced separately based on material type and linear footage.",
 };
 
+// ─── Pricing Engine ─────────────────────────────────────────────────────────
+const BASE_RATES: Record<string, number> = {
+  multifamily: 1.00,
+  office: 1.15,
+  medical: 1.30,
+  retail: 1.25,
+  industrial: 0.90,
+  automotive: 1.20,
+  education: 1.10,
+  "gyms-fitness": 1.20,
+};
+
+const MIN_JOB_SQFT = 2500;
+
+// Maps URL facility param → BASE_RATES key
+const FACILITY_RATE_KEY: Record<string, string> = {
+  "multi-family":    "multifamily",
+  "office-corporate": "office",
+  medical:           "medical",
+  retail:            "retail",
+  industrial:        "industrial",
+  automotive:        "automotive",
+  education:         "education",
+  "gyms-fitness":    "gyms-fitness",
+};
+
+interface ComplexityInputs {
+  occupancy?: "occupied" | "vacant";
+  height?: "standard" | "high";
+  access?: "normal" | "tight";
+  schedule?: "standard" | "after_hours";
+}
+
+function getAdjustedRate(
+  baseRate: number,
+  inputs: ComplexityInputs,
+  paintableSqFt: number,
+): number {
+  let multiplier = 1.0;
+  if (inputs.occupancy === "occupied")   multiplier += 0.15;
+  if (inputs.height    === "high")       multiplier += 0.20;
+  if (inputs.access    === "tight")      multiplier += 0.15;
+  if (inputs.schedule  === "after_hours") multiplier += 0.25;
+
+  let adjusted = baseRate * multiplier;
+
+  // Margin protection — small-job surcharge
+  if (paintableSqFt < MIN_JOB_SQFT) adjusted *= 1.25;
+
+  return adjusted;
+}
+
 const COMM_PAINT_SERVICES = [
   {
     key: "curbPainting",
@@ -451,17 +503,26 @@ export default function SubscriptionLab() {
         .filter(r => r.service === "touch-up")
         .reduce((a, r) => a + r.qty * r.floors * (r.sqft || 0), 0);
       const touchUpWall = tuFloor * COMM_WALL_MULTIPLIER;
+
+      // ── Pricing engine ──────────────────────────────────────────────────────
+      const rateKey = FACILITY_RATE_KEY[facilityParam] ?? "office";
+      const baseRate = BASE_RATES[rateKey] ?? 1.0;
+      // paintableSqFt = full repaint wall surface + effective touch-up surface
+      const paintableSqFt = repaintWall + touchUpWall * TU_SURFACE_RATIO;
+      // Phase 1: complexity inputs will be wired in Phase 2 (UI toggles)
+      const adjRate = getAdjustedRate(baseRate, {}, paintableSqFt);
+
       const extCost = Object.entries(commExtZones)
         .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
         .reduce((acc, [zone]) => acc + (COMM_EXT_COST[zone] ?? 0), 0);
-      const r1 = Math.round((repaintWall * 0.38 + touchUpWall * 0.12) / 12 + extCost / 12);
-      const r2 = Math.round((repaintWall * 0.36 * 2 + touchUpWall * 0.11 * 2) / 12 + extCost * 2 / 12);
-      const r3 = Math.round((repaintWall * 0.35 * 4 + touchUpWall * 0.10 * 4) / 12 + extCost * 4 / 12);
+      const r1 = Math.round((repaintWall * 0.38 * adjRate + touchUpWall * TU_SURFACE_RATIO * 0.12 * adjRate) / 12 + extCost / 12);
+      const r2 = Math.round((repaintWall * 0.36 * 2 * adjRate + touchUpWall * TU_SURFACE_RATIO * 0.11 * 2 * adjRate) / 12 + extCost * 2 / 12);
+      const r3 = Math.round((repaintWall * 0.35 * 4 * adjRate + touchUpWall * TU_SURFACE_RATIO * 0.10 * 4 * adjRate) / 12 + extCost * 4 / 12);
       const t2 = Math.round(r2 * 0.98);
       const t3 = Math.round(r3 * 0.97);
       return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250 };
     }
-  }, [unitMix, resDistZones, singularHubs, resExtZones, commZones, commExtZones, isMultiFamily]);
+  }, [unitMix, resDistZones, singularHubs, resExtZones, commZones, commExtZones, isMultiFamily, facilityParam]);
 
   // Discounted display prices
   const displayPrices = useMemo(() => {
