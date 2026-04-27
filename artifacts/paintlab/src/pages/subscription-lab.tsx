@@ -140,6 +140,18 @@ function getAdjustedRate(
   return adjusted;
 }
 
+// ─── Commercial Simplification Layer ────────────────────────────────────────
+const CONDITION_FACTORS: Record<string, number> = {
+  light:    0.30,
+  moderate: 0.45,
+  heavy:    0.60,
+};
+
+function calculateCommercialMaintenance(sf: number, condition: string): number {
+  const factor = CONDITION_FACTORS[condition] ?? 0.45;
+  return sf * 3.5 * factor; // paintable sqft for one maintenance cycle
+}
+
 // ─── MF Turn Engine ──────────────────────────────────────────────────────────
 interface MFUnit {
   count: number;
@@ -347,7 +359,6 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
 interface UnitRow { count: number; turns: number; sqft: number; repaintPct: number; }
 interface ResDistRow { qty: number; floors: number; sqft: number; service: "repaint" | "touch-up"; }
 interface ResHubRow { qty: number; sqft: number; service: "repaint" | "touch-up"; }
-interface CommZoneServiceRow { qty: number; floors: number; sqft: number; service: "repaint" | "touch-up"; }
 
 // ─── Default State Factories ──────────────────────────────────────────────────
 const defaultUnitMix = (): Record<string, UnitRow> => ({
@@ -381,22 +392,6 @@ const defaultCommExtZones = (): Record<string, boolean> => ({
   commFacade: false, commEntranceFloor: false, commDumpsterPad: false,
   commEntries: false, commGarage: false, commCladding: false,
 });
-
-function allFacilityZones(cfg: FacilityConfig): ZoneConfig[] {
-  const seen = new Set<string>();
-  return [...cfg.touchUpZones, ...cfg.hubZones].filter(z => {
-    if (seen.has(z.key)) return false;
-    seen.add(z.key);
-    return true;
-  });
-}
-function initCommZones(cfg: FacilityConfig): Record<string, CommZoneServiceRow> {
-  const touchUpKeys = new Set(cfg.touchUpZones.map(z => z.key));
-  return Object.fromEntries(allFacilityZones(cfg).map(z => [
-    z.key,
-    { qty: 0, floors: 1, sqft: 0, service: touchUpKeys.has(z.key) ? "touch-up" as const : "repaint" as const },
-  ]));
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function fmt(n: number) {
@@ -446,7 +441,6 @@ export default function SubscriptionLab() {
   const facilityParam = params.get("facility") ?? typeParam;
   const isMultiFamily = typeParam === "multi-family";
   const facilityLabel = FACILITY_LABELS[facilityParam] ?? "Commercial";
-  const facilityConfig: FacilityConfig = FACILITY_CONFIGS[facilityParam] ?? FACILITY_CONFIGS["commercial"];
 
   const [extInfoZone, setExtInfoZone] = useState<string | null>(null);
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -456,7 +450,8 @@ export default function SubscriptionLab() {
   const [resDistZones, setResDistZones] = useState(defaultResDistZones);
   const [singularHubs, setSingularHubs] = useState(defaultSingularHubs);
   const [resExtZones, setResExtZones] = useState(defaultResExtZones);
-  const [commZones, setCommZones] = useState<Record<string, CommZoneServiceRow>>(() => initCommZones(facilityConfig));
+  const [commTotalSqFt, setCommTotalSqFt] = useState(0);
+  const [commCondition, setCommCondition] = useState<"light" | "moderate" | "heavy">("moderate");
   const [commExtZones, setCommExtZones] = useState(defaultCommExtZones);
   const [paintInterest, setPaintInterest] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(COMM_PAINT_SERVICES.map(s => [s.key, false]))
@@ -529,34 +524,28 @@ export default function SubscriptionLab() {
       const t4 = Math.round(interiorMonthly * 1.67 + zoneCostPerYear(0.18, 0.10) * 12 / 12 + extCostPerVisit);
       return { tiers: [t1, t2, t3, t4], tiersRaw: [t1, t2, t3, t4], onboarding: 250 };
     } else {
-      const repaintFloor = Object.values(commZones)
-        .filter(r => r.service === "repaint")
-        .reduce((a, r) => a + r.qty * r.floors * (r.sqft || 0), 0);
-      const repaintWall = repaintFloor * COMM_WALL_MULTIPLIER;
-      const tuFloor = Object.values(commZones)
-        .filter(r => r.service === "touch-up")
-        .reduce((a, r) => a + r.qty * r.floors * (r.sqft || 0), 0);
-      const touchUpWall = tuFloor * COMM_WALL_MULTIPLIER;
-
-      // ── Pricing engine ──────────────────────────────────────────────────────
-      const rateKey = FACILITY_RATE_KEY[facilityParam] ?? "office";
-      const baseRate = BASE_RATES[rateKey] ?? 1.0;
-      // paintableSqFt = full repaint wall surface + effective touch-up surface
-      const paintableSqFt = repaintWall + touchUpWall * TU_SURFACE_RATIO;
-      // Phase 1: complexity inputs will be wired in Phase 2 (UI toggles)
-      const adjRate = getAdjustedRate(baseRate, {}, paintableSqFt);
+      // ── Commercial Simplification Layer ────────────────────────────────────
+      const rateKey     = FACILITY_RATE_KEY[facilityParam] ?? "office";
+      const baseRate    = BASE_RATES[rateKey] ?? 1.0;
+      const paintableSqFt = calculateCommercialMaintenance(commTotalSqFt, commCondition);
+      // Complexity inputs wired in a future phase (UI toggles)
+      const adjRate     = getAdjustedRate(baseRate, {}, paintableSqFt);
+      // Cost per service visit
+      const visitCost   = paintableSqFt * adjRate;
 
       const extCost = Object.entries(commExtZones)
         .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
         .reduce((acc, [zone]) => acc + (COMM_EXT_COST[zone] ?? 0), 0);
-      const r1 = Math.round((repaintWall * 0.38 * adjRate + touchUpWall * TU_SURFACE_RATIO * 0.12 * adjRate) / 12 + extCost / 12);
-      const r2 = Math.round((repaintWall * 0.36 * 2 * adjRate + touchUpWall * TU_SURFACE_RATIO * 0.11 * 2 * adjRate) / 12 + extCost * 2 / 12);
-      const r3 = Math.round((repaintWall * 0.35 * 4 * adjRate + touchUpWall * TU_SURFACE_RATIO * 0.10 * 4 * adjRate) / 12 + extCost * 4 / 12);
+
+      // Monthly subscription = annualised visit cost ÷ 12
+      const r1 = Math.round(visitCost * 1 / 12 + extCost * 1 / 12); // 1 visit/yr
+      const r2 = Math.round(visitCost * 2 / 12 + extCost * 2 / 12); // 2 visits/yr
+      const r3 = Math.round(visitCost * 4 / 12 + extCost * 4 / 12); // 4 visits/yr
       const t2 = Math.round(r2 * 0.98);
       const t3 = Math.round(r3 * 0.97);
       return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250 };
     }
-  }, [unitMix, resDistZones, singularHubs, resExtZones, commZones, commExtZones, isMultiFamily, facilityParam]);
+  }, [unitMix, resDistZones, singularHubs, resExtZones, commTotalSqFt, commCondition, commExtZones, isMultiFamily, facilityParam]);
 
   // Discounted display prices
   const displayPrices = useMemo(() => {
@@ -620,12 +609,11 @@ export default function SubscriptionLab() {
         if (row.turns > 0) { const eff = row.sqft > 0 ? row.sqft : UNIT_SQFT[type]; lines.push(`  ${UNIT_LABELS[type]}: ${row.turns}/mo × ${eff} sqft`); }
       });
     } else {
-      const allZones = allFacilityZones(facilityConfig);
-      lines.push(`\nPAINT ZONES:`);
-      allZones.forEach(z => {
-        const r = commZones[z.key];
-        if (r && r.qty > 0) lines.push(`  ${z.label} [${r.service}]: ${r.qty} × ${r.floors}fl × ${r.sqft || z.defaultSqFt} sqft = ${Math.round(r.qty * r.floors * (r.sqft || z.defaultSqFt || 0) * 3.5).toLocaleString()} wall sqft`);
-      });
+      const paintableSqFt = Math.round(calculateCommercialMaintenance(commTotalSqFt, commCondition));
+      lines.push(`\nFACILITY SIZE: ${commTotalSqFt.toLocaleString()} sqft`);
+      lines.push(`WEAR CONDITION: ${commCondition.charAt(0).toUpperCase() + commCondition.slice(1)} (${Math.round((CONDITION_FACTORS[commCondition] ?? 0.45) * 100)}% factor)`);
+      lines.push(`PAINTABLE SURFACE / VISIT: ${paintableSqFt.toLocaleString()} sqft`);
+      lines.push(`NOTE: Full Repaint / specialty coatings scoped separately at walk-through.`);
       const interested = COMM_PAINT_SERVICES.filter(s => paintInterest[s.key]).map(s => s.label);
       if (interested.length) lines.push(`\nPAINT/COATING INTEREST: ${interested.join(", ")}`);
     }
@@ -695,72 +683,6 @@ export default function SubscriptionLab() {
     </div>
   );
 
-  // ─── Commercial zone table with per-zone service toggle ──────────────────
-  const commZoneTableDesktop = (zones: ZoneConfig[]) => (
-    <div className="hidden sm:block">
-      <div className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 mb-2 px-1">
-        <div />
-        {colHdr("QTY", "per floor")}
-        {colHdr("Floors")}
-        {colHdr("SQFT EACH", "avg floor sqft")}
-        {colHdr("Wall Surface", "×3.5 auto")}
-        {colHdr("Service")}
-      </div>
-      {zones.map(z => {
-        const row = commZones[z.key] ?? { qty: 0, floors: 1, sqft: 0, service: "touch-up" as const };
-        const sqftEff = row.sqft > 0 ? row.sqft : (z.defaultSqFt ?? 0);
-        const wall = Math.round(row.qty * row.floors * sqftEff * COMM_WALL_MULTIPLIER);
-        return (
-          <div key={z.key} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
-            <div className="flex items-center pl-1">
-              <p className="text-sm font-medium text-foreground leading-tight">{z.label}</p>
-              <InfoTip text={z.info} />
-            </div>
-            {numInput(row.qty, v => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], qty: v } })))}
-            {numInput(row.floors, v => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], floors: v } })))}
-            {numInput(row.sqft, v => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], sqft: v } })), z.defaultSqFt?.toString() ?? "sqft")}
-            <div className={`h-10 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
-              <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>{wall > 0 ? wall.toLocaleString() : "—"}</span>
-            </div>
-            <button type="button" onClick={() => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], service: p[z.key].service === "repaint" ? "touch-up" : "repaint" } }))}
-              className={`h-10 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50"}`}>
-              {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  const commZoneTableMobile = (zones: ZoneConfig[]) => (
-    <div className="sm:hidden space-y-3">
-      {zones.map(z => {
-        const row = commZones[z.key] ?? { qty: 0, floors: 1, sqft: 0, service: "touch-up" as const };
-        const sqftEff = row.sqft > 0 ? row.sqft : (z.defaultSqFt ?? 0);
-        const wall = Math.round(row.qty * row.floors * sqftEff * COMM_WALL_MULTIPLIER);
-        return (
-          <div key={z.key} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
-            <div className="flex items-center gap-1 mb-3">
-              <p className="text-sm font-bold flex-grow">{z.label}</p>
-              <InfoTip text={z.info} />
-            </div>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <div><p className="text-[10px] text-muted-foreground mb-1">QTY/floor</p>{numInput(row.qty, v => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], qty: v } })))}</div>
-              <div><p className="text-[10px] text-muted-foreground mb-1">Floors</p>{numInput(row.floors, v => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], floors: v } })))}</div>
-              <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], sqft: v } })), z.defaultSqFt?.toString() ?? "sqft")}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setCommZones(p => ({ ...p, [z.key]: { ...p[z.key], service: p[z.key].service === "repaint" ? "touch-up" : "repaint" } }))}
-                className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
-                {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
-              </button>
-              {wall > 0 && <span className="text-[10px] text-muted-foreground">{wall.toLocaleString()} wall sqft</span>}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
@@ -1071,42 +993,87 @@ export default function SubscriptionLab() {
             ) : (
               <>
                 {/* ── COMM STEP 1: Select Paint Zones ── */}
-                {sectionCard(<>Select <span className="text-primary">Paint Zones</span></>, "STEP 1", (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> for that zone. Repaints receive a complete two-coat repaint at each service cycle. Touch-ups deliver precision spot coating, edge blending, and color matching.</p>
-
-                    {/* Legend */}
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-5 px-3 py-2.5 border border-border/50 bg-secondary/20 rounded-sm">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold flex-shrink-0">Legend:</span>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-primary flex-shrink-0 inline-block" />
-                        <span className="text-xs font-semibold text-foreground">Full Repaint</span>
-                        <span className="text-[10px] text-muted-foreground">100% wall surface, higher rate</span>
+                {sectionCard(<>Facility <span className="text-primary">Size & Condition</span></>, "STEP 1", (
+                  <div className="space-y-6">
+                    {/* Total SqFt */}
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-2">
+                        Total Interior Square Footage
+                      </label>
+                      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                        Enter your facility's total interior floor area. Wall surface (3.5× multiplier) and paintable scope are calculated automatically based on your selected wear condition.
+                      </p>
+                      <div className="flex items-center gap-3 max-w-xs">
+                        {numInput(commTotalSqFt, setCommTotalSqFt, "e.g. 8000")}
+                        <span className="text-xs text-muted-foreground whitespace-nowrap font-mono">sqft</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
-                        <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                        <span className="text-[10px] text-muted-foreground">~25% of wall surface, lower rate</span>
+                      {commTotalSqFt > 0 && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Estimated wall surface:&nbsp;
+                          <strong className="text-primary">
+                            {Math.round(commTotalSqFt * 3.5).toLocaleString()} sqft
+                          </strong>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Wear Condition */}
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-2">
+                        Facility Wear Condition
+                      </label>
+                      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                        How heavily does your facility's interior see daily wear? This determines the paintable scope per service visit.
+                      </p>
+                      <div className="grid grid-cols-3 gap-3">
+                        {(["light", "moderate", "heavy"] as const).map(cond => {
+                          const labels: Record<string, { title: string; hint: string; factor: string }> = {
+                            light:    { title: "Light",    hint: "Low-traffic, pristine surfaces — offices, professional suites", factor: "30% scope/visit" },
+                            moderate: { title: "Moderate", hint: "Standard commercial wear — retail, education, medical",          factor: "45% scope/visit" },
+                            heavy:    { title: "Heavy",    hint: "High-impact, industrial or high-traffic environments",           factor: "60% scope/visit" },
+                          };
+                          const active = commCondition === cond;
+                          return (
+                            <button key={cond} type="button" onClick={() => setCommCondition(cond)}
+                              className={`flex flex-col items-start p-3 border text-left transition-colors ${active ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary/40"}`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className={`w-3 h-3 border flex-shrink-0 ${active ? "bg-primary border-primary" : "border-muted-foreground"}`} />
+                                <span className={`text-sm font-bold ${active ? "text-primary" : "text-foreground"}`}>{labels[cond].title}</span>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground leading-snug mb-1.5">{labels[cond].hint}</p>
+                              <span className={`text-[10px] font-mono font-bold ${active ? "text-primary" : "text-muted-foreground"}`}>{labels[cond].factor}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    {commZoneTableDesktop(allFacilityZones(facilityConfig))}
-                    {commZoneTableMobile(allFacilityZones(facilityConfig))}
-
-                    {Object.values(commZones).some(r => r.qty > 0) && (
-                      <div className="mt-3 pt-3 border-t border-border flex flex-wrap justify-end gap-4">
+                    {/* Paintable scope summary */}
+                    {commTotalSqFt > 0 && (
+                      <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
                         <span className="text-xs text-muted-foreground">
-                          Repaint wall surface: <strong className="text-primary">
-                            {Math.round(Object.values(commZones).filter(r => r.service === "repaint").reduce((a, r) => a + r.qty * r.floors * (r.sqft || 0), 0) * COMM_WALL_MULTIPLIER).toLocaleString()} sqft
+                          Paintable scope / visit:&nbsp;
+                          <strong className="text-primary">
+                            {Math.round(calculateCommercialMaintenance(commTotalSqFt, commCondition)).toLocaleString()} sqft
                           </strong>
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          Touch-up wall surface: <strong className="text-foreground">
-                            {Math.round(Object.values(commZones).filter(r => r.service === "touch-up").reduce((a, r) => a + r.qty * r.floors * (r.sqft || 0), 0) * COMM_WALL_MULTIPLIER).toLocaleString()} sqft
-                          </strong>
+                          Condition factor:&nbsp;
+                          <strong className="text-foreground">{Math.round((CONDITION_FACTORS[commCondition] ?? 0.45) * 100)}%</strong>
                         </span>
                       </div>
                     )}
+
+                    {/* Full Repaint — scoped separately */}
+                    <div className="border border-border/60 bg-secondary/10 p-4 flex gap-3">
+                      <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-bold text-foreground mb-1">Full Repaint — Scoped Separately</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Full interior repaints, color changes, and specialty coatings are not included in the subscription maintenance pricing above. These are assessed and quoted as standalone projects during your complimentary walk-through.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
 
