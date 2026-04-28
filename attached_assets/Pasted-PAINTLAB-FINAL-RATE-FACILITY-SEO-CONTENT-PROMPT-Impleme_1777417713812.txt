@@ -1,0 +1,374 @@
+PAINTLAB FINAL RATE + FACILITY SEO CONTENT PROMPT
+
+Implement final facility-specific pricing rates, touch-up definitions, pricing caveats, minimum visit messaging, and below-form SEO support content across the PaintLab subscription calculator pages.
+
+Do not redesign the site.
+Do not simplify the calculator.
+Do not remove existing facility structures, tiers, steps, room/area zones, legends, or service toggles.
+Only update pricing configuration, calculation logic, supporting UI copy, and below-form SEO content.
+
+==================================================
+1. FINAL FULL REPAINT PSSF RATES
+==================================================
+
+Create/replace the facility pricing config with these exact full repaint rates:
+
+const FACILITY_REPAINT_RATES = {
+  multifamily: 0.65,
+  office_corporate: 1.75,
+  retail: 1.50,
+  medical_healthcare: 3.20,
+  automotive: 1.75,
+  education: 1.75,
+  industrial_warehouse: 1.00,
+  gyms_fitness: 2.00
+};
+
+Use these rates as the full repaint $/PSSF baseline.
+
+Do not continue using older placeholder rates.
+
+==================================================
+2. FINAL TOUCH-UP DEFINITIONS + COST FACTORS
+==================================================
+
+Touch-up has TWO different concepts:
+
+A) Touch-Up Definition (% of Total PSSF)
+This describes how much of the total surface is typically affected by touch-up work.
+
+B) Touch-Up Cost (% of Full Repaint)
+This describes the effective cost rate compared to a full repaint.
+
+Implement this config:
+
+const FACILITY_TOUCHUP_CONFIG = {
+  multifamily: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.35
+  },
+  office_corporate: {
+    touchupCoveragePercent: 0.15,
+    touchupCostFactor: 0.35
+  },
+  retail: {
+    touchupCoveragePercent: 0.15,
+    touchupCostFactor: 0.35
+  },
+  medical_healthcare: {
+    touchupCoveragePercent: 0.15,
+    touchupCostFactor: 0.60
+  },
+  automotive: {
+    touchupCoveragePercent: 0.15,
+    touchupCostFactor: 0.35
+  },
+  education: {
+    touchupCoveragePercent: 0.15,
+    touchupCostFactor: 0.40
+  },
+  industrial_warehouse: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.30
+  },
+  gyms_fitness: {
+    touchupCoveragePercent: 0.15,
+    touchupCostFactor: 0.50
+  }
+};
+
+Important:
+- Full Repaint selected zone = 100% of calculated PSSF × full repaint rate.
+- Touch-Up selected zone = calculated PSSF × touchupCoveragePercent × full repaint rate × touchupCostFactor.
+- Do NOT use one universal 35% touch-up logic anymore.
+- Touch-up definitions and cost factors must be facility-specific.
+
+Example:
+Office touch-up:
+PSSF × 0.15 × $1.75 × 0.35
+
+Medical touch-up:
+PSSF × 0.15 × $3.20 × 0.60
+
+Industrial touch-up:
+PSSF × 0.20 × $1.00 × 0.30
+
+==================================================
+3. SERVICE CALCULATION FUNCTION
+==================================================
+
+Replace old service multiplier logic with a facility-aware function.
+
+Use this structure:
+
+function calculateAreaServiceCost({ facilityType, pssf, service }) {
+  const fullRepaintRate = FACILITY_REPAINT_RATES[facilityType];
+  const touchupConfig = FACILITY_TOUCHUP_CONFIG[facilityType];
+
+  if (!fullRepaintRate) return 0;
+
+  if (service === "repaint") {
+    return pssf * fullRepaintRate;
+  }
+
+  if (service === "touchup") {
+    const coveragePercent = touchupConfig?.touchupCoveragePercent ?? 0.15;
+    const costFactor = touchupConfig?.touchupCostFactor ?? 0.35;
+
+    return pssf * coveragePercent * fullRepaintRate * costFactor;
+  }
+
+  return 0;
+}
+
+Use this function for:
+- Multifamily Step 1 unit turn repaint/touch-up calculations
+- Multifamily Step 2 shared public/common area zones
+- All non-multifamily facility zone calculators
+
+Do not allow touch-up and full repaint to produce the same price.
+
+==================================================
+4. PSSF / SURFACE COVERAGE HANDLING
+==================================================
+
+Keep backend surface coverage calculation internal.
+
+Surface coverage should continue to use the existing backend multiplier logic where applicable.
+
+Do not show users:
+- x3.5
+- ×3.5
+- 3.5 auto
+- wall surface x3.5
+- multiplier explanations
+
+Use only this user-facing phrase where needed:
+
+Surface coverage calculated automatically
+
+==================================================
+5. SAME-COLOR VS NEW-COLOR CAVEAT
+==================================================
+
+For every facility calculator page, add a concise pricing detail card or accordion near the calculator/results area titled:
+
+What full repaint pricing includes
+
+Include facility-specific text:
+
+For Multifamily:
+“Full repaint pricing assumes a same-color repaint with 1 coat. New color repaints usually require 2 coats and add 50% to cost. New-color requirements are scoped as needed during walkthrough.”
+
+For Office / Corporate, Retail, Medical / Healthcare, Automotive, Education, Industrial / Warehouse, and Gyms / Fitness:
+“Full repaint pricing assumes a same-color repaint with 1 coat. New color repaints usually require 2 coats and add 50% to cost. New-color requirements are scoped as needed during walkthrough.”
+
+Do not automatically add the 50% cost unless the UI has an explicit color-change option. For now, this is scoped as-needed messaging only.
+
+==================================================
+6. FACILITY-SPECIFIC INCLUDED SCOPE CAVEATS
+==================================================
+
+Add a small pricing detail card/accordion on each facility calculator page.
+
+Use this structure:
+
+Title:
+Pricing notes
+
+For Multifamily:
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Office / Corporate:
+- Includes after-hours service delivery, common for office facilities.
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Retail:
+- Includes after-hours service delivery, common for retail facilities.
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Medical / Healthcare:
+- Includes after-hours service delivery, common for medical/healthcare facilities.
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Automotive:
+- Includes after-hours service delivery, common for automotive facilities.
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Education:
+- Includes after-hours service delivery, common for education facilities.
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Industrial / Warehouse:
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+For Gyms / Fitness Centers:
+- Includes after-hours service delivery, common for gym/fitness facilities.
+- Same-color full repaint includes 1 coat.
+- New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.
+- Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.
+- Ceiling water stain paint touch-up adds $125 per stain area.
+- Full ceiling repaint needs are scoped as needed.
+
+Keep this text compact and visually secondary. Use accordion or small info card formatting so it does not distract from the calculator.
+
+==================================================
+7. TOUCH-UP UI / LEGEND UPDATE
+==================================================
+
+Because touch-up coverage and cost factor now vary by facility, update the legend language so it does not incorrectly imply the same coverage for every facility.
+
+Replace any universal legend text like:
+“Touch-Up → ~35% of wall surface, lower rate”
+
+With:
+“Touch-Up → targeted surface coverage, lower rate”
+
+Keep:
+“Full Repaint → 100% wall surface, higher rate”
+
+If there is room, add a small helper tooltip:
+“Touch-up pricing varies by facility type based on expected coverage, access, durability needs, and finish standards.”
+
+Do not expose the detailed formula unless it is in an internal admin/debug area.
+
+==================================================
+8. $500 MINIMUM PER VISIT CALLOUT
+==================================================
+
+On the overarching facilities/subscription portal page, add a subtle, small callout near the facility cards or near the tier explanation area:
+
+“Minimum service visit: $500”
+
+Optional supporting text:
+“Final scope and pricing are confirmed after your walkthrough.”
+
+Do not make this loud or alarming.
+Do not place it above the main headline.
+Keep it subtle and trust-building.
+
+If a calculated visit amount is below $500, apply the $500 minimum per visit before converting to monthly pricing.
+
+Minimum visit logic:
+- Applies per scheduled visit.
+- Applies to interior paint/maintenance visit totals.
+- Does not force every monthly subscription to be $500/month unless the visit cadence and minimum calculation require it.
+
+Example:
+Annual Shield with one visit/year:
+If per-visit cost is $300, annualized cost should use $500 for that visit, then divide by 12.
+
+Quarterly Guard with 4 visits/year:
+If per-visit cost is $300, use $500 × 4 visits/year, then divide by 12.
+
+==================================================
+9. MINIMUM PER VISIT FUNCTION
+==================================================
+
+Implement:
+
+const MINIMUM_SERVICE_VISIT = 500;
+
+function applyMinimumPerVisit(perVisitCost) {
+  if (perVisitCost <= 0) return 0;
+  return Math.max(perVisitCost, MINIMUM_SERVICE_VISIT);
+}
+
+For cadence-based areas:
+annualCost = applyMinimumPerVisit(perVisitCost) * visitsPerYear
+monthlyCost = annualCost / 12
+
+For multifamily unit turns:
+Do not blindly apply $500 to every individual unit turn. Unit turns are monthly volume-based and should be calculated as monthly aggregate work. Only apply minimum if the entire scheduled visit/work order minimum would otherwise fall below $500, if that logic exists in the visit model.
+
+==================================================
+10. BELOW-FORM FACILITY SEO CONTENT
+==================================================
+
+Add facility-specific SEO support content below the “Get Your Proposal” form on each respective facility calculator page.
+
+Important placement:
+- Do NOT place this content above the calculator.
+- Do NOT place it above the proposal form.
+- Place it directly below the “Get Your Proposal” form.
+- Each content package should only appear on its matching facility page.
+
+Design:
+- Keep calculator and proposal form as primary conversion focus.
+- Below-form content should feel like an SEO/support section.
+- Use clean spacing, modern cards, H2/H3 headings, and mobile-first formatting.
+- Use accordions if page feels too long.
+- Copy must be crawlable HTML text, not images.
+- Add subtle CTA: “Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.”
+
+Use the facility-specific copy from the uploaded/pasted SEO content file:
+- Multifamily / Apartment Calculator Page
+- Office / Corporate Calculator Page
+- Retail Calculator Page
+- Automotive / Showroom Calculator Page
+- Gym / Fitness Calculator Page
+- Medical / Healthcare Calculator Page
+- Industrial / Warehouse Calculator Page
+- Education / School Calculator Page
+
+Match each content package only to its corresponding facility calculator page.
+
+Naturally include Austin-area SEO language for:
+Austin, Round Rock, Cedar Park, Georgetown, Buda, Kyle, Westlake, Bee Cave, and Lakeway.
+
+Do not keyword stuff.
+
+==================================================
+11. FINAL VALIDATION CHECKLIST
+==================================================
+
+Confirm all of the following:
+
+1. Full repaint rates match FACILITY_REPAINT_RATES exactly.
+2. Touch-up coverage and cost factors match FACILITY_TOUCHUP_CONFIG exactly.
+3. Full repaint uses 100% PSSF × facility repaint rate.
+4. Touch-up uses PSSF × touchupCoveragePercent × full repaint rate × touchupCostFactor.
+5. Touch-up and full repaint never calculate the same price.
+6. Universal 35% touch-up logic is removed.
+7. UI legend does not incorrectly state every touch-up is 35% wall surface.
+8. “Surface coverage calculated automatically” remains the only user-facing surface calculation language.
+9. Same-color/new-color caveat appears on every facility calculator page.
+10. Ceiling/trim/water stain caveats appear on every facility calculator page.
+11. $500 minimum service visit callout appears subtly on the overarching facilities page.
+12. $500 minimum per visit is applied correctly to cadence-based visit pricing.
+13. Window/exterior/scoped-as-needed services remain scoped and are not accidentally priced.
+14. Facility-specific SEO content appears below the Get Your Proposal form only.
+15. No SEO support content appears above the calculator or proposal form.
+16. Calculator remains the primary focus of each page.
+17. No existing facility zones, steps, or tier cards are removed.
+18. No total building square footage fallback is reintroduced.
+19. No condition-based pricing is reintroduced.
+20. Existing PaintLab visual style remains intact.

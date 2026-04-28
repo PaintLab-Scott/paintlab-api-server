@@ -49,10 +49,44 @@ const RES_HUB_LABELS: Record<string, string> = {
   mainLobby: "Main Lobby", mailroom: "Mailroom", coworking: "Co-working Space",
   gym: "Gym Area", bathrooms: "Public Bathrooms", leasingOffice: "Leasing Office", packageRoom: "Package Room",
 };
-const TU_SURFACE_RATIO = 0.35;
+// ─── Facility Pricing Config ─────────────────────────────────────────────────
+const FACILITY_REPAINT_RATES: Record<string, number> = {
+  multifamily:          0.65,
+  office_corporate:     1.75,
+  retail:               1.50,
+  medical_healthcare:   3.20,
+  automotive:           1.75,
+  education:            1.75,
+  industrial_warehouse: 1.00,
+  gyms_fitness:         2.00,
+};
 
-// ─── Service Multipliers ──────────────────────────────────────────────────────
-const SERVICE_MULTIPLIERS = { repaint: 1.0, touchup: 0.35 } as const;
+const FACILITY_TOUCHUP_CONFIG: Record<string, { touchupCoveragePercent: number; touchupCostFactor: number }> = {
+  multifamily:          { touchupCoveragePercent: 0.20, touchupCostFactor: 0.35 },
+  office_corporate:     { touchupCoveragePercent: 0.15, touchupCostFactor: 0.35 },
+  retail:               { touchupCoveragePercent: 0.15, touchupCostFactor: 0.35 },
+  medical_healthcare:   { touchupCoveragePercent: 0.15, touchupCostFactor: 0.60 },
+  automotive:           { touchupCoveragePercent: 0.15, touchupCostFactor: 0.35 },
+  education:            { touchupCoveragePercent: 0.15, touchupCostFactor: 0.40 },
+  industrial_warehouse: { touchupCoveragePercent: 0.20, touchupCostFactor: 0.30 },
+  gyms_fitness:         { touchupCoveragePercent: 0.15, touchupCostFactor: 0.50 },
+};
+
+const MINIMUM_SERVICE_VISIT = 500;
+function applyMinimumPerVisit(perVisitCost: number): number {
+  if (perVisitCost <= 0) return 0;
+  return Math.max(perVisitCost, MINIMUM_SERVICE_VISIT);
+}
+
+function calculateAreaServiceCost({ facilityType, pssf, service }: { facilityType: string; pssf: number; service: string }): number {
+  const fullRepaintRate = FACILITY_REPAINT_RATES[facilityType];
+  const touchupConfig   = FACILITY_TOUCHUP_CONFIG[facilityType];
+  if (!fullRepaintRate) return 0;
+  if (service === "repaint") return pssf * fullRepaintRate;
+  const coveragePercent = touchupConfig?.touchupCoveragePercent ?? 0.15;
+  const costFactor      = touchupConfig?.touchupCostFactor      ?? 0.35;
+  return pssf * coveragePercent * fullRepaintRate * costFactor;
+}
 
 // ─── Visits Per Year (unified tier → frequency map) ──────────────────────────
 const VISITS_PER_YEAR: Record<string, number> = {
@@ -114,56 +148,25 @@ const COMM_EXT_INFO: Record<string, string> = {
   commCladding: "Scope assessed during your complimentary walk-through and priced separately based on material type and linear footage.",
 };
 
-// ─── Pricing Engine ─────────────────────────────────────────────────────────
-const BASE_RATES: Record<string, number> = {
-  multifamily: 1.00,
-  office: 1.15,
-  medical: 1.30,
-  retail: 1.25,
-  industrial: 0.90,
-  automotive: 1.20,
-  education: 1.10,
-  "gyms-fitness": 1.20,
+// Maps URL facility param → FACILITY_REPAINT_RATES key
+const FACILITY_PARAM_TO_PRICING_KEY: Record<string, string> = {
+  "multi-family":     "multifamily",
+  "office-corporate": "office_corporate",
+  medical:            "medical_healthcare",
+  retail:             "retail",
+  industrial:         "industrial_warehouse",
+  automotive:         "automotive",
+  education:          "education",
+  "gyms-fitness":     "gyms_fitness",
 };
 
-const MIN_JOB_SQFT = 2500;
-
-// Maps URL facility param → BASE_RATES key
-const FACILITY_RATE_KEY: Record<string, string> = {
-  "multi-family":    "multifamily",
-  "office-corporate": "office",
-  medical:           "medical",
-  retail:            "retail",
-  industrial:        "industrial",
-  automotive:        "automotive",
-  education:         "education",
-  "gyms-fitness":    "gyms-fitness",
-};
-
-interface ComplexityInputs {
-  occupancy?: "occupied" | "vacant";
-  height?: "standard" | "high";
-  access?: "normal" | "tight";
-  schedule?: "standard" | "after_hours";
-}
-
-function getAdjustedRate(
-  baseRate: number,
-  inputs: ComplexityInputs,
-  paintableSqFt: number,
-): number {
-  let multiplier = 1.0;
-  if (inputs.occupancy === "occupied")    multiplier += 0.15;
-  if (inputs.height    === "high")        multiplier += 0.20;
-  if (inputs.access    === "tight")       multiplier += 0.15;
-  if (inputs.schedule  === "after_hours") multiplier += 0.25;
-
-  let adjusted = baseRate * multiplier;
-
-  // Margin protection — small-job surcharge
-  if (paintableSqFt < MIN_JOB_SQFT) adjusted *= 1.25;
-
-  return adjusted;
+function getFacilityPricing(facilityParam: string): { repaintRate: number; tuCoverage: number; tuCostFactor: number } {
+  const key = FACILITY_PARAM_TO_PRICING_KEY[facilityParam] ?? "office_corporate";
+  return {
+    repaintRate:  FACILITY_REPAINT_RATES[key]               ?? 1.75,
+    tuCoverage:   FACILITY_TOUCHUP_CONFIG[key]?.touchupCoveragePercent ?? 0.15,
+    tuCostFactor: FACILITY_TOUCHUP_CONFIG[key]?.touchupCostFactor      ?? 0.35,
+  };
 }
 
 // ─── MF Turn Engine ──────────────────────────────────────────────────────────
@@ -174,45 +177,60 @@ interface MFUnit {
   repaintPercent: number; // % of those turns that are full repaints
 }
 
-function calculateMultifamilyMonthlyPSSF(units: MFUnit[]): number {
-  let totalMonthlyPSSF = 0;
+function calculateMultifamilyMonthlyCost(
+  units: MFUnit[],
+  repaintRate: number,
+  tuCoverage: number,
+  tuCostFactor: number,
+): number {
+  let totalMonthlyCost = 0;
   units.forEach(unit => {
     const { count, avgSqFt, turnRate, repaintPercent } = unit;
-    const monthlyTurns   = count * (turnRate / 100);
-    const repaintUnits   = monthlyTurns * (repaintPercent / 100);
-    const touchupUnits   = monthlyTurns - repaintUnits;
-    const pssf           = avgSqFt * 3.5;
-    const repaintPSSF    = repaintUnits * pssf * SERVICE_MULTIPLIERS.repaint;
-    const touchupPSSF    = touchupUnits * pssf * SERVICE_MULTIPLIERS.touchup;
-    totalMonthlyPSSF    += repaintPSSF + touchupPSSF;
+    const monthlyTurns = count * (turnRate / 100);
+    const repaintUnits = monthlyTurns * (repaintPercent / 100);
+    const touchupUnits = monthlyTurns - repaintUnits;
+    const pssf         = avgSqFt * 3.5;
+    const repaintCost  = repaintUnits * pssf * repaintRate;
+    const touchupCost  = touchupUnits * pssf * tuCoverage * repaintRate * tuCostFactor;
+    totalMonthlyCost  += repaintCost + touchupCost;
   });
-  return totalMonthlyPSSF;
+  return totalMonthlyCost;
 }
 
 // ─── Common Area Engine ───────────────────────────────────────────────────────
 interface CommonAreaInput { qty: number; floors: number; sqft: number; service: string; }
 
-function calculateCommonAreaPerVisitPSSF(areas: CommonAreaInput[]): number {
+function calculateCommonAreaPerVisitCost(
+  areas: CommonAreaInput[],
+  repaintRate: number,
+  tuCoverage: number,
+  tuCostFactor: number,
+): number {
   let total = 0;
   areas.forEach(area => {
     const qty    = area.qty    || 0;
     const floors = area.floors || 1;
     const sqft   = area.sqft   || 0;
     if (qty === 0 || sqft === 0) return;
-    const base       = qty * floors * sqft * 3.5;
-    const multiplier = area.service === "repaint" ? SERVICE_MULTIPLIERS.repaint : SERVICE_MULTIPLIERS.touchup;
-    total           += base * multiplier;
+    const pssf = qty * floors * sqft * 3.5;
+    total += calculateAreaServiceCost({ facilityType: "multifamily", pssf, service: area.service === "repaint" ? "repaint" : "touchup" });
   });
+  void repaintRate; void tuCoverage; void tuCostFactor;
   return total;
 }
 
-function calculateCommonAreaMonthly(areas: CommonAreaInput[], tierId: string, rate: number): number {
+function calculateCommonAreaMonthly(
+  areas: CommonAreaInput[],
+  tierId: string,
+  repaintRate: number,
+  tuCoverage: number,
+  tuCostFactor: number,
+): number {
   const visits = VISITS_PER_YEAR[tierId] ?? 0;
   if (visits === 0) return 0;
   const efficiency = TIER_EFFICIENCY[tierId] ?? 1.0;
-  const adjustedRate = rate * efficiency;
-  const perVisit = calculateCommonAreaPerVisitPSSF(areas);
-  return (perVisit * visits / 12) * adjustedRate;
+  const perVisit = calculateCommonAreaPerVisitCost(areas, repaintRate, tuCoverage, tuCostFactor);
+  return (perVisit * visits / 12) * efficiency;
 }
 
 // ─── Wash Engine ─────────────────────────────────────────────────────────────
@@ -584,6 +602,7 @@ export default function SubscriptionLab() {
   const calc = useMemo(() => {
     if (isMultiFamily) {
       // ── MF Unit Turn Engine ───────────────────────────────────────────────
+      const { repaintRate: mfRepaintRate, tuCoverage: mfTuCoverage, tuCostFactor: mfTuCostFactor } = getFacilityPricing("multi-family");
       const mfUnits: MFUnit[] = Object.entries(unitMix)
         .filter(([, row]) => row.count > 0)
         .map(([type, row]) => ({
@@ -592,10 +611,7 @@ export default function SubscriptionLab() {
           turnRate:       row.count > 0 ? (row.turns / row.count) * 100 : 0,
           repaintPercent: row.repaintPct ?? 100,
         }));
-      const totalMonthlyPSSF = calculateMultifamilyMonthlyPSSF(mfUnits);
-      const mfBaseRate       = BASE_RATES["multifamily"];
-      const mfAdjRate        = getAdjustedRate(mfBaseRate, {}, totalMonthlyPSSF);
-      const interiorMonthly  = totalMonthlyPSSF * mfAdjRate;
+      const interiorMonthly = calculateMultifamilyMonthlyCost(mfUnits, mfRepaintRate, mfTuCoverage, mfTuCostFactor);
 
       // ── Common Area Engine ────────────────────────────────────────────────
       const commonAreas: CommonAreaInput[] = [
@@ -610,19 +626,21 @@ export default function SubscriptionLab() {
           service: row.service,
         })),
       ];
-      const commonPerVisit = calculateCommonAreaPerVisitPSSF(commonAreas);
+      const commonPerVisit = calculateCommonAreaPerVisitCost(commonAreas, mfRepaintRate, mfTuCoverage, mfTuCostFactor);
 
       // Per-tier: common area monthly + wash monthly (efficiency on common areas only)
       const mfTierIds = ["essential", "asset_shield", "asset_shield_plus", "signature"] as const;
       const tierMonthly = mfTierIds.map(id => {
-        const common = calculateCommonAreaMonthly(commonAreas, id, mfBaseRate);
+        const common = calculateCommonAreaMonthly(commonAreas, id, mfRepaintRate, mfTuCoverage, mfTuCostFactor);
         const wash   = calculateWashMonthly(resExtZones, id, EXT_ZONE_COST, SCOPED_EXT_ZONES);
         return Math.round(interiorMonthly + common + wash);
       });
 
       // Savings for tiers 3 and 4 (vs no efficiency discount)
-      const t3SavingsAmt = commonPerVisit > 0 ? Math.round((calculateCommonAreaMonthly(commonAreas, "asset_shield_plus", mfBaseRate) / 0.95) - calculateCommonAreaMonthly(commonAreas, "asset_shield_plus", mfBaseRate)) : 0;
-      const t4SavingsAmt = commonPerVisit > 0 ? Math.round((calculateCommonAreaMonthly(commonAreas, "signature", mfBaseRate) / 0.90) - calculateCommonAreaMonthly(commonAreas, "signature", mfBaseRate)) : 0;
+      const t3Base = calculateCommonAreaMonthly(commonAreas, "asset_shield_plus", mfRepaintRate, mfTuCoverage, mfTuCostFactor);
+      const t4Base = calculateCommonAreaMonthly(commonAreas, "signature",         mfRepaintRate, mfTuCoverage, mfTuCostFactor);
+      const t3SavingsAmt = commonPerVisit > 0 ? Math.round(t3Base / 0.95 - t3Base) : 0;
+      const t4SavingsAmt = commonPerVisit > 0 ? Math.round(t4Base / 0.90 - t4Base) : 0;
 
       return {
         tiers: tierMonthly,
@@ -633,8 +651,8 @@ export default function SubscriptionLab() {
       };
     } else {
       // ── Commercial Zone-Based Pricing ──────────────────────────────────────
-      const rateKey  = FACILITY_RATE_KEY[facilityParam] ?? "office";
-      const baseRate = BASE_RATES[rateKey] ?? 1.0;
+      const { repaintRate, tuCoverage, tuCostFactor } = getFacilityPricing(facilityParam);
+      const pricingKey = FACILITY_PARAM_TO_PRICING_KEY[facilityParam] ?? "office_corporate";
 
       // Get facility-specific zones from FACILITY_CONFIGS
       const facilityZoneCfg = FACILITY_CONFIGS[facilityParam] ?? FACILITY_CONFIGS["commercial"];
@@ -650,8 +668,8 @@ export default function SubscriptionLab() {
         return true;
       });
 
-      // Zone-by-zone effective surface — price only selected zones (qty > 0)
-      let totalEffectiveSqFt = 0;
+      // Zone-by-zone direct cost calculation using facility-specific rates
+      let totalVisitCost = 0;
       allZonesList.forEach(z => {
         const row = commZones[z.key];
         const qty = row?.qty ?? 0;
@@ -659,22 +677,22 @@ export default function SubscriptionLab() {
         const floors = row?.floors ?? 1;
         const sqft   = (row?.sqft ?? 0) > 0 ? row!.sqft : (z.defaultSqFt ?? 0);
         if (sqft === 0) return;
-        const wallSurface      = qty * floors * sqft * COMM_WALL_MULTIPLIER;
-        const svc              = row?.service ?? (touchUpKeySet.has(z.key) ? "touch-up" : "repaint");
-        const effectiveSurface = svc === "repaint" ? wallSurface : wallSurface * TU_SURFACE_RATIO;
-        totalEffectiveSqFt    += effectiveSurface;
+        const pssf = qty * floors * sqft * COMM_WALL_MULTIPLIER;
+        const svc  = row?.service ?? (touchUpKeySet.has(z.key) ? "touch-up" : "repaint");
+        totalVisitCost += calculateAreaServiceCost({ facilityType: pricingKey, pssf, service: svc === "repaint" ? "repaint" : "touchup" });
       });
 
-      const adjRate   = getAdjustedRate(baseRate, {}, totalEffectiveSqFt);
-      const visitCost = totalEffectiveSqFt * adjRate;
+      // Apply $500 minimum per visit before annualising
+      const visitCostWithMin = applyMinimumPerVisit(totalVisitCost);
 
       // Monthly subscription = annualised visit cost ÷ 12, driven by COMMERCIAL_TIERS
       const commTierIds = ["annual_shield", "bi_annual_shield", "quarterly_guard"] as const;
       const [r1, r2, r3] = commTierIds.map(id => {
         const visits = VISITS_PER_YEAR[id] ?? 0;
         const washMonthly = calculateWashMonthly(commExtZones, id, COMM_EXT_COST, SCOPED_EXT_ZONES);
-        return Math.round(visitCost * visits / 12 + washMonthly);
+        return Math.round((visitCostWithMin * visits) / 12 + washMonthly);
       });
+      void repaintRate; void tuCoverage; void tuCostFactor;
       const t2 = Math.round(r2 * 0.98);
       const t3 = Math.round(r3 * 0.97);
       return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250, mfSavings: [0,0,0], mfSavingsPct: [0,0,0] };
@@ -968,7 +986,8 @@ export default function SubscriptionLab() {
                         <div className="flex items-center gap-2">
                           <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
                           <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                          <span className="text-[10px] text-muted-foreground">~35% of wall surface, lower rate</span>
+                          <span className="text-[10px] text-muted-foreground">targeted surface coverage, lower rate</span>
+                          <InfoTip text="Touch-up pricing varies by facility type based on expected coverage, access, durability needs, and finish standards." />
                         </div>
                       </div>
 
@@ -987,7 +1006,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3.5;
-                          const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                          const effectiveWall = totalWall;
                           return (
                             <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <div className="flex items-center pl-1">
@@ -1013,7 +1032,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3.5;
-                          const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                          const effectiveWall = totalWall;
                           return (
                             <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <div className="flex items-center gap-1 mb-3">
@@ -1052,7 +1071,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3.5;
-                          const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                          const effectiveWall = totalWall;
                           return (
                             <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
@@ -1074,7 +1093,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3.5;
-                          const effectiveWall = row.service === "repaint" ? totalWall : totalWall * TU_SURFACE_RATIO;
+                          const effectiveWall = totalWall;
                           return (
                             <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
@@ -1146,7 +1165,7 @@ export default function SubscriptionLab() {
                 {/* ── COMM STEP 1: Select Paint Zones ── */}
                 {sectionCard(<>Select <span className="text-primary">Paint Zones</span></>, "STEP 1", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> for that zone. Repaints receive a complete two-coat repaint at each service cycle. Touch-ups deliver precision spot coating, edge blending, and color matching.</p>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> for that zone. Repaints coat 100% of the zone's wall surface. Touch-ups cover targeted sections — typically high-contact spots, scuffed areas, and visible damage — at a lower cost per cycle. Surface coverage is calculated automatically based on your facility type.</p>
 
                     {/* Legend */}
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-5 px-3 py-2.5 border border-border/50 bg-secondary/20 rounded-sm">
@@ -1159,7 +1178,8 @@ export default function SubscriptionLab() {
                       <div className="flex items-center gap-2">
                         <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
                         <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                        <span className="text-[10px] text-muted-foreground">~35% of wall surface, lower rate</span>
+                        <span className="text-[10px] text-muted-foreground">targeted surface coverage, lower rate</span>
+                        <InfoTip text="Touch-up pricing varies by facility type based on expected coverage, access, durability needs, and finish standards." />
                       </div>
                     </div>
 
@@ -1250,9 +1270,10 @@ export default function SubscriptionLab() {
                                 </strong>
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                Touch-up coverage:&nbsp;<strong className="text-foreground">
-                                  {Math.round(allZ.filter(z => getRow(z.key).service === "touch-up").reduce((a, z) => a + wallSurface(z), 0) * TU_SURFACE_RATIO).toLocaleString()} sqft
+                                Touch-up zones:&nbsp;<strong className="text-foreground">
+                                  {allZ.filter(z => getRow(z.key).service === "touch-up").reduce((a, z) => a + wallSurface(z), 0).toLocaleString()} sqft
                                 </strong>
+                                <span className="ml-1 text-[10px] italic">(coverage calculated automatically)</span>
                               </span>
                             </div>
                           )}
@@ -1323,6 +1344,111 @@ export default function SubscriptionLab() {
           </div>
         </div>
       </section>
+
+      {/* PRICING NOTES + WHAT'S INCLUDED */}
+      {(() => {
+        const pricingNotes: Record<string, string[]> = {
+          "multi-family": [
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          "office-corporate": [
+            "Includes after-hours service delivery, common for office facilities.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          retail: [
+            "Includes after-hours service delivery, common for retail facilities.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          medical: [
+            "Includes after-hours service delivery, common for medical/healthcare facilities.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          automotive: [
+            "Includes after-hours service delivery, common for automotive facilities.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          education: [
+            "Includes after-hours service delivery, common for education facilities.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          industrial: [
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          "gyms-fitness": [
+            "Includes after-hours service delivery, common for gym/fitness facilities.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per room.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+        };
+        const notes = pricingNotes[facilityParam] ?? pricingNotes["office-corporate"];
+        return (
+          <section className="py-5 bg-background border-b border-border">
+            <div className="container mx-auto px-4 sm:px-6 md:px-12">
+              <div className="max-w-5xl mx-auto space-y-3">
+                {/* What full repaint pricing includes */}
+                <div className="border border-border/50 bg-secondary/10 p-4 flex gap-3">
+                  <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wider mb-1">What full repaint pricing includes</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Full repaint pricing assumes a same-color repaint with 1 coat. New color repaints usually require 2 coats and add 50% to cost. New-color requirements are scoped as needed during walkthrough.</p>
+                  </div>
+                </div>
+                {/* Pricing Notes accordion */}
+                <div className="border border-border/50 bg-secondary/10">
+                  <button type="button" onClick={() => setPricingOpen(o => !o)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-secondary/20 transition-colors">
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ${pricingOpen ? "rotate-180" : ""}`} />
+                    <p className="text-xs font-bold text-foreground flex-grow">Pricing notes</p>
+                  </button>
+                  {pricingOpen && (
+                    <div className="px-4 pb-4">
+                      <ul className="space-y-1.5">
+                        {notes.map((note, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+                            <span className="text-primary mt-0.5 flex-shrink-0">·</span>
+                            {note}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* TIER CARDS */}
       <section className="py-12 sm:py-16 bg-card border-b border-border">
@@ -1535,6 +1661,119 @@ export default function SubscriptionLab() {
           </div>
         </div>
       </section>
+
+      {/* BELOW-FORM SEO CONTENT — facility-specific, below proposal form only */}
+      {(() => {
+        const seoContent: Record<string, { h2: string; intro: string; sections: { h3: string; body: string }[]; cta: string }> = {
+          "multi-family": {
+            h2: "Apartment & Multi-Family Painting Services in Austin, TX",
+            intro: "PaintLab provides recurring commercial painting maintenance for apartment communities, condo associations, and mixed-use developments across Austin, Round Rock, Cedar Park, Georgetown, Buda, Kyle, Westlake, Bee Cave, and Lakeway. Our multi-family autopilot subscription manages unit turn repaints, common area upkeep, and exterior services on a predictable monthly budget — no surprise project invoices.",
+            sections: [
+              { h3: "Unit Turn Repaints & Touch-Ups", body: "Every unit turn is categorized at intake — full repaint for move-out condition or precision touch-up for units with minimal wear. Both are priced transparently within the subscription. Consistent color systems and paint specs are maintained across all units, keeping your property visually cohesive and reducing per-unit cost over time." },
+              { h3: "Common Area & Corridor Maintenance", body: "Stairwells, corridors, mailrooms, fitness centers, leasing offices, and amenity decks accumulate visible wear faster than units. PaintLab's Tier 2–4 plans include scheduled common area painting cycles at your selected frequency — annual, quarterly, or monthly — so high-traffic surfaces always look maintained without reactive patching." },
+              { h3: "Serving Austin Metro Apartment Communities", body: "We serve Class A, B, and C apartment communities throughout the Austin MSA including Round Rock, Cedar Park, Georgetown, Pflugerville, Hutto, Buda, Kyle, Westlake Hills, Bee Cave, and Lakeway. Whether you manage 50 units or 500, PaintLab's subscription model scales to your portfolio." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          "office-corporate": {
+            h2: "Commercial Office Painting Services in Austin, TX",
+            intro: "PaintLab delivers recurring interior painting maintenance for Class A, B, and C office buildings, corporate campuses, and coworking spaces in Austin, Round Rock, Cedar Park, and across the greater Austin metro. Our subscription plans keep tenant-ready corridors, conference rooms, and common areas consistently polished — without disruptive one-time painting projects.",
+            sections: [
+              { h3: "Tenant-Ready Office Interior Maintenance", body: "High-traffic corridors, reception areas, elevator lobbies, and tenant suites experience constant scuffing and finish degradation. PaintLab's office subscription plans deliver scheduled touch-up and repaint cycles during off-hours — keeping your building at peak presentation without impacting tenant operations." },
+              { h3: "After-Hours Commercial Painting in Austin", body: "Office painting in occupied buildings requires after-hours coordination. PaintLab's standard office service includes after-hours delivery to minimize disruption to tenants, employees, and building management. All service visits are scheduled and confirmed in advance with your property management team." },
+              { h3: "Austin Office Buildings We Serve", body: "We maintain office and corporate campuses in Austin, Round Rock, Cedar Park, Georgetown, Westlake, Bee Cave, and surrounding communities. From downtown high-rises to suburban Class B parks, PaintLab's subscription provides a consistent maintenance partner for your whole portfolio." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          retail: {
+            h2: "Retail Store Painting & Maintenance in Austin, TX",
+            intro: "PaintLab provides recurring interior painting maintenance for retail centers, shopping strips, and storefront environments across Austin, Round Rock, Cedar Park, Kyle, and Buda. Our retail subscription plans keep high-traffic sales floors, fitting rooms, stockrooms, and common corridors looking sharp — on a predictable monthly investment.",
+            sections: [
+              { h3: "Retail Interior Touch-Up & Repaint Programs", body: "Retail environments experience wall damage from product displays, cart traffic, and high customer volume. PaintLab's precision touch-up programs address scuffing, chipping, and surface wear before it becomes a branding problem — maintaining a consistent, professional appearance across every service cycle." },
+              { h3: "After-Hours Retail Painting Services", body: "Retail painting is delivered after store hours to avoid disrupting sales operations. PaintLab coordinates all scheduling with your retail operations team, providing predictable service windows that respect your store hours and customer experience requirements." },
+              { h3: "Serving Retail Centers Across the Austin Metro", body: "We serve retail properties in Austin, Round Rock, Cedar Park, Georgetown, Kyle, Buda, Bee Cave, and Westlake. From neighborhood strip centers to regional shopping destinations, PaintLab's subscription model provides consistent, reliable maintenance for retail landlords and owner-operators." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          medical: {
+            h2: "Medical & Healthcare Facility Painting in Austin, TX",
+            intro: "PaintLab delivers specialized interior painting maintenance for clinics, hospitals, dental offices, urgent care centers, and senior living facilities across Austin and the greater metro area. Our healthcare subscription plans prioritize infection-resistant coatings, zero operational disruption, and rigorous scheduling standards required in clinical environments.",
+            sections: [
+              { h3: "Healthcare-Grade Coatings & Surface Maintenance", body: "Medical and healthcare environments require scrubbable, antimicrobial-compatible surface finishes that withstand frequent disinfection. PaintLab uses healthcare-appropriate coatings and materials suited to the demands of patient rooms, treatment areas, corridors, and nurse stations — applied on a subscription schedule you control." },
+              { h3: "Zero-Disruption After-Hours Service", body: "Healthcare painting is delivered during off-peak hours or overnight to ensure patient safety and operational continuity. PaintLab coordinates all service windows with facility management, infection control, and clinical operations teams to meet the scheduling requirements of active medical environments." },
+              { h3: "Austin Healthcare Facilities We Serve", body: "We serve medical offices, outpatient clinics, dental practices, behavioral health facilities, and senior care communities in Austin, Round Rock, Cedar Park, Georgetown, Kyle, Buda, and surrounding areas. Our healthcare clients value the consistency and accountability that a subscription model provides versus reactive painting vendors." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          automotive: {
+            h2: "Automotive Dealership & Service Facility Painting in Austin, TX",
+            intro: "PaintLab provides recurring interior coating maintenance for automotive dealerships, service centers, and car wash facilities in Austin, Round Rock, Cedar Park, and across the Austin metro. Our automotive subscription plans maintain showroom floors, service bays, detail bays, and customer waiting areas with chemical-resistant systems on a predictable schedule.",
+            sections: [
+              { h3: "Showroom & Service Bay Maintenance Programs", body: "Automotive facilities require coatings that withstand chemical exposure, vehicle traffic, and heavy equipment contact. PaintLab's automotive subscription maintains showroom walls, service lane markings, parts rooms, and customer-facing zones with finishes selected for durability in automotive environments." },
+              { h3: "After-Hours Automotive Painting Services", body: "Automotive facilities depend on operational continuity. PaintLab's after-hours service delivery ensures all painting and coating maintenance is completed outside of business hours — without impacting showroom presentation, service throughput, or customer experience." },
+              { h3: "Serving Austin Area Dealerships & Auto Facilities", body: "We serve automotive dealerships, franchise service centers, independent auto shops, and car wash facilities throughout Austin, Round Rock, Cedar Park, Georgetown, Kyle, Buda, and surrounding communities. Our subscription model gives automotive facilities a consistent maintenance partner instead of relying on reactive, one-time contractors." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          education: {
+            h2: "School & Educational Facility Painting in Austin, TX",
+            intro: "PaintLab provides recurring interior painting maintenance for K–12 schools, universities, charter campuses, and educational facilities across Austin, Round Rock, Cedar Park, Georgetown, and surrounding communities. Our education subscription plans deliver scheduled repaints and touch-ups during off-hours, summer windows, and semester breaks — with zero disruption to students or staff.",
+            sections: [
+              { h3: "Campus Interior Maintenance Programs", body: "Classrooms, corridors, cafeterias, gyms, and administrative offices in education facilities accumulate significant wear over each school year. PaintLab's subscription plans address surface degradation proactively, using durable institutional finishes that hold up to high-contact environments and frequent cleaning." },
+              { h3: "Summer & Off-Hours School Painting Services", body: "Education facility painting is coordinated around the academic calendar — scheduled during summers, winter breaks, and weekends to avoid any disruption to instruction. PaintLab works directly with facility directors and campus operations teams to plan each service cycle in advance." },
+              { h3: "Educational Facilities We Serve Across Austin Metro", body: "We serve public schools, private campuses, charter schools, community colleges, and universities in Austin, Round Rock, Cedar Park, Georgetown, Pflugerville, Hutto, Kyle, Buda, and Westlake. PaintLab's recurring subscription provides campus facilities directors with a reliable painting maintenance partner year over year." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          industrial: {
+            h2: "Industrial & Warehouse Painting Services in Austin, TX",
+            intro: "PaintLab delivers recurring interior coating maintenance for distribution centers, manufacturing plants, cold storage facilities, and industrial warehouses across Austin, Round Rock, Cedar Park, Georgetown, and the broader Central Texas region. Our industrial subscription plans maintain OSHA safety markings, transit zone surfaces, and facility walls on a scheduled, predictable basis.",
+            sections: [
+              { h3: "OSHA Safety Markings & Protective Coating Maintenance", body: "Industrial and warehouse environments require durable protective coatings and maintained OSHA-compliant safety markings. PaintLab's industrial subscription plans include scheduled touch-ups and repaints for forklift lanes, safety zones, pipe markings, and facility wall surfaces — keeping your facility compliant and visually organized." },
+              { h3: "Industrial Facility Painting Without Operational Downtime", body: "Production, distribution, and warehousing operations cannot be interrupted for painting. PaintLab schedules all industrial service visits around your operational windows — nights, weekends, and planned maintenance periods — to deliver surface maintenance with zero production impact." },
+              { h3: "Industrial Facilities We Serve in Central Texas", body: "We serve distribution centers, light manufacturing plants, cold storage operations, and industrial campuses in Austin, Round Rock, Cedar Park, Georgetown, Pflugerville, Kyle, Buda, and across Central Texas. Our industrial subscription model provides facility managers with a consistent, accountable maintenance partner." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+          "gyms-fitness": {
+            h2: "Gym & Fitness Center Painting Services in Austin, TX",
+            intro: "PaintLab provides recurring interior painting maintenance for gyms, fitness studios, CrossFit boxes, and health clubs across Austin, Round Rock, Cedar Park, Georgetown, and surrounding communities. Our fitness facility subscription plans maintain high-impact walls, locker rooms, lobby areas, and group fitness studios with durable finishes on a scheduled basis.",
+            sections: [
+              { h3: "High-Impact Surface Maintenance for Gyms", body: "Gym interiors sustain intense surface wear from equipment contact, chalk, and high membership volume. PaintLab's fitness facility subscription delivers scheduled touch-up and repaint cycles using impact-resistant finishes suited to active training environments — keeping your facility looking sharp and well-maintained for members." },
+              { h3: "After-Hours Gym Painting Services", body: "Fitness facility painting is delivered during early morning or late-night windows to minimize member impact. PaintLab coordinates all service delivery around your gym's peak hours, ensuring painting and coating maintenance never competes with member experience or class schedules." },
+              { h3: "Fitness Centers We Serve Across Austin Metro", body: "We serve independent gyms, national fitness franchises, CrossFit affiliates, yoga studios, and multi-sport complexes in Austin, Round Rock, Cedar Park, Georgetown, Kyle, Buda, Westlake, Bee Cave, and Lakeway. PaintLab's subscription gives fitness operators a consistent painting maintenance partner instead of reactive spot-fix contractors." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details.",
+          },
+        };
+        const seo = seoContent[facilityParam];
+        if (!seo) return null;
+        return (
+          <section className="py-14 sm:py-16 bg-card border-t border-border">
+            <div className="container mx-auto px-4 sm:px-6 md:px-12">
+              <div className="max-w-4xl mx-auto">
+                <div className="mb-6">
+                  <div className="h-[1px] w-10 bg-primary mb-4" />
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tighter mb-3">{seo.h2}</h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{seo.intro}</p>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                  {seo.sections.map((s, i) => (
+                    <div key={i} className="border border-border bg-background p-5">
+                      <h3 className="text-sm font-bold text-foreground mb-2 leading-tight">{s.h3}</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.body}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="border border-primary/20 bg-primary/5 p-4 flex gap-3">
+                  <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">{seo.cta}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       <Footer />
     </div>

@@ -215,6 +215,15 @@ export default function SubscriptionPortal() {
         </div>
       </section>
 
+      <section className="py-5 bg-background border-t border-border">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground border border-border/40 bg-secondary/10 px-4 py-3">
+            <span><strong className="text-foreground">Minimum service visit: $500.</strong> Final scope and pricing confirmed after your walkthrough.</span>
+            <span className="text-muted-foreground/60 text-[10px] italic">One-time onboarding fee: $250</span>
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 bg-card border-t border-border">
         <div className="container mx-auto px-6 md:px-12 text-center">
           <p className="text-muted-foreground mb-2">Not sure which category fits your property?</p>
