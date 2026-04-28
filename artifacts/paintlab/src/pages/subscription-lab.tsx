@@ -235,6 +235,25 @@ const FACILITY_LABELS: Record<string, string> = {
   commercial: "Commercial / Industrial",
 };
 
+// ─── Tier Definitions ───────────────────────────────────────────────────────
+const MULTIFAMILY_TIERS = [
+  { id: "essential",         name: "Essential",         visitsPerYear: 0,  description: "Monthly unit turns only" },
+  { id: "asset_shield",      name: "Asset Shield",      visitsPerYear: 1,  description: "Annual maintenance" },
+  { id: "asset_shield_plus", name: "Asset Shield Plus", visitsPerYear: 4,  description: "Quarterly maintenance" },
+  { id: "signature",         name: "Signature",         visitsPerYear: 12, description: "Monthly maintenance" },
+] as const;
+
+const COMMERCIAL_TIERS = [
+  { id: "annual_shield",    name: "Annual Shield",    visitsPerYear: 1 },
+  { id: "bi_annual_shield", name: "Bi-Annual Shield", visitsPerYear: 2 },
+  { id: "quarterly_guard",  name: "Quarterly Guard",  visitsPerYear: 4 },
+] as const;
+
+function getTierConfig(type: string) {
+  if (type === "multifamily") return MULTIFAMILY_TIERS;
+  return COMMERCIAL_TIERS;
+}
+
 // ─── Facility Zone Configs ──────────────────────────────────────────────────
 interface ZoneConfig { key: string; label: string; info: string; defaultSqFt?: number; }
 interface FacilityConfig {
@@ -547,10 +566,12 @@ export default function SubscriptionLab() {
       const extCostPerVisit = Object.entries(resExtZones)
         .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
         .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
-      const t1 = Math.round(interiorMonthly);
-      const t2 = Math.round(interiorMonthly * 1.17 + zoneCostPerYear(0.10, 0.05) / 12 + extCostPerVisit / 12);
-      const t3 = Math.round(interiorMonthly * 1.33 + zoneCostPerYear(0.13, 0.07) * 4 / 12 + extCostPerVisit * 4 / 12);
-      const t4 = Math.round(interiorMonthly * 1.67 + zoneCostPerYear(0.18, 0.10) * 12 / 12 + extCostPerVisit);
+      const mfTiersCfg = getTierConfig("multifamily");
+      // Tier visit frequencies driven by MULTIFAMILY_TIERS config
+      const t1 = Math.round(interiorMonthly);                                                                                                                                                                       // Essential: 0 zone visits
+      const t2 = Math.round(interiorMonthly * 1.17 + zoneCostPerYear(0.10, 0.05) * mfTiersCfg[1].visitsPerYear / 12 + extCostPerVisit * mfTiersCfg[1].visitsPerYear / 12); // Asset Shield: 1 visit/yr
+      const t3 = Math.round(interiorMonthly * 1.33 + zoneCostPerYear(0.13, 0.07) * mfTiersCfg[2].visitsPerYear / 12 + extCostPerVisit * mfTiersCfg[2].visitsPerYear / 12); // Asset Shield Plus: 4 visits/yr
+      const t4 = Math.round(interiorMonthly * 1.67 + zoneCostPerYear(0.18, 0.10) * mfTiersCfg[3].visitsPerYear / 12 + extCostPerVisit * mfTiersCfg[3].visitsPerYear / 12); // Signature: 12 visits/yr
       return { tiers: [t1, t2, t3, t4], tiersRaw: [t1, t2, t3, t4], onboarding: 250 };
     } else {
       // ── Commercial Simplification Layer ────────────────────────────────────
@@ -582,10 +603,11 @@ export default function SubscriptionLab() {
         .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
         .reduce((acc, [zone]) => acc + (COMM_EXT_COST[zone] ?? 0), 0);
 
-      // Monthly subscription = annualised visit cost ÷ 12
-      const r1 = Math.round(visitCost * 1 / 12 + extCost * 1 / 12); // 1 visit/yr
-      const r2 = Math.round(visitCost * 2 / 12 + extCost * 2 / 12); // 2 visits/yr
-      const r3 = Math.round(visitCost * 4 / 12 + extCost * 4 / 12); // 4 visits/yr
+      // Monthly subscription = annualised visit cost ÷ 12, driven by COMMERCIAL_TIERS
+      const commTiersCfg = getTierConfig("commercial");
+      const r1 = Math.round(visitCost * commTiersCfg[0].visitsPerYear / 12 + extCost * commTiersCfg[0].visitsPerYear / 12); // Annual Shield: 1 visit/yr
+      const r2 = Math.round(visitCost * commTiersCfg[1].visitsPerYear / 12 + extCost * commTiersCfg[1].visitsPerYear / 12); // Bi-Annual Shield: 2 visits/yr
+      const r3 = Math.round(visitCost * commTiersCfg[2].visitsPerYear / 12 + extCost * commTiersCfg[2].visitsPerYear / 12); // Quarterly Guard: 4 visits/yr
       const t2 = Math.round(r2 * 0.98);
       const t3 = Math.round(r3 * 0.97);
       return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250 };
