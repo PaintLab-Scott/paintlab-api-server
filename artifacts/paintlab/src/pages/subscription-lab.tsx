@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useParams } from "wouter";
 import { ArrowLeft, CheckCircle2, Phone, MessageSquare, Send, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -516,13 +516,28 @@ function InfoTip({ text }: { text: string }) {
   );
 }
 
+// ─── Slug → facility mapping ──────────────────────────────────────────────────
+const SLUG_TO_FACILITY: Record<string, { type: string; facility: string }> = {
+  "multifamily-apartment-painting-austin-tx": { type: "multi-family", facility: "multi-family" },
+  "office-corporate-painting-austin-tx": { type: "commercial", facility: "office-corporate" },
+  "medical-healthcare-painting-austin-tx": { type: "commercial", facility: "medical" },
+  "industrial-warehouse-painting-austin-tx": { type: "commercial", facility: "industrial" },
+  "automotive-dealership-painting-austin-tx": { type: "commercial", facility: "automotive" },
+  "education-campus-painting-austin-tx": { type: "commercial", facility: "education" },
+  "retail-store-painting-austin-tx": { type: "commercial", facility: "retail" },
+  "gym-fitness-center-painting-austin-tx": { type: "commercial", facility: "gyms-fitness" },
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function SubscriptionLab() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const typeParam = params.get("type") ?? sessionStorage.getItem("facilityType") ?? "commercial";
-  const facilityParam = params.get("facility") ?? typeParam;
+  const routeParams = useParams<{ slug?: string }>();
+  const slugData = SLUG_TO_FACILITY[routeParams.slug ?? ""];
+
+  const qParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const typeParam = slugData?.type ?? qParams.get("type") ?? sessionStorage.getItem("facilityType") ?? "commercial";
+  const facilityParam = slugData?.facility ?? qParams.get("facility") ?? typeParam;
   const isMultiFamily = typeParam === "multi-family";
   const facilityLabel = FACILITY_LABELS[facilityParam] ?? "Commercial";
 

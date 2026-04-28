@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -36,6 +37,7 @@ const pillars = [
 ];
 
 export default function About() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   return (
     <div className="bg-background text-foreground min-h-screen">
       <Navbar />
@@ -221,13 +223,7 @@ export default function About() {
                   style={{ filter: "contrast(1.05) saturate(0.85) brightness(0.95)" }}
                 />
                 {/* Subtle dark gradient overlay at bottom */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/55 via-transparent to-transparent pointer-events-none" />
-
-                {/* Name plate at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <p className="text-white font-bold text-sm tracking-tight leading-tight">Scott Gendelman</p>
-                  <p className="text-primary text-[10px] font-mono tracking-widest uppercase mt-0.5">Founder &amp; Managing Director, PAINTLAB</p>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/20 via-transparent to-transparent pointer-events-none" />
               </div>
             </motion.div>
 
@@ -274,10 +270,10 @@ export default function About() {
               <motion.div variants={fadeInUp} className="mt-10 pt-8 border-t border-border">
                 <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-3">Contact Scott directly</p>
                 <a
-                  href="mailto:hello@paintlabpro.com"
+                  href="mailto:scott@paintlabpro.com"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
                 >
-                  hello@paintlabpro.com →
+                  scott@paintlabpro.com →
                 </a>
               </motion.div>
             </motion.div>
@@ -322,7 +318,7 @@ export default function About() {
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request"
+                href="/#quote"
                 className="inline-flex items-center justify-center px-8 py-4 bg-primary text-background font-bold uppercase tracking-widest text-xs hover:bg-primary/90 transition-colors"
               >
                 Get a Quote

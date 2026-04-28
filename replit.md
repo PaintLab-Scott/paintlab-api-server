@@ -21,11 +21,17 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ### PaintLab Website (`artifacts/paintlab`)
 - React + Vite single-page commercial paint systems marketing website
 - Deployed at `/` (root path)
-- Dark industrial theme with safety orange accent
+- Dark industrial theme with safety orange (#FF6600) accent
 - Mobile-responsive with hamburger nav
-- Sections: Hero, About/Trust, Services, Sectors (9 industries), Approach (3 pillars), Why PaintLab, Contact/Quote form, Footer
+- Sections: Hero, About/Trust, Services, Sectors (9 industries), Approach (3 pillars), Why PaintLab, Contact/Quote form (`id="quote"`), Footer
 - Uses framer-motion for scroll animations
 - AI-generated images in `public/images/`
+- Subscription calculator with facility-specific pricing at `/subscription-lab` (query params) or `/subscriptions/:slug` (SEO slugs)
+- SEO: structured data (LocalBusiness + Service), OG/Twitter cards, geo meta, canonical, hero preload in `index.html`
+- `public/sitemap.xml`, `public/robots.txt`, `public/llms.txt` present
+- All "Get a Quote" CTAs go to `/#quote` (Command Your Outcome contact section)
+- Contact: (512) 484-3124 | hello@paintlabpro.com | Scott direct: scott@paintlabpro.com
+- Slug routing: subscription-portal navigates to `/subscriptions/[keyword-slug]`; slugs resolve via `SLUG_TO_FACILITY` map in `subscription-lab.tsx`
 
 ## Key Commands
 

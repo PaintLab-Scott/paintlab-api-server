@@ -93,11 +93,25 @@ export default function SubscriptionPortal() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [, setLocation] = useLocation();
 
+  const FACILITY_TO_SLUG: Record<string, string> = {
+    "multi-family": "multifamily-apartment-painting-austin-tx",
+    "office-corporate": "office-corporate-painting-austin-tx",
+    "medical": "medical-healthcare-painting-austin-tx",
+    "industrial": "industrial-warehouse-painting-austin-tx",
+    "automotive": "automotive-dealership-painting-austin-tx",
+    "education": "education-campus-painting-austin-tx",
+    "retail": "retail-store-painting-austin-tx",
+    "gyms-fitness": "gym-fitness-center-painting-austin-tx",
+  };
+
   const handleSelect = (facility: typeof facilities[0]) => {
     sessionStorage.setItem("facilityType", facility.id);
     sessionStorage.setItem("facilityLabel", facility.label);
-    if (facility.path === "multi-family") {
-      setLocation(`/subscription-lab?type=multi-family`);
+    const slug = FACILITY_TO_SLUG[facility.path] ?? FACILITY_TO_SLUG[facility.id];
+    if (slug) {
+      setLocation(`/subscriptions/${slug}`);
+    } else if (facility.path === "multi-family") {
+      setLocation(`/subscriptions/multifamily-apartment-painting-austin-tx`);
     } else {
       setLocation(`/subscription-lab?type=commercial&facility=${facility.id}`);
     }

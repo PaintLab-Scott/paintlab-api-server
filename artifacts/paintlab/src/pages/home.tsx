@@ -213,8 +213,8 @@ export default function Home() {
               Your Property's Aesthetic on <span className="text-primary">Autopilot.</span>
             </motion.p>
 
-            <motion.p variants={fadeInUp} className="text-base md:text-lg text-muted-foreground max-w-2xl mb-10 leading-relaxed">
-              Stop bidding. Start subscribing. Austin's first <strong className="text-foreground">fixed-cost painting utility</strong> for diverse commercial assets.
+            <motion.p variants={fadeInUp} className="text-sm md:text-base text-muted-foreground max-w-2xl mb-10 leading-relaxed">
+              Stop bidding. Start subscribing. Austin's 1st <strong className="text-foreground">fixed-cost painting utility</strong> for commercial assets. Flexible subscription care or expert project execution. Always reliable. Zero hassle.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
@@ -466,11 +466,11 @@ export default function Home() {
               <div className="space-y-6 text-sm">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Direct Line</p>
-                  <p className="font-mono text-foreground font-semibold">1-800-PAINTLAB</p>
+                  <a href="tel:+15124843124" className="font-mono text-foreground font-semibold hover:text-primary transition-colors">(512) 484-3124</a>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Email</p>
-                  <p className="font-mono text-foreground font-semibold">systems@paintlab.com</p>
+                  <a href="mailto:hello@paintlabpro.com" className="font-mono text-foreground font-semibold hover:text-primary transition-colors">hello@paintlabpro.com</a>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Headquarters</p>

@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center mb-4">
+            <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center mb-4">
               <img src="/images/pl-logo.png" alt="PaintLab" className="h-14 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
             </Link>
             <p className="text-muted-foreground max-w-sm mb-6 text-sm leading-relaxed">
@@ -24,7 +24,7 @@ export default function Footer() {
               <li><a href="/#services" className="text-muted-foreground hover:text-primary transition-colors text-sm">Services</a></li>
               <li><a href="/#sectors" className="text-muted-foreground hover:text-primary transition-colors text-sm">Sectors</a></li>
               <li><a href="/#approach" className="text-muted-foreground hover:text-primary transition-colors text-sm">Our Approach</a></li>
-              <li><Link href="/about" className="text-muted-foreground hover:text-primary transition-colors text-sm">About</Link></li>
+              <li><Link href="/about" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-muted-foreground hover:text-primary transition-colors text-sm">About</Link></li>
             </ul>
           </div>
 
@@ -39,7 +39,7 @@ export default function Footer() {
               </li>
               <li>Austin, Texas</li>
               <li className="mt-4">
-                <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request" className="text-primary font-semibold hover:underline">Request a Quote →</a>
+                <a href="/#quote" className="text-primary font-semibold hover:underline">Request a Quote →</a>
               </li>
             </ul>
           </div>

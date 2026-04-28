@@ -144,6 +144,7 @@ function Router() {
       <Route path="/services/:slug" component={ServiceDetail} />
       <Route path="/subscription-portal" component={SubscriptionPortal} />
       <Route path="/subscription-lab" component={SubscriptionLab} />
+      <Route path="/subscriptions/:slug" component={SubscriptionLab} />
       <Route path="/about" component={About} />
       <Route path="/member-portal" component={ProtectedMemberPortal} />
       <Route path="/sign-in/*?" component={SignInPage} />

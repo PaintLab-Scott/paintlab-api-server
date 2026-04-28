@@ -62,6 +62,16 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-framer": ["framer-motion"],
+          "vendor-clerk": ["@clerk/react"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
   },
   server: {
     port: Number(process.env.PORT) || 5173,

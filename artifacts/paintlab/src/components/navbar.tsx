@@ -92,14 +92,14 @@ export function Navbar() {
                   </button>
                 </SignInButton>
                 <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-xs px-6 py-5">
-                  <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request">Get a Quote</a>
+                  <a href="/#quote">Get a Quote</a>
                 </Button>
               </div>
             )
           )}
           {!isLoaded && (
             <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-xs px-6 py-5">
-              <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request">Get a Quote</a>
+              <a href="/#quote">Get a Quote</a>
             </Button>
           )}
         </nav>
@@ -171,7 +171,7 @@ export function Navbar() {
           )}
 
           <Button asChild className="rounded-none mt-4 bg-primary text-background w-full py-6">
-            <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Quote%20Request" onClick={() => setMobileMenuOpen(false)}>Get a Quote</a>
+            <a href="/#quote" onClick={() => setMobileMenuOpen(false)}>Get a Quote</a>
           </Button>
         </div>
       )}
