@@ -51,11 +51,35 @@ const RES_HUB_LABELS: Record<string, string> = {
 };
 const TU_SURFACE_RATIO = 0.35;
 
+// ─── Service Multipliers ──────────────────────────────────────────────────────
+const SERVICE_MULTIPLIERS = { repaint: 1.0, touchup: 0.35 } as const;
+
+// ─── Visits Per Year (unified tier → frequency map) ──────────────────────────
+const VISITS_PER_YEAR: Record<string, number> = {
+  // Multi-family tiers
+  essential:         0,
+  asset_shield:      1,
+  asset_shield_plus: 4,
+  signature:         12,
+  // Commercial tiers
+  annual_shield:     1,
+  bi_annual_shield:  2,
+  quarterly_guard:   4,
+};
+
+// ─── Tier Efficiency (applied to common areas only, NOT unit turns) ───────────
+const TIER_EFFICIENCY: Record<string, number> = {
+  essential:         1.0,
+  asset_shield:      1.0,
+  asset_shield_plus: 0.95,
+  signature:         0.90,
+};
+
 // Scope-only exterior zones (no per-visit cost — scoped at walkthrough)
-const SCOPED_EXT_ZONES = new Set(["buildingCladding", "commCladding"]);
+const SCOPED_EXT_ZONES = new Set(["buildingCladding", "commCladding", "windowCleaning"]);
 const EXT_ZONE_COST: Record<string, number> = {
   mainFacade: 250, floorSurface: 150, poolDeck: 450,
-  doorway: 250, garbageArea: 100, garageEntrance: 175, buildingCladding: 0,
+  doorway: 250, garbageArea: 100, garageEntrance: 175, buildingCladding: 0, windowCleaning: 0,
 };
 const EXT_ZONE_LABELS: Record<string, string> = {
   mainFacade: "Main Entrance Facade",
@@ -65,6 +89,7 @@ const EXT_ZONE_LABELS: Record<string, string> = {
   garbageArea: "Garbage Area",
   garageEntrance: "Garage Entrance",
   buildingCladding: "Building Cladding / Siding",
+  windowCleaning: "Window Cleaning",
 };
 const EXT_ZONE_INFO: Record<string, string> = {
   buildingCladding: "Scope assessed during your complimentary walk-through and priced separately based on material type and linear footage.",
@@ -74,7 +99,7 @@ const EXT_ZONE_INFO: Record<string, string> = {
 const COMM_WALL_MULTIPLIER = 3.5;
 const COMM_EXT_COST: Record<string, number> = {
   commFacade: 250, commEntranceFloor: 250, commDumpsterPad: 200,
-  commEntries: 150, commGarage: 150, commCladding: 0,
+  commEntries: 150, commGarage: 150, commCladding: 0, windowCleaning: 0,
 };
 const COMM_EXT_LABELS: Record<string, string> = {
   commFacade: "Main Entrance Facade",
@@ -83,6 +108,7 @@ const COMM_EXT_LABELS: Record<string, string> = {
   commEntries: "Building Entries — Walls & Floor Surface",
   commGarage: "Garage Entrance",
   commCladding: "Building Cladding / Siding",
+  windowCleaning: "Window Cleaning",
 };
 const COMM_EXT_INFO: Record<string, string> = {
   commCladding: "Scope assessed during your complimentary walk-through and priced separately based on material type and linear footage.",
@@ -140,45 +166,6 @@ function getAdjustedRate(
   return adjusted;
 }
 
-// ─── Commercial Simplification Layer ────────────────────────────────────────
-const CONDITION_FACTORS: Record<string, number> = {
-  light:    0.30,
-  moderate: 0.45,
-  heavy:    0.60,
-};
-
-function calculateCommercialMaintenance(sf: number, condition: string): number {
-  const factor = CONDITION_FACTORS[condition] ?? 0.45;
-  return sf * 3.5 * factor; // paintable sqft for one maintenance cycle
-}
-
-// ─── Scoped Area Mode ────────────────────────────────────────────────────────
-interface ScopedAreaInput { quantity: number; squareFeet: number; }
-interface ScopedCommercialInputs { totalSqFt: number; condition: string; areas: ScopedAreaInput[]; }
-
-function calculateScopedCommercialPSSF(inputs: ScopedCommercialInputs): number {
-  const factor = CONDITION_FACTORS[inputs.condition] ?? 0.45;
-
-  let scopedTotalSqFt = 0;
-
-  if (inputs.areas && inputs.areas.length > 0) {
-    inputs.areas.forEach(area => {
-      const qty = area.quantity || 0;
-      const sqft = area.squareFeet || 0;
-      if (qty > 0 && sqft > 0) {
-        scopedTotalSqFt += qty * sqft;
-      }
-    });
-  }
-
-  // If user entered scoped areas → use them; otherwise fall back to total building
-  if (scopedTotalSqFt > 0) {
-    return scopedTotalSqFt * 3.5 * factor;
-  }
-
-  return inputs.totalSqFt * 3.5 * factor;
-}
-
 // ─── MF Turn Engine ──────────────────────────────────────────────────────────
 interface MFUnit {
   count: number;
@@ -194,12 +181,62 @@ function calculateMultifamilyMonthlyPSSF(units: MFUnit[]): number {
     const monthlyTurns   = count * (turnRate / 100);
     const repaintUnits   = monthlyTurns * (repaintPercent / 100);
     const touchupUnits   = monthlyTurns - repaintUnits;
-    const pssf           = avgSqFt * 3.5;          // paintable wall sqft per unit
-    const repaintPSSF    = repaintUnits * pssf;
-    const touchupPSSF    = touchupUnits * pssf * 0.5; // touch-up covers 50% of surface
+    const pssf           = avgSqFt * 3.5;
+    const repaintPSSF    = repaintUnits * pssf * SERVICE_MULTIPLIERS.repaint;
+    const touchupPSSF    = touchupUnits * pssf * SERVICE_MULTIPLIERS.touchup;
     totalMonthlyPSSF    += repaintPSSF + touchupPSSF;
   });
   return totalMonthlyPSSF;
+}
+
+// ─── Common Area Engine ───────────────────────────────────────────────────────
+interface CommonAreaInput { qty: number; floors: number; sqft: number; service: string; }
+
+function calculateCommonAreaPerVisitPSSF(areas: CommonAreaInput[]): number {
+  let total = 0;
+  areas.forEach(area => {
+    const qty    = area.qty    || 0;
+    const floors = area.floors || 1;
+    const sqft   = area.sqft   || 0;
+    if (qty === 0 || sqft === 0) return;
+    const base       = qty * floors * sqft * 3.5;
+    const multiplier = area.service === "repaint" ? SERVICE_MULTIPLIERS.repaint : SERVICE_MULTIPLIERS.touchup;
+    total           += base * multiplier;
+  });
+  return total;
+}
+
+function calculateCommonAreaMonthly(areas: CommonAreaInput[], tierId: string, rate: number): number {
+  const visits = VISITS_PER_YEAR[tierId] ?? 0;
+  if (visits === 0) return 0;
+  const efficiency = TIER_EFFICIENCY[tierId] ?? 1.0;
+  const adjustedRate = rate * efficiency;
+  const perVisit = calculateCommonAreaPerVisitPSSF(areas);
+  return (perVisit * visits / 12) * adjustedRate;
+}
+
+// ─── Wash Engine ─────────────────────────────────────────────────────────────
+function calculateWashMonthly(
+  zones: Record<string, boolean>,
+  tierId: string,
+  costs: Record<string, number>,
+  scopedSet: Set<string>,
+): number {
+  const visits = VISITS_PER_YEAR[tierId] ?? 0;
+  if (!visits) return 0;
+  let total = 0;
+  Object.entries(zones).forEach(([zone, on]) => {
+    if (on && !scopedSet.has(zone)) total += costs[zone] ?? 0;
+  });
+  return (total * visits) / 12;
+}
+
+// ─── Savings Helper ───────────────────────────────────────────────────────────
+function calculateSavings(base: number, discounted: number): { savings: number; percent: number } {
+  if (base <= 0) return { savings: 0, percent: 0 };
+  const savings = base - discounted;
+  const percent = (savings / base) * 100;
+  return { savings, percent };
 }
 
 const COMM_PAINT_SERVICES = [
@@ -433,11 +470,11 @@ const defaultSingularHubs = (): Record<string, ResHubRow> => ({
 });
 const defaultResExtZones = (): Record<string, boolean> => ({
   mainFacade: false, floorSurface: false, poolDeck: false,
-  doorway: false, garbageArea: false, garageEntrance: false, buildingCladding: false,
+  doorway: false, garbageArea: false, garageEntrance: false, buildingCladding: false, windowCleaning: false,
 });
 const defaultCommExtZones = (): Record<string, boolean> => ({
   commFacade: false, commEntranceFloor: false, commDumpsterPad: false,
-  commEntries: false, commGarage: false, commCladding: false,
+  commEntries: false, commGarage: false, commCladding: false, windowCleaning: false,
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -497,9 +534,6 @@ export default function SubscriptionLab() {
   const [resDistZones, setResDistZones] = useState(defaultResDistZones);
   const [singularHubs, setSingularHubs] = useState(defaultSingularHubs);
   const [resExtZones, setResExtZones] = useState(defaultResExtZones);
-  const [commTotalSqFt, setCommTotalSqFt] = useState(0);
-  const [commCondition, setCommCondition] = useState<"light" | "moderate" | "heavy">("moderate");
-  const [commScopedZones, setCommScopedZones] = useState<Record<string, { qty: number; sqft: number }>>({});
   const [commZones, setCommZones] = useState<Record<string, CommZoneRow>>({});
   const [commExtZones, setCommExtZones] = useState(defaultCommExtZones);
   const [paintInterest, setPaintInterest] = useState<Record<string, boolean>>(() =>
@@ -508,7 +542,6 @@ export default function SubscriptionLab() {
   const [annualUpfront, setAnnualUpfront] = useState({ t1: false, t2: false, t3: false });
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [optionalExpanded, setOptionalExpanded] = useState(false);
-  const [commScopedOpen, setCommScopedOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", propertyName: "", address: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
@@ -535,10 +568,7 @@ export default function SubscriptionLab() {
   // ─── Math Engine ─────────────────────────────────────────────────────────
   const calc = useMemo(() => {
     if (isMultiFamily) {
-      // ── MF Turn Engine ────────────────────────────────────────────────────
-      // Map existing unitMix rows → MFUnit[].
-      // UI `turns` = monthly turn count; turnRate % = (turns / count) × 100,
-      // which collapses back to monthlyTurns = row.turns inside the function.
+      // ── MF Unit Turn Engine ───────────────────────────────────────────────
       const mfUnits: MFUnit[] = Object.entries(unitMix)
         .filter(([, row]) => row.count > 0)
         .map(([type, row]) => ({
@@ -547,34 +577,45 @@ export default function SubscriptionLab() {
           turnRate:       row.count > 0 ? (row.turns / row.count) * 100 : 0,
           repaintPercent: row.repaintPct ?? 100,
         }));
-
       const totalMonthlyPSSF = calculateMultifamilyMonthlyPSSF(mfUnits);
-      const mfBaseRate       = BASE_RATES["multifamily"]; // $1.00/paintable sqft
+      const mfBaseRate       = BASE_RATES["multifamily"];
       const mfAdjRate        = getAdjustedRate(mfBaseRate, {}, totalMonthlyPSSF);
       const interiorMonthly  = totalMonthlyPSSF * mfAdjRate;
-      const zoneCostPerYear = (repaintRate: number, tuRate: number) => {
-        const distCost = Object.entries(resDistZones).reduce((acc, [zone, row]) => {
-          const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
-          const wall = row.qty * row.floors * eff * 3.5;
-          return acc + (row.service === "repaint" ? wall * repaintRate : wall * TU_SURFACE_RATIO * tuRate);
-        }, 0);
-        const hubCost = Object.entries(singularHubs).reduce((acc, [hub, row]) => {
-          const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
-          const wall = row.qty * eff * 3.5;
-          return acc + (row.service === "repaint" ? wall * repaintRate : wall * TU_SURFACE_RATIO * tuRate);
-        }, 0);
-        return distCost + hubCost;
+
+      // ── Common Area Engine ────────────────────────────────────────────────
+      const commonAreas: CommonAreaInput[] = [
+        ...Object.entries(resDistZones).map(([zone, row]) => ({
+          qty: row.qty, floors: row.floors,
+          sqft: row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0),
+          service: row.service,
+        })),
+        ...Object.entries(singularHubs).map(([hub, row]) => ({
+          qty: row.qty, floors: 1,
+          sqft: row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0),
+          service: row.service,
+        })),
+      ];
+      const commonPerVisit = calculateCommonAreaPerVisitPSSF(commonAreas);
+
+      // Per-tier: common area monthly + wash monthly (efficiency on common areas only)
+      const mfTierIds = ["essential", "asset_shield", "asset_shield_plus", "signature"] as const;
+      const tierMonthly = mfTierIds.map(id => {
+        const common = calculateCommonAreaMonthly(commonAreas, id, mfBaseRate);
+        const wash   = calculateWashMonthly(resExtZones, id, EXT_ZONE_COST, SCOPED_EXT_ZONES);
+        return Math.round(interiorMonthly + common + wash);
+      });
+
+      // Savings for tiers 3 and 4 (vs no efficiency discount)
+      const t3SavingsAmt = commonPerVisit > 0 ? Math.round((calculateCommonAreaMonthly(commonAreas, "asset_shield_plus", mfBaseRate) / 0.95) - calculateCommonAreaMonthly(commonAreas, "asset_shield_plus", mfBaseRate)) : 0;
+      const t4SavingsAmt = commonPerVisit > 0 ? Math.round((calculateCommonAreaMonthly(commonAreas, "signature", mfBaseRate) / 0.90) - calculateCommonAreaMonthly(commonAreas, "signature", mfBaseRate)) : 0;
+
+      return {
+        tiers: tierMonthly,
+        tiersRaw: tierMonthly,
+        onboarding: 250,
+        mfSavings: [0, 0, t3SavingsAmt, t4SavingsAmt],
+        mfSavingsPct: [0, 0, 5, 10],
       };
-      const extCostPerVisit = Object.entries(resExtZones)
-        .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
-        .reduce((acc, [zone]) => acc + (EXT_ZONE_COST[zone] ?? 0), 0);
-      const mfTiersCfg = getTierConfig("multifamily");
-      // Tier visit frequencies driven by MULTIFAMILY_TIERS config
-      const t1 = Math.round(interiorMonthly);                                                                                                                                                                       // Essential: 0 zone visits
-      const t2 = Math.round(interiorMonthly * 1.17 + zoneCostPerYear(0.10, 0.05) * mfTiersCfg[1].visitsPerYear / 12 + extCostPerVisit * mfTiersCfg[1].visitsPerYear / 12); // Asset Shield: 1 visit/yr
-      const t3 = Math.round(interiorMonthly * 1.33 + zoneCostPerYear(0.13, 0.07) * mfTiersCfg[2].visitsPerYear / 12 + extCostPerVisit * mfTiersCfg[2].visitsPerYear / 12); // Asset Shield Plus: 4 visits/yr
-      const t4 = Math.round(interiorMonthly * 1.67 + zoneCostPerYear(0.18, 0.10) * mfTiersCfg[3].visitsPerYear / 12 + extCostPerVisit * mfTiersCfg[3].visitsPerYear / 12); // Signature: 12 visits/yr
-      return { tiers: [t1, t2, t3, t4], tiersRaw: [t1, t2, t3, t4], onboarding: 250 };
     } else {
       // ── Commercial Zone-Based Pricing ──────────────────────────────────────
       const rateKey  = FACILITY_RATE_KEY[facilityParam] ?? "office";
@@ -612,18 +653,16 @@ export default function SubscriptionLab() {
       const adjRate   = getAdjustedRate(baseRate, {}, totalEffectiveSqFt);
       const visitCost = totalEffectiveSqFt * adjRate;
 
-      const extCost = Object.entries(commExtZones)
-        .filter(([zone, on]) => on && !SCOPED_EXT_ZONES.has(zone))
-        .reduce((acc, [zone]) => acc + (COMM_EXT_COST[zone] ?? 0), 0);
-
       // Monthly subscription = annualised visit cost ÷ 12, driven by COMMERCIAL_TIERS
-      const commTiersCfg = getTierConfig("commercial");
-      const r1 = Math.round(visitCost * commTiersCfg[0].visitsPerYear / 12 + extCost * commTiersCfg[0].visitsPerYear / 12);
-      const r2 = Math.round(visitCost * commTiersCfg[1].visitsPerYear / 12 + extCost * commTiersCfg[1].visitsPerYear / 12);
-      const r3 = Math.round(visitCost * commTiersCfg[2].visitsPerYear / 12 + extCost * commTiersCfg[2].visitsPerYear / 12);
+      const commTierIds = ["annual_shield", "bi_annual_shield", "quarterly_guard"] as const;
+      const [r1, r2, r3] = commTierIds.map(id => {
+        const visits = VISITS_PER_YEAR[id] ?? 0;
+        const washMonthly = calculateWashMonthly(commExtZones, id, COMM_EXT_COST, SCOPED_EXT_ZONES);
+        return Math.round(visitCost * visits / 12 + washMonthly);
+      });
       const t2 = Math.round(r2 * 0.98);
       const t3 = Math.round(r3 * 0.97);
-      return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250 };
+      return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250, mfSavings: [0,0,0], mfSavingsPct: [0,0,0] };
     }
   }, [unitMix, resDistZones, singularHubs, resExtZones, commZones, commExtZones, isMultiFamily, facilityParam]);
 
@@ -637,6 +676,9 @@ export default function SubscriptionLab() {
       annualUpfront.t3 ? Math.round(r3 * 0.95) : Math.round(r3 * 0.97),
     ];
   }, [calc, annualUpfront, isMultiFamily]);
+
+  const mfTierSavings = useMemo(() => calc.mfSavings ?? [0,0,0,0], [calc]);
+  const mfTierSavingsPct = useMemo(() => calc.mfSavingsPct ?? [0,0,0,0], [calc]);
 
   const annualSavings = useMemo(() => {
     if (isMultiFamily) return [0, 0, 0, 0];
@@ -925,7 +967,7 @@ export default function SubscriptionLab() {
                       {/* Desktop multi-floor */}
                       <div className="hidden sm:block mb-1">
                         <div className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 mb-2 px-1">
-                          <div />{colHdr("QTY", "per floor")}{colHdr("Floors")}{colHdr("SQFT EACH", "avg floor sqft")}{colHdr("Wall Surface", "surface coverage")}{colHdr("Service")}
+                          <div />{colHdr("QTY", "per floor")}{colHdr("Floors")}{colHdr("SQFT EACH", "avg floor sqft")}{colHdr("Wall Surface", "surface coverage")}{colHdr("Service", "touch-up or full repaint")}
                         </div>
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
@@ -990,7 +1032,7 @@ export default function SubscriptionLab() {
                       {/* Desktop hubs */}
                       <div className="hidden sm:block">
                         <div className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 mb-2 px-1">
-                          <div />{colHdr("Qty")}{colHdr("SQFT EACH", "enter or use default")}{colHdr("Wall Surface", "surface coverage")}{colHdr("Service")}
+                          <div />{colHdr("Qty")}{colHdr("SQFT EACH", "enter or use default")}{colHdr("Wall Surface", "surface coverage")}{colHdr("Service", "touch-up or full repaint")}
                         </div>
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
@@ -1051,7 +1093,7 @@ export default function SubscriptionLab() {
                 )}
 
                 {/* ── MF STEP 3: Paint & Cleaning Services ── */}
-                {sectionCard("Select Paint & Cleaning Services", "STEP 3", (
+                {sectionCard("Select Exterior Paint & Cleaning Services", "STEP 3", (
                   <div>
                     <p className="text-xs font-bold text-foreground uppercase tracking-wider mb-1">Pressure / Soft Wash Services</p>
                     <p className="text-xs text-muted-foreground mb-4">Select exterior wash zones to include. Wash frequency is determined by your selected tier. Costs shown are placeholders and will be more accurately scoped and confirmed after the walkthrough.</p>
@@ -1079,7 +1121,7 @@ export default function SubscriptionLab() {
                     </div>
                     <div className="mt-4 p-4 border border-border/50 bg-secondary/10 flex gap-3">
                       <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-muted-foreground leading-relaxed">Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots · Windows — assessed during your complimentary walk-through and quoted separately.</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots — assessed during your complimentary walk-through and quoted separately.</p>
                     </div>
                   </div>
                 ))}
@@ -1130,7 +1172,7 @@ export default function SubscriptionLab() {
                           {/* Desktop table */}
                           <div className="hidden sm:block">
                             <div className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 mb-2 px-1">
-                              <div />{colHdr("QTY", "per floor")}{colHdr("Floors")}{colHdr("SQFT EACH", "avg floor sqft")}{colHdr("Wall Surface", "surface coverage")}{colHdr("Service")}
+                              <div />{colHdr("QTY", "per floor")}{colHdr("Floors")}{colHdr("SQFT EACH", "avg floor sqft")}{colHdr("Wall Surface", "surface coverage")}{colHdr("Service", "touch-up or full repaint")}
                             </div>
                             {allZ.map(z => {
                               const row = getRow(z.key);
@@ -1242,7 +1284,7 @@ export default function SubscriptionLab() {
 
                     <div className="mt-4 p-4 border border-border/50 bg-secondary/10 flex gap-3">
                       <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-muted-foreground leading-relaxed">Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots · Windows — assessed during your complimentary walk-through and quoted separately.</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots — assessed during your complimentary walk-through and quoted separately.</p>
                     </div>
                   </div>
                 ))}
@@ -1276,6 +1318,8 @@ export default function SubscriptionLab() {
               const price = displayPrices[i] ?? 0;
               const isSelected = selectedTier === tier.id;
               const savings = !isMultiFamily ? (annualSavings[i] ?? 0) : 0;
+              const mfSavAmt  = isMultiFamily ? (mfTierSavings[i] ?? 0) : 0;
+              const mfSavPct  = isMultiFamily ? (mfTierSavingsPct[i] ?? 0) : 0;
               const discountKey = `t${i + 1}` as "t1" | "t2" | "t3";
 
               // MF tiers 2-4 only show pricing if user has selected zone data
@@ -1319,6 +1363,14 @@ export default function SubscriptionLab() {
                         {savings > 0 && (
                           <div className="mt-1 px-2 py-1 bg-primary/10 border border-primary/20 inline-block">
                             <span className="text-[11px] font-bold text-primary">Saves {fmt(savings)}/year</span>
+                          </div>
+                        )}
+                        {isMultiFamily && mfSavAmt > 0 && mfSavPct > 0 && (
+                          <div className="mt-2 flex flex-col gap-1">
+                            <div className="px-2 py-1 bg-primary/10 border border-primary/20 inline-block">
+                              <span className="text-[11px] font-bold text-primary">Save {mfSavPct}% vs annual plan</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">{fmt(mfSavAmt)}/month efficiency savings</span>
                           </div>
                         )}
                       </div>

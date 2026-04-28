@@ -1,0 +1,116 @@
+Update the exterior services section across all facility calculators. This includes BOTH pricing logic and UI corrections.
+
+Do not remove existing functionality. Enhance and correct.
+
+---
+
+PART 1 — EXTERIOR WASH PRICING LOGIC (REQUIRED)
+
+Ensure exterior wash services are calculated using tier-based visit frequency.
+
+Use this function:
+
+function calculateWashMonthly(zones, tier) {
+  const visits = VISITS_PER_YEAR[tier];
+  if (!visits) return 0;
+
+  let total = 0;
+
+  zones.forEach(zone => {
+    if (WASH_ZONES[zone]) {
+      total += WASH_ZONES[zone];
+    }
+  });
+
+  return (total * visits) / 12;
+}
+
+---
+
+REQUIREMENTS:
+
+- This function must be used in the unified pricing engine
+- It must apply to BOTH:
+  - Multifamily calculators
+  - Non-multifamily calculators
+- Wash pricing must scale with tier frequency
+- Do NOT apply efficiency discounts to wash pricing
+- Do NOT remove existing WASH_ZONES configuration
+
+---
+
+PART 2 — MULTIFAMILY STEP 3 HEADER FIX
+
+In Multi-Family Residential Step 3:
+
+Find:
+"Select Paint & Cleaning Services"
+
+Replace with:
+"Select Exterior Paint & Cleaning Services"
+
+Do NOT change layout or styling.
+
+---
+
+PART 3 — ADD WINDOW CLEANING (ALL FACILITIES)
+
+Add a new option:
+
+"Window Cleaning"
+
+Requirements:
+
+- Must appear in the same section as exterior services
+- Must visually match:
+  "Building Cladding / Siding"
+
+Next to it, display:
+
+"Scoped as needed"
+
+---
+
+CRITICAL:
+
+- Do NOT assign pricing
+- Do NOT include in calculateWashMonthly
+- Do NOT include in any automated pricing
+- This is informational only
+
+---
+
+PART 4 — FOOTNOTE TEXT FIX (ALL FACILITIES)
+
+Find:
+
+"Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots · Windows — assessed during your complimentary walk-through and quoted separately"
+
+Replace with:
+
+"Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots — assessed during your complimentary walk-through and quoted separately"
+
+Remove ONLY the word "Windows".
+
+---
+
+PART 5 — DO NOT BREAK EXISTING SYSTEM
+
+- Do NOT modify pricing for existing wash zones
+- Do NOT remove wash selections
+- Do NOT change tier logic
+- Do NOT affect multifamily Step 2 or commercial Step 1 zone logic
+
+---
+
+FINAL VALIDATION
+
+Confirm:
+
+1. calculateWashMonthly is implemented and used
+2. Wash pricing changes based on tier frequency
+3. Multifamily Step 3 header is updated
+4. Window Cleaning appears with "Scoped as needed"
+5. Window Cleaning is NOT priced
+6. Footnote no longer includes "Windows"
+7. No existing functionality is broken
