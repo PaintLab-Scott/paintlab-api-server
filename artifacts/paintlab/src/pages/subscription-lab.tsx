@@ -36,7 +36,7 @@ const RES_DIST_LABELS: Record<string, string> = {
 };
 const RES_DIST_INFO: Record<string, string> = {
   corridors: "Shared hallways serving resident units on each floor. Enter the total floor sqft of all corridor area on a typical floor. Typically 6–8 ft wide — measure total hallway length × width.",
-  stairwells: "Interior stairwells including stair walls, landing walls, and soffits. Enter the footprint sqft of the stair shaft per landing; the 3.5× multiplier captures the full vertical wall surface.",
+  stairwells: "Interior stairwells including stair walls, landing walls, and soffits. Enter the footprint sqft of the stair shaft per landing; surface coverage is calculated automatically.",
   elevatorLandings: "Vestibule areas in front of elevator doors on each floor. Typically 8–12 ft wide × 10–15 ft deep. Enter floor sqft per landing.",
   wasteRooms: "Dedicated garbage, recycling, and waste rooms located on each floor. High-moisture, high-contact surfaces require scrubbable finishes. Enter floor sqft per room.",
   publicDoors: "Non-stairwell public entry and exit doors in corridors and common areas — door frames, surrounds, and adjacent wall panels. Enter the count of door openings as QTY and approximate sqft of the door + surround area per unit.",
@@ -308,7 +308,7 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
       { key: "hallwaysCorridors", label: "Hallways / Corridors", info: "Primary circulation hallways and corridors throughout your office. Measure length × width per floor. Typical office corridor is 6–10 ft wide. Enter floor sqft of all hallway area per floor.", defaultSqFt: 400 },
       { key: "mainEntryLobby", label: "Main Entry Lobby / Reception", info: "Your primary arrival and reception area. Includes reception desk surround, accent walls, and feature surfaces.", defaultSqFt: 1200 },
       { key: "privateOffices", label: "Private Offices", info: "Individual closed offices. Enter combined floor sqft across all private and executive offices.", defaultSqFt: 600 },
-      { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter the footprint sqft of the stair shaft per landing. The 3.5× wall multiplier captures the full vertical surface.", defaultSqFt: 80 },
+      { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter the footprint sqft of the stair shaft per landing. Surface coverage is calculated automatically.", defaultSqFt: 80 },
       { key: "elevatorLobbies", label: "Elevator Lobbies", info: "Vestibule areas in front of elevator banks on each floor. Enter sqft of this zone per floor (typical: 8 × 15 ft = 120 sqft).", defaultSqFt: 120 },
     ],
     hubZones: [
@@ -323,7 +323,7 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
     touchUpZones: [
       { key: "patientHallways", label: "Patient Care Hallways", info: "Primary corridors in clinical zones — typically 8 ft wide to accommodate gurneys and wheelchairs. Measure length × 8 ft per floor. High-impact lower 4 ft of wall requires most attention.", defaultSqFt: 600 },
       { key: "adminCorridors", label: "Administrative Corridors", info: "Back-of-house office and administrative hallways. Lower traffic than clinical corridors. Enter sqft per floor (length × width).", defaultSqFt: 300 },
-      { key: "stairwells", label: "Stairwells", info: "Staff and emergency stairwells. Enter footprint sqft of the stair shaft per landing; the 3.5× multiplier captures wall surface.", defaultSqFt: 80 },
+      { key: "stairwells", label: "Stairwells", info: "Staff and emergency stairwells. Enter footprint sqft of the stair shaft per landing; surface coverage is calculated automatically.", defaultSqFt: 80 },
       { key: "elevatorLandings", label: "Elevator Lobbies & Landings", info: "Elevator vestibule areas on each floor — includes call-button walls and door surrounds. Typical size: 10 × 15 ft = 150 sqft per landing.", defaultSqFt: 150 },
     ],
     hubZones: [
@@ -360,7 +360,7 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
       { key: "backCorridors", label: "Back-of-House Corridors", info: "Staff hallways behind the showroom and service areas. Lower-finish surfaces but still visible to employees. Enter sqft per floor.", defaultSqFt: 200 },
     ],
     hubZones: [
-      { key: "showroomFloor", label: "Vehicle Showroom / Display Floor", info: "Main vehicle display area — focal walls, window reveals, and feature accent surfaces. Wall surfaces only (not the floor slab). Enter floor sqft; 3.5× multiplier applies to wall surface.", defaultSqFt: 3000 },
+      { key: "showroomFloor", label: "Vehicle Showroom / Display Floor", info: "Main vehicle display area — focal walls, window reveals, and feature accent surfaces. Wall surfaces only (not the floor slab). Enter floor sqft; surface coverage is calculated automatically.", defaultSqFt: 3000 },
       { key: "customerLounge", label: "Customer Lounge & Waiting Area", info: "The seating area where customers wait during service. Premium finishes, high refresh rate. Enter floor sqft.", defaultSqFt: 600 },
       { key: "serviceAdvisors", label: "Service Advisor Area", info: "The counter and surrounding wall area where advisors interact with customers. Typically 20–30 ft long × 12 ft deep. Enter floor sqft.", defaultSqFt: 350 },
       { key: "salesOffices", label: "Finance & Sales Offices", info: "Closed-door sales and F&I offices. Enter combined floor sqft across all offices.", defaultSqFt: 500 },
@@ -372,13 +372,13 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
     hubDesc: "Full repaint zones are the anchor spaces in a school or campus: administration, gymnasium, cafeteria, and library. Full repaints at the scheduled tier cycle keep these destination spaces fresh and inspiring.",
     touchUpZones: [
       { key: "mainHallways", label: "Main Hallways & Classroom Corridors", info: "Primary hallways running between classrooms. Measure hallway length × width per floor. Standard school hallway is 8–10 ft wide. Lockers are excluded from the wall surface calculation.", defaultSqFt: 1000 },
-      { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter footprint sqft of the stair shaft per landing. The 3.5× multiplier captures vertical wall surface.", defaultSqFt: 100 },
+      { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter footprint sqft of the stair shaft per landing. Surface coverage is calculated automatically.", defaultSqFt: 100 },
       { key: "lockerBays", label: "Locker Bay Areas", info: "Wall surfaces flanking locker banks. Enter floor sqft of the locker bay zone (bay length × depth from wall to aisle centerline). Locker units themselves are not painted.", defaultSqFt: 400 },
       { key: "cafCorridors", label: "Cafeteria Access Corridors", info: "Hallways and entry vestibules leading into the cafeteria/dining area. Typically 10–12 ft wide. Enter sqft per floor.", defaultSqFt: 200 },
     ],
     hubZones: [
       { key: "adminOffice", label: "Administration Office & Front Desk", info: "The main administrative suite including reception, principal offices, and support staff areas. Enter combined floor sqft.", defaultSqFt: 800 },
-      { key: "gymnasium", label: "Gymnasium / Multi-Purpose Room", info: "Main gym or multipurpose room — wall surfaces only, not the wood floor. Enter floor sqft; 3.5× captures wall surface up to 20 ft height (confirmed at walk-through).", defaultSqFt: 5000 },
+      { key: "gymnasium", label: "Gymnasium / Multi-Purpose Room", info: "Main gym or multipurpose room — wall surfaces only, not the wood floor. Enter floor sqft; surface coverage is calculated automatically based on wall height confirmed at walk-through.", defaultSqFt: 5000 },
       { key: "cafeteria", label: "Cafeteria / Dining Hall", info: "Main dining area including serving line surround walls. High-humidity, high-splatter zone requiring scrubbable finishes. Enter floor sqft.", defaultSqFt: 3000 },
       { key: "bathrooms", label: "Student & Staff Restrooms", info: "All restroom facilities. Enter combined floor sqft.", defaultSqFt: 600 },
       { key: "library", label: "Library / Media Center", info: "Library or media center space. Full repaint keeps the learning environment fresh and inviting. Enter floor sqft.", defaultSqFt: 2000 },
@@ -427,7 +427,7 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
       { key: "officeHallways", label: "Office Hallways", info: "General-purpose hallways running through office or work areas. Enter sqft per floor (hallway length × width). Typical office hallway is 6–8 ft wide.", defaultSqFt: 400 },
       { key: "serviceCorridors", label: "Main Service Corridors", info: "Wider back-of-house corridors used for deliveries, equipment movement, and staff circulation. Enter sqft per floor.", defaultSqFt: 300 },
       { key: "elevatorLandings", label: "Elevator Landings & Lobbies", info: "Vestibule areas in front of elevator banks. Enter the floor sqft of this zone per floor (typical: 10 × 15 ft = 150 sqft per landing).", defaultSqFt: 150 },
-      { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter footprint sqft of the stair shaft. The 3.5× multiplier captures vertical wall surface.", defaultSqFt: 80 },
+      { key: "stairwells", label: "Stairwells", info: "Interior stairwells — stair walls, landing walls, and undersides. Enter footprint sqft of the stair shaft. Surface coverage is calculated automatically.", defaultSqFt: 80 },
     ],
     hubZones: [
       { key: "lobbies", label: "Main Lobbies", info: "Your primary entry lobby or lobbies. All walls, feature walls, and reception surrounds included. Enter combined floor sqft.", defaultSqFt: 1200 },
@@ -847,7 +847,7 @@ export default function SubscriptionLab() {
                 </button>
                 {pricingOpen && (
                   <div className="mt-2 max-w-2xl text-xs text-muted-foreground leading-relaxed border border-border/40 bg-secondary/10 p-4">
-                    All inputs assume 10-ft ceiling height. A 3.5× floor-to-wall-surface multiplier is applied automatically to convert floor sqft to paintable wall surface. <strong className="text-foreground">Full repaint zones</strong> are priced at a higher rate than <strong className="text-foreground">touch-up zones</strong> (precision spot coating). Actual ceiling heights and square footages are confirmed during your complimentary walk-through — no commitment required before that conversation.
+                    All inputs assume 10-ft ceiling height. Surface coverage is calculated automatically from your floor sqft inputs. <strong className="text-foreground">Full repaint zones</strong> are priced at a higher rate than <strong className="text-foreground">touch-up zones</strong> (precision spot coating). Actual ceiling heights and square footages are confirmed during your complimentary walk-through — no commitment required before that conversation.
                   </div>
                 )}
               </motion.div>
@@ -1290,6 +1290,21 @@ export default function SubscriptionLab() {
                 ))}
               </>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* INITIAL SCOPE ALIGNMENT */}
+      <section className="py-6 bg-background border-b border-border">
+        <div className="container mx-auto px-4 sm:px-6 md:px-12">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex gap-3 p-4 border border-border/50 bg-secondary/10">
+              <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-muted-foreground leading-relaxed space-y-1">
+                <p className="font-semibold text-foreground uppercase tracking-wider text-[10px]">Initial Scope Alignment</p>
+                <p>Pricing is based on standard maintenance conditions for the selected areas. During your onboarding walkthrough, we will confirm scope and surface conditions. If additional prep or restoration is required to meet PaintLab standards, a one-time adjustment may apply before ongoing service begins.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

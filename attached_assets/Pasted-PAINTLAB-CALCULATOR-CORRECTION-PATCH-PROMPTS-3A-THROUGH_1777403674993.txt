@@ -1,0 +1,414 @@
+PAINTLAB CALCULATOR CORRECTION PATCH — PROMPTS 3A THROUGH 7
+
+This is a correction patch for the PaintLab subscription calculators.
+
+Do NOT redesign the UI.
+Do NOT simplify the calculator.
+Do NOT remove existing sections.
+Do NOT change visual styling unless specifically instructed below.
+
+The goal is to restore missing logic/UI from prior prompt updates and make sure the pricing model is accurate, consistent, and defensible.
+
+==================================================
+1. LOCK EXISTING TIER STRUCTURES
+==================================================
+
+Keep the existing tier structures exactly as shown in the UI.
+
+Multifamily calculator must retain exactly 4 tiers:
+- Essential
+- Asset Shield
+- Asset Shield Plus
+- Signature
+
+Tier 1 description must read:
+“Monthly unit turns only”
+
+Commercial / non-multifamily calculators must retain exactly 3 tiers:
+- Annual Shield
+- Bi-Annual Shield
+- Quarterly Guard
+
+Do NOT rename tiers.
+Do NOT merge tiers.
+Do NOT replace tiers with Basic / Standard / Premium / Pro.
+
+Use these tier frequencies:
+
+Multifamily:
+const MULTIFAMILY_VISITS_PER_YEAR = {
+  essential: 0,
+  asset_shield: 1,
+  asset_shield_plus: 4,
+  signature: 12
+};
+
+Commercial / non-multifamily:
+const COMMERCIAL_VISITS_PER_YEAR = {
+  annual_shield: 1,
+  bi_annual_shield: 2,
+  quarterly_guard: 4
+};
+
+==================================================
+2. RESTORE FACILITY-SPECIFIC AREA/ZONES
+==================================================
+
+Restore the previously existing facility-specific zone/area selection UI for all 8 calculator facility types:
+
+1. Multi-Family Residential
+2. Office / Corporate
+3. Medical / Healthcare
+4. Industrial / Warehouse
+5. Automotive
+6. Education
+7. Retail
+8. Gyms & Fitness Centers
+
+The PaintLab contact/help/CTA card is NOT a facility type.
+
+For all non-multifamily calculators, restore the exact prior facility-specific room/zone lists from the previous working version / earlier code / git history.
+
+Do NOT create new guessed room lists.
+Do NOT use generic room lists.
+Do NOT simplify into total building square footage.
+Do NOT use one universal commercial room list.
+
+For example, Gyms & Fitness Centers should restore the prior gym-specific zones such as:
+- Main Corridors & Hallways
+- Locker Room Hallways
+- Entry & Check-in Approach Zone
+- Cardio Area
+- Free Weights Area
+- Strength Machine Zone
+- Class / Training Rooms
+- Men's Locker Room
+- Women's Locker Room
+- Front Desk / Reception Area
+- Offices & Staff Areas
+
+Each restored zone row must include:
+- Quantity
+- Floors where applicable
+- Square Feet Each
+- Surface coverage calculated automatically
+- Service toggle: Touch-Up / Full Repaint
+
+==================================================
+3. RESTORE LEGEND COMPONENTS
+==================================================
+
+Restore the visible legend component that explains Full Repaint vs Touch-Up.
+
+The legend must appear in BOTH locations:
+
+1. Multifamily Step 2 — Shared Public/Common Areas
+2. Non-multifamily Step 1 — Facility-specific area/zone selection
+
+The legend must appear above the zone/area table, like the previous version.
+
+Legend text must be exactly:
+
+LEGEND:
+Full Repaint → 100% wall surface, higher rate
+Touch-Up → ~35% of wall surface, lower rate
+
+Remove all references to:
+“25%”
+
+Touch-Up must be shown as 35%, not 25%.
+
+==================================================
+4. SERVICE MULTIPLIERS — REQUIRED EVERYWHERE
+==================================================
+
+Use one shared service multiplier system across all calculators:
+
+const SERVICE_MULTIPLIERS = {
+  repaint: 1.0,
+  touchup: 0.35
+};
+
+Full Repaint = 1.0x
+Touch-Up = 0.35x
+
+Touch-Up and Full Repaint must never calculate the same price for the same selected area.
+
+This must apply to:
+- Multifamily Step 2 common areas
+- All non-multifamily facility calculators
+
+==================================================
+5. REMOVE ALL CONDITION LOGIC
+==================================================
+
+Hard delete all condition-based pricing logic from the entire codebase.
+
+Remove:
+- CONDITION_FACTORS
+- CONDITION_MODIFIERS
+- inputs.condition
+- light / moderate / heavy pricing
+- condition selectors
+- any condition-based price adjustment
+
+Do NOT add condition pricing back.
+
+Instead, add this expectation-setting language near the pricing output and/or before submission:
+
+Initial Scope Alignment:
+Pricing is based on standard maintenance conditions for the selected areas.
+
+During your onboarding walkthrough, we will confirm scope and surface conditions.
+
+If additional prep or restoration is required to meet PaintLab standards, a one-time adjustment may apply before ongoing service begins.
+
+==================================================
+6. REMOVE TOTAL BUILDING SQFT FROM COMMERCIAL
+==================================================
+
+Commercial / non-multifamily calculators must NEVER use total building square footage.
+
+Remove:
+- total building square footage pricing inputs
+- inputs.totalSqFt
+- fallback to full-building pricing
+- any calculation using total facility square footage
+
+Commercial pricing must be based ONLY on selected facility-specific zones/areas.
+
+If no zones are selected, return $0 or prompt the user to add areas.
+
+==================================================
+7. REMOVE ALL VISIBLE 3.5x MULTIPLIER LANGUAGE
+==================================================
+
+Keep the 3.5 surface coverage conversion in backend calculations only.
+
+Do NOT show the multiplier to users.
+
+Search the entire codebase and remove all visible references to:
+- x3.5
+- ×3.5
+- 3.5 auto
+- * 3.5
+- wall surface x3.5
+- paintable surface multiplier
+- multiplier explanation
+
+Replace user-facing labels/helper text with exactly:
+
+Surface coverage calculated automatically
+
+The backend should still use:
+squareFeet * 3.5
+
+But users should never see “3.5”.
+
+==================================================
+8. COMMERCIAL / NON-MULTIFAMILY PRICING LOGIC
+==================================================
+
+Commercial pricing must be cadence-based using the selected tier.
+
+Use this model:
+
+selected zone PSSF per visit
+× visits per year
+÷ 12
+× base rate
+
+Implement or verify this logic:
+
+function calculateCommercialPerVisitPSSF(inputs) {
+  let total = 0;
+
+  if (!inputs.areas || inputs.areas.length === 0) return 0;
+
+  inputs.areas.forEach(area => {
+    const qty = area.quantity || 0;
+    const floors = area.floors || 1;
+    const sqft = area.squareFeet || 0;
+    const service = area.service || "touchup";
+
+    const serviceMultiplier = SERVICE_MULTIPLIERS[service] || 0.35;
+
+    if (qty > 0 && sqft > 0) {
+      total += qty * floors * sqft * 3.5 * serviceMultiplier;
+    }
+  });
+
+  return total;
+}
+
+function calculateCommercialMonthly(inputs, rate) {
+  const perVisitPSSF = calculateCommercialPerVisitPSSF(inputs);
+  const visits = COMMERCIAL_VISITS_PER_YEAR[inputs.tier] || 1;
+
+  return ((perVisitPSSF * visits) / 12) * rate;
+}
+
+Commercial tier frequency:
+- Annual Shield = 1 visit/year
+- Bi-Annual Shield = 2 visits/year
+- Quarterly Guard = 4 visits/year
+
+Do NOT use condition logic.
+Do NOT use total building square footage.
+
+==================================================
+9. MULTIFAMILY PRICING LOGIC
+==================================================
+
+Multifamily must keep its unique model.
+
+Step 1:
+Unit turns are already monthly and must NOT be multiplied by tier frequency.
+
+Step 2:
+Common areas are tier-frequency based and must be multiplied by the selected tier cadence.
+
+Use this model:
+
+common area PSSF per visit
+× visits per year
+÷ 12
+× base rate
+× applicable efficiency factor
+
+Implement or verify this logic:
+
+function calculateCommonAreaPerVisitPSSF(areas) {
+  let total = 0;
+
+  if (!areas || areas.length === 0) return 0;
+
+  areas.forEach(area => {
+    const qty = area.quantity || 0;
+    const floors = area.floors || 1;
+    const sqft = area.squareFeet || 0;
+    const service = area.service || "touchup";
+
+    const serviceMultiplier = SERVICE_MULTIPLIERS[service] || 0.35;
+
+    if (qty > 0 && sqft > 0) {
+      total += qty * floors * sqft * 3.5 * serviceMultiplier;
+    }
+  });
+
+  return total;
+}
+
+function calculateMultifamilyCommonAreasMonthly(areas, tier, rate) {
+  if (tier === "essential") return 0;
+
+  const perVisitPSSF = calculateCommonAreaPerVisitPSSF(areas);
+  const visits = MULTIFAMILY_VISITS_PER_YEAR[tier] || 0;
+
+  return ((perVisitPSSF * visits) / 12) * rate;
+}
+
+Do NOT multiply unit turns by tier frequency.
+Only common areas use tier visit frequency.
+
+==================================================
+10. MULTIFAMILY TIER EFFICIENCY DISCOUNTS
+==================================================
+
+Apply slight efficiency discounts ONLY to multifamily recurring common-area maintenance.
+
+Do NOT apply efficiency discounts to:
+- monthly unit turns
+- exterior wash
+- commercial / non-multifamily calculators
+
+Use:
+
+const MULTIFAMILY_TIER_EFFICIENCY = {
+  essential: 1.0,
+  asset_shield: 1.0,
+  asset_shield_plus: 0.95,
+  signature: 0.90
+};
+
+Apply:
+- Asset Shield Plus = 5% discount
+- Signature = 10% discount
+
+Do NOT discount:
+- Essential
+- Asset Shield
+
+Savings display requirements:
+For Asset Shield Plus and Signature only, show:
+- Save 5% for Asset Shield Plus
+- Save 10% for Signature
+- Estimated $/month savings
+
+Savings must compare against the undiscounted price for the same selected scope and same tier cadence.
+
+==================================================
+11. VALIDATION CHECKLIST
+==================================================
+
+After making these changes, confirm:
+
+1. Multifamily still has 4 tiers:
+   Essential, Asset Shield, Asset Shield Plus, Signature
+
+2. Commercial/non-multifamily still has 3 tiers:
+   Annual Shield, Bi-Annual Shield, Quarterly Guard
+
+3. Tier names are unchanged
+
+4. Multifamily Tier 1 says:
+   Monthly unit turns only
+
+5. All 8 calculator facility types are present
+
+6. The PaintLab CTA/contact card is not treated as a facility
+
+7. Non-multifamily facility-specific zone lists are restored
+
+8. Multifamily Step 2 common area zones are intact
+
+9. Legend appears in:
+   - Multifamily Step 2
+   - Non-multifamily Step 1
+
+10. Legend says:
+   Full Repaint → 100% wall surface, higher rate
+   Touch-Up → ~35% of wall surface, lower rate
+
+11. No “25%” text remains
+
+12. No x3.5 / ×3.5 / 3.5 auto text remains
+
+13. Surface label says only:
+   Surface coverage calculated automatically
+
+14. Touch-Up uses 0.35x
+
+15. Full Repaint uses 1.0x
+
+16. Touch-Up and Full Repaint produce different prices
+
+17. No condition selectors exist
+
+18. No condition pricing logic exists
+
+19. No total building square footage logic exists for commercial
+
+20. Commercial pricing uses selected areas only
+
+21. Commercial pricing is tier-frequency based
+
+22. Multifamily unit turns remain monthly and are not tier-frequency multiplied
+
+23. Multifamily common areas are tier-frequency based
+
+24. Efficiency discounts only apply to multifamily Asset Shield Plus and Signature common-area recurring maintenance
+
+25. Efficiency discounts do not apply to unit turns, wash, or commercial calculators
+
+This correction patch is complete only when all validation items are true.
