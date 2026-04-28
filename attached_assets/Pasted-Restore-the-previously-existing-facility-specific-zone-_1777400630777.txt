@@ -1,0 +1,199 @@
+Restore the previously existing facility-specific zone/area selection UI and ensure all calculators use scoped area-based inputs with correct service logic and UI messaging.
+
+This is a rollback + correction task. Do NOT redesign or simplify the UI.
+
+---
+
+FACILITY STRUCTURE REQUIREMENT (CRITICAL)
+
+The application must support exactly these 8 calculator facility types:
+
+1. Multi-Family Residential
+2. Office / Corporate
+3. Medical / Healthcare
+4. Industrial / Warehouse
+5. Automotive
+6. Education
+6. Retail
+8. Gyms & Fitness Centers
+
+The PaintLab contact/CTA card is NOT a facility and must not be treated as one.
+
+---
+
+RESTORE PRIOR ZONE CONFIGURATION
+
+For ALL non-multifamily facilities:
+
+Restore the exact previous version of zone/area rows from earlier code/version history.
+
+Do NOT:
+- create new generic room lists
+- simplify to shared categories
+- use a single universal zone structure
+
+Each facility must use its original, facility-specific zone list.
+
+---
+
+MULTIFAMILY STRUCTURE (DO NOT CHANGE)
+
+Multi-Family Residential must retain:
+
+Step 1:
+- Unit mix + monthly turn logic
+
+Step 2:
+- Shared public/common area zones (with rows + service toggles)
+
+Step 3:
+- Exterior paint & cleaning services
+
+Tier structure:
+- 4-tier Multi-Family Autopilot Plan
+
+---
+
+ZONE ROW REQUIREMENTS
+
+Each row must include:
+
+- Quantity input
+- Floors input (where applicable)
+- Square Feet per area
+- Surface coverage (auto-calculated)
+- Service toggle:
+    - Touch-Up
+    - Full Repaint
+
+---
+
+SERVICE LOGIC (CRITICAL)
+
+Apply everywhere:
+
+- Full Repaint = 1.0x coverage
+- Touch-Up = 0.35x coverage
+
+Touch-Up must always produce a lower price.
+
+---
+
+LEGEND COMPONENT — RESTORE (CRITICAL FIX)
+
+The legend UI element that explains Full Repaint vs Touch-Up has been removed and must be re-added.
+
+You must restore the legend component exactly as a visible UI element.
+
+---
+
+ADD THIS LEGEND BACK IN TWO LOCATIONS:
+
+1. Multifamily Step 2 (shared public/common areas)
+2. Non-multifamily Step 1 (all commercial facility calculators)
+
+---
+
+LEGEND FORMAT REQUIREMENTS
+
+Recreate the legend as a horizontal UI component with:
+
+- A label: "LEGEND:"
+- Two items:
+    - Full Repaint (with orange indicator)
+    - Touch-Up (with dark/gray indicator)
+
+---
+
+LEGEND TEXT (UPDATED — MUST MATCH EXACTLY)
+
+Full Repaint → 100% wall surface, higher rate  
+Touch-Up → ~35% of wall surface, lower rate
+
+---
+
+DO NOT:
+
+- use 25% anywhere
+- omit the legend
+- move it to another location
+- convert it into tooltip-only text
+
+It must be visibly displayed above the zone table like the previous version.
+
+---
+
+SURFACE COVERAGE UI RULE
+
+Remove ALL visible references to:
+
+- x3.5
+- ×3.5
+- 3.5 auto
+- any multiplier explanation
+
+Replace with:
+
+"Surface coverage calculated automatically"
+
+Keep multiplier logic backend only.
+
+---
+
+PRICING MODEL ENFORCEMENT
+
+All calculators must:
+
+- price ONLY selected zones
+- NOT use total building square footage
+- NOT include condition modifiers
+
+If no zones selected:
+- return $0 or prompt user
+
+---
+
+UI PRESERVATION RULES
+
+Do NOT:
+
+- redesign layout
+- remove steps
+- reorder sections
+- change tier layout
+
+Do:
+
+- restore zone selection UI
+- restore legend component
+- correct service logic
+
+---
+
+FINAL VALIDATION CHECK
+
+Confirm:
+
+1. Legend is visible in BOTH:
+   - Multifamily Step 2
+   - Non-multifamily Step 1
+
+2. Legend shows:
+   - Full Repaint → 100%
+   - Touch-Up → ~35%
+
+3. No "25%" exists anywhere
+
+4. No "x3.5" exists anywhere
+
+5. All facility-specific zones are restored
+
+6. Pricing reflects Touch-Up vs Repaint differences
+
+7. No condition logic exists
+
+8. No total square footage logic exists
+
+---
+
+This is a restoration and correction task. Preserve the UI and ensure accuracy.
