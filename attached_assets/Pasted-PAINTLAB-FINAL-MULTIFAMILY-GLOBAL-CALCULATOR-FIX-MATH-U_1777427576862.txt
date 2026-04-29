@@ -1,0 +1,253 @@
+PAINTLAB FINAL MULTIFAMILY + GLOBAL CALCULATOR FIX (MATH + UI + CONTENT)
+
+This is a precision update. Do NOT redesign the UI. Do NOT remove existing structure.
+Only fix calculation logic, defaults, labels, and content placement exactly as outlined.
+
+==================================================
+1. MULTIFAMILY CALCULATION FIX (CRITICAL)
+==================================================
+
+Multifamily Step 1 (Unit Turns) and Step 2 (Common Areas) must use DIFFERENT logic.
+
+-------------------------
+STEP 1 — UNIT TURNS
+-------------------------
+
+Use:
+
+const UNIT_TURN_REPAINT_RATE = 0.475;
+const UNIT_SURFACE_MULTIPLIER = 2.9;
+const UNIT_TOUCHUP_COVERAGE = 0.20;
+const UNIT_TOUCHUP_COST_FACTOR = 0.35;
+
+Turns/Mo = ACTUAL number of unit turns per month (NOT %).
+
+For each unit type:
+
+monthlyTurns = turnsMo
+
+fullTurns = monthlyTurns × (fullRepaintPercent / 100)
+touchupTurns = monthlyTurns - fullTurns
+
+unitPSSF = sqftEach × UNIT_SURFACE_MULTIPLIER
+
+fullRepaintCost = fullTurns × unitPSSF × UNIT_TURN_REPAINT_RATE
+
+touchupCost =
+  touchupTurns ×
+  unitPSSF ×
+  UNIT_TOUCHUP_COVERAGE ×
+  UNIT_TURN_REPAINT_RATE ×
+  UNIT_TOUCHUP_COST_FACTOR
+
+Total Step 1 monthly = sum of all unit types
+
+-------------------------
+UNIT TURN VOLUME EFFICIENCY
+-------------------------
+
+Apply ONLY to Step 1 total:
+
+function getUnitTurnEfficiency(totalMonthlyTurns) {
+  if (totalMonthlyTurns > 25) return 0.90;
+  if (totalMonthlyTurns > 15) return 0.95;
+  return 1.0;
+}
+
+finalUnitTurnCost = totalUnitTurnCost × efficiency
+
+IMPORTANT:
+- Do NOT apply tier cadence to unit turns
+- Do NOT apply $500 minimum to unit turns
+- Do NOT apply Step 2 logic to unit turns
+
+-------------------------
+STEP 2 — COMMON AREAS
+-------------------------
+
+Use:
+
+const MF_COMMON_REPAINT_RATE = 0.65;
+const MF_COMMON_TOUCHUP_FACTOR = 0.35;
+
+For each zone:
+
+zonePSSF = qty × floors × sqftEach × 3.5
+
+IF service === "repaint":
+  cost = zonePSSF × MF_COMMON_REPAINT_RATE
+
+IF service === "touchup":
+  cost = zonePSSF × MF_COMMON_REPAINT_RATE × MF_COMMON_TOUCHUP_FACTOR
+
+CRITICAL:
+Do NOT multiply by 20% coverage here.
+That ONLY applies to unit turns.
+
+-------------------------
+STEP 2 TIER CADENCE
+-------------------------
+
+const MF_VISITS = {
+  essential: 0,
+  asset_shield: 1,
+  asset_shield_plus: 4,
+  signature: 12
+};
+
+monthlyCommonAreas =
+  (perVisitCost × MF_VISITS[tier] ÷ 12)
+
+Apply efficiency ONLY to Step 2:
+
+asset_shield_plus → × 0.95  
+signature → × 0.90  
+
+Do NOT apply efficiency to:
+- unit turns
+- wash
+- anything else
+
+-------------------------
+TOTAL MULTIFAMILY
+-------------------------
+
+Essential:
+= Step 1 only
+
+Other tiers:
+= Step 1 + Step 2
+
+==================================================
+2. VALIDATION RULE (REPLACES HARDCODED EXAMPLE)
+==================================================
+
+Do NOT hardcode any example zones.
+
+Validation logic:
+
+For ANY Step 2 selections:
+- Increasing tier cadence MUST materially increase price
+- Tier 2, 3, 4 must NOT be within ~$50 of each other
+
+If Step 2 PSSF > 0:
+Tier 3 and Tier 4 MUST be meaningfully higher than Tier 2
+
+==================================================
+3. SERVICE TOGGLE DEFAULT (VERY IMPORTANT)
+==================================================
+
+ALL service toggles across ALL calculators must:
+
+- Default to TOUCH-UP
+- NOT show any orange/active FULL REPAINT selections on load
+- FULL REPAINT only activates when user clicks
+
+Fix everywhere:
+- Multifamily Step 1
+- Multifamily Step 2
+- All commercial calculators
+
+==================================================
+4. REMOVE THIS TEXT EVERYWHERE
+==================================================
+
+Delete this sentence globally:
+
+"Pressure/soft wash services for Roof · Pedestrian walkways & sidewalks · Parking garages & lots — assessed during your complimentary walk-through and quoted separately."
+
+==================================================
+5. MOVE “INITIAL SCOPE ALIGNMENT” TEXT
+==================================================
+
+Find ALL instances of:
+
+"Initial Scope Alignment Pricing is based on standard maintenance conditions for the selected areas..."
+
+Remove from inline UI.
+
+Add it under the “Pricing Notes” dropdown as a bullet:
+
+- Pricing is based on standard maintenance conditions for selected areas. Final scope is confirmed during onboarding walkthrough. Additional prep or restoration may require a one-time adjustment.
+
+==================================================
+6. UPDATE PROPOSAL CTA TEXT
+==================================================
+
+Replace ALL instances of:
+
+"Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details."
+
+WITH:
+
+"Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details and requirements."
+
+==================================================
+7. “OUR APPROACH” LINK FIX
+==================================================
+
+Ensure the bottom link:
+
+“Our Approach”
+
+Correctly scrolls or routes to the actual “Our Approach” section on the page.
+
+Fix anchor or routing if broken.
+
+==================================================
+8. LABEL + UI CLEANUP
+==================================================
+
+Change:
+
+"Unit turns only"
+→ "Monthly unit turns only"
+
+Change:
+
+"Wall Surface"
+→ "Surface Coverage"
+
+Helper text:
+"calculated automatically"
+
+Do NOT show:
+- x3.5
+- multipliers
+- any calculation explanation
+
+==================================================
+9. SAVINGS COPY FIX
+==================================================
+
+Replace:
+
+"Save 5% vs annual plan"
+→ "5% common-area efficiency savings"
+
+"Save 10% vs annual plan"
+→ "10% common-area efficiency savings"
+
+Only show savings if Step 2 > 0.
+
+==================================================
+10. FINAL QA CHECKLIST
+==================================================
+
+Confirm:
+
+1. Step 1 and Step 2 use different touch-up logic
+2. Step 2 is NOT double-discounted
+3. Unit turns use Turns/Mo as count, not %
+4. Unit-turn efficiency works
+5. Tier 1 = unit turns only
+6. Tier 2/3/4 increase meaningfully when Step 2 is used
+7. All toggles default to touch-up
+8. Removed wash sentence everywhere
+9. Scope alignment moved to pricing notes
+10. Proposal CTA text updated
+11. “Our Approach” link works
+12. Labels updated
+13. No UI redesign occurred
+
+This task is complete only when ALL items above are true.
