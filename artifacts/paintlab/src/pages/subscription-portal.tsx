@@ -229,22 +229,22 @@ export default function SubscriptionPortal() {
               </motion.button>
             ))}
 
-            {/* Filler cell — logo + contact (fills empty 9th slot in 3-col grid) */}
-            <motion.div variants={fadeInUp} className="bg-card p-8 md:p-10 flex flex-col justify-between border-l-0 relative overflow-hidden">
+            {/* Filler cell — full-width brand contact bar */}
+            <motion.div variants={fadeInUp} className="bg-card p-8 md:p-10 flex items-center justify-center border-l-0 relative overflow-hidden md:col-span-2 xl:col-span-3">
               <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
-              <div className="relative z-10 flex flex-col h-full">
-                <img src="/logo.svg" alt="PaintLab" className="h-10 w-auto object-contain mb-6 opacity-90" />
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">
+              <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 max-w-3xl w-full">
+                <img src="/logo.svg" alt="PaintLab" className="h-10 w-auto object-contain opacity-90 flex-shrink-0" />
+                <p className="text-muted-foreground text-sm leading-relaxed text-center md:text-left flex-grow">
                   Not sure which plan fits? Our team will walk you through the right configuration for your property — no commitment required.
                 </p>
-                <div className="mt-auto space-y-3">
+                <div className="flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
                   <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Subscription%20Inquiry"
-                    className="flex items-center gap-3 w-full px-4 py-3 bg-primary text-background text-sm font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors">
+                    className="flex items-center gap-3 px-4 py-3 bg-primary text-background text-sm font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors whitespace-nowrap">
                     <Mail className="w-4 h-4 flex-shrink-0" />
                     hello@paintlabpro.com
                   </a>
                   <a href="tel:+15124843124"
-                    className="flex items-center gap-3 w-full px-4 py-3 border border-border text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    className="flex items-center gap-3 px-4 py-3 border border-border text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors whitespace-nowrap">
                     <Phone className="w-4 h-4 flex-shrink-0" />
                     (512) 484-3124
                   </a>
@@ -255,17 +255,6 @@ export default function SubscriptionPortal() {
         </div>
       </section>
 
-      <section className="py-16 bg-card border-t border-border">
-        <div className="container mx-auto px-6 md:px-12 text-center">
-          <p className="text-muted-foreground mb-2">Not sure which category fits your property?</p>
-          <a
-            href="mailto:hello@paintlabpro.com?subject=PaintLab%20Subscription%20Inquiry"
-            className="text-primary font-semibold hover:underline inline-flex items-center gap-1"
-          >
-            Talk to our team <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
-      </section>
 
       <Footer />
     </div>

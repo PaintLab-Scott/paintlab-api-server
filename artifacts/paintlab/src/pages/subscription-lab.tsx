@@ -1063,13 +1063,6 @@ export default function SubscriptionLab() {
                   "STEP 2",
                   (
                     <div>
-                      {/* Expanded OPTIONAL details — only visible when expanded */}
-                      {optionalExpanded && (
-                        <div className="mb-5 p-3 border border-primary/30 bg-primary/5 text-xs text-muted-foreground leading-relaxed">
-                          Corridors, stairwells, amenity spaces, and building exterior. It is completely optional. <strong className="text-foreground">Tier 1 always covers unit turns</strong> regardless of what you select here. Tiers 2–4 become available once you select at least one zone below.
-                        </div>
-                      )}
-
                       <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the quantity of each zone type and select <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> per zone. Repaints receive a complete two-coat repaint and drywall patches at each service cycle. Touch-ups restore appearance with precision spot coating, scuff repair, and color matching.</p>
 
                       {/* Service legend — redesigned compact inline */}
@@ -1211,15 +1204,8 @@ export default function SubscriptionLab() {
                       </div>
                     </div>
                   ),
-                  <div className="flex items-center gap-2 border-2 border-primary/40 bg-primary/5 px-3 py-1.5 flex-shrink-0">
-                    <div className="flex-shrink-0 bg-primary text-background text-[9px] font-black uppercase tracking-widest px-2 py-0.5">OPTIONAL</div>
-                    <p className="text-xs text-foreground font-medium leading-snug hidden sm:block">
-                      This step covers your building's <span className="text-primary">shared public areas only</span>
-                    </p>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setOptionalExpanded(o => !o); }}
-                      className="flex-shrink-0 text-primary hover:text-primary/70 transition-colors">
-                      {optionalExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
+                  <div className="border border-primary/40 bg-primary/5 px-2 py-1 flex-shrink-0 inline-flex">
+                    <div className="bg-primary text-background text-[9px] font-black uppercase tracking-widest px-2 py-0.5">OPTIONAL</div>
                   </div>
                 )}
 
@@ -1251,7 +1237,11 @@ export default function SubscriptionLab() {
                       )}
                     </div>
                   </div>
-                ))}
+                ),
+                  <div className="border border-primary/40 bg-primary/5 px-2 py-1 flex-shrink-0 inline-flex">
+                    <div className="bg-primary text-background text-[9px] font-black uppercase tracking-widest px-2 py-0.5">OPTIONAL</div>
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -1577,14 +1567,8 @@ export default function SubscriptionLab() {
               <div className="h-[1px] w-10 bg-primary" />
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Select Your Tier</span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">
-              {isMultiFamily ? "4-Tier Multi-Family Autopilot Plan" : "3-Tier Commercial Maintenance Plan"}
-            </h2>
-            <p className="text-muted-foreground text-sm mt-2">
-              One-time onboarding fee: <strong className="text-foreground">$250</strong>
-              <span className="text-muted-foreground ml-1">— covers account management setup</span>
-            </p>
-            <p className="text-[11px] text-muted-foreground/70 mt-1 font-mono tracking-wide">6-month minimum subscription required</p>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">Select Your Preliminary Repaint Plan</h2>
+            <p className="text-muted-foreground text-sm mt-2">Based on your inputs, here's a recommended starting structure for your property.</p>
           </motion.div>
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
@@ -1689,6 +1673,14 @@ export default function SubscriptionLab() {
               <strong className="text-foreground">Important:</strong> The PaintLab Subscription covers precision touch-ups for your selected touch-up zones and full repaints for your selected full repaint zones at the chosen tier frequency. Large-surface color changes or specialty coatings will be scoped as separate projects to ensure the highest quality results.
             </p>
           </div>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5 border border-primary/20 bg-primary/5 px-5 py-4">
+            <span className="text-sm text-muted-foreground">Need a one-time project instead?</span>
+            <a href="/#quote" className="text-sm text-primary font-semibold hover:underline">Request an onsite walkthrough here</a>
+            <span className="text-sm text-muted-foreground">or</span>
+            <a href="mailto:hello@paintlabpro.com" className="text-sm text-primary font-semibold hover:underline">email us</a>
+            <span className="text-sm text-muted-foreground">.</span>
+          </div>
         </div>
       </section>
 
@@ -1701,8 +1693,8 @@ export default function SubscriptionLab() {
                 <div className="h-[1px] w-10 bg-primary" />
                 <span className="text-primary font-mono text-xs tracking-widest uppercase">Get Your Proposal</span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">Fill this form to get your proposal.</h2>
-              <p className="text-muted-foreground mt-2 text-sm sm:text-base">We'll send your full configuration summary and schedule a complimentary walkthrough to finalize scope and investment.</p>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">Schedule Your Property Walkthrough.</h2>
+              <p className="text-muted-foreground mt-2 text-sm sm:text-base">Need a one-time project instead? Request an onsite scope.</p>
             </motion.div>
 
             {submitted ? (
