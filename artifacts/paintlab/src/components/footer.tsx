@@ -21,6 +21,7 @@ export default function Footer() {
             <h4 className="text-foreground font-semibold mb-6 uppercase tracking-wider text-xs">Navigation</h4>
             <ul className="flex flex-col gap-3">
               <li><Link href="/subscription-portal" className="text-muted-foreground hover:text-primary transition-colors text-sm">Subscriptions</Link></li>
+              <li><Link href="/facility-solutions" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-muted-foreground hover:text-primary transition-colors text-sm">Facility Solutions</Link></li>
               <li><a href="/#services" className="text-muted-foreground hover:text-primary transition-colors text-sm">Services</a></li>
               <li><a href="/#sectors" className="text-muted-foreground hover:text-primary transition-colors text-sm">Sectors</a></li>
               <li><a href="/#approach" className="text-muted-foreground hover:text-primary transition-colors text-sm">Our Approach</a></li>

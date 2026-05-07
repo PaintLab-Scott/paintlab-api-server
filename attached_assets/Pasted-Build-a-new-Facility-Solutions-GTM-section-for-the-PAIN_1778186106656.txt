@@ -1,0 +1,714 @@
+Build a new “Facility Solutions” GTM section for the PAINTLAB website.
+
+IMPORTANT:
+These are NOT generic painting service pages.
+These are business-development conversion pages designed specifically for:
+
+* Regional Property Managers
+* Property Managers
+* Regional Maintenance Supervisors
+* Maintenance Managers
+* Facilities Leaders
+* Asset Managers
+* Ownership Groups
+* Operations Leaders
+
+The goal is:
+
+1. Validate operational repaint pain points
+2. Position PAINTLAB as a more modern repaint operations partner
+3. Reduce perceived risk
+4. Encourage pilot conversations
+5. Allow self-directed users to explore facility-specific calculators lower on the page
+
+Brand Direction:
+
+* Premium commercial repaint operations company
+* Modern SaaS-like B2B aesthetic
+* NOT traditional contractor style
+* Executive-level feel
+* Minimal and sophisticated
+* Strong spacing and typography
+* Use:
+
+  * Orange: #FF6600
+  * Charcoal: #1A1A1A
+* White backgrounds with subtle gray sections
+* Premium cards
+* Soft animations
+* Mobile-first responsive
+* Fast loading
+* Clean UX hierarchy
+
+TOP NAVIGATION:
+Add new top-level navigation tab:
+Facility Solutions
+
+Also add to footer navigation.
+
+MAIN HUB PAGE:
+Create:
+URL:
+/facility-solutions
+
+Purpose:
+A high-level routing page that helps users select their facility type and navigate into the corresponding GTM landing page.
+
+IMPORTANT:
+Do NOT place calculator CTAs on this page.
+The purpose is engagement and routing, not pricing/configuration.
+
+Hero:
+Headline:
+Facility-Level Repaint Solutions Built for Operational Leaders
+
+Subheadline:
+PAINTLAB helps property, maintenance, and facilities leaders simplify repaint execution through reliable project support, recurring maintenance options, and low-risk pilot programs designed to prove value before scaling.
+
+Primary CTA:
+Find Your Facility Type
+
+Secondary CTA:
+Request a Pilot Conversation
+
+Create premium tile grid:
+Section headline:
+Choose Your Facility Type
+
+Each tile:
+
+* Premium image or subtle facility visual
+* Facility type
+* One-line operational value statement
+* CTA:
+  Explore Solution
+
+Tiles:
+
+1. Multifamily Residential
+   Text:
+   Reduce repaint friction across unit turns, common areas, amenities, and portfolio maintenance.
+   Link:
+   /facility-solutions/multifamily-repaint-pilot
+
+2. Office / Corporate / CRE
+   Text:
+   Keep office buildings, tenant spaces, lobbies, and shared areas presentation-ready.
+   Link:
+   /facility-solutions/office-cre-repaint-support
+
+3. Retail / Shopping Centers
+   Text:
+   Protect customer-facing spaces with fast, clean, low-disruption repaint support.
+   Link:
+   /facility-solutions/retail-repaint-support
+
+4. Industrial / Warehouse
+   Text:
+   Support facility appearance and operational continuity without disrupting production.
+   Link:
+   /facility-solutions/industrial-warehouse-repaint-support
+
+5. Hospitality
+   Text:
+   Maintain guest-facing presentation across hotels, resorts, restaurants, and amenity spaces.
+   Link:
+   /facility-solutions/hospitality-repaint-support
+
+6. Restaurants
+   Text:
+   Refresh dining rooms, back-of-house areas, exteriors, and brand-critical surfaces.
+   Link:
+   /facility-solutions/restaurant-repaint-support
+
+7. Senior Living
+   Text:
+   Deliver professional repaint support with resident comfort, cleanliness, and scheduling sensitivity.
+   Link:
+   /facility-solutions/senior-living-repaint-support
+
+8. Self Storage
+   Text:
+   Improve curb appeal, corridors, offices, doors, and high-visibility storage areas.
+   Link:
+   /facility-solutions/self-storage-repaint-support
+
+9. HOA / Community Associations
+   Text:
+   Support clubhouses, amenity centers, gates, shared structures, and community assets.
+   Link:
+   /facility-solutions/hoa-community-repaint-support
+
+10. Education / Schools
+    Text:
+    Refresh classrooms, corridors, offices, gyms, and high-use spaces around academic schedules.
+    Link:
+    /facility-solutions/education-facility-repaint-support
+
+11. Healthcare
+    Text:
+    Support clean, professional repaint execution for patient-facing and staff-facing environments.
+    Link:
+    /facility-solutions/healthcare-facility-repaint-support
+
+Add section below tile grid:
+
+Headline:
+Start Small. Prove the Model. Scale What Works.
+
+Body:
+PAINTLAB is designed for leaders who want a more reliable repaint partner without committing an entire portfolio upfront. We help teams identify a pilot property, define the repaint scope, prove responsiveness and workmanship, then explore a broader maintenance or project-based relationship.
+
+CTA:
+Start With a Pilot Property
+
+SEO:
+Title:
+Facility Repaint Solutions | PAINTLAB Austin
+
+Meta Description:
+PAINTLAB provides facility-level repaint support for multifamily, office, retail, hospitality, industrial, senior living, self storage, HOA, education, and healthcare properties in Austin and Central Texas.
+
+---
+
+## UNIVERSAL FACILITY PAGE FRAMEWORK
+
+Build individual landing pages for each facility type using this exact structure.
+
+IMPORTANT:
+These are GTM conversion pages.
+NOT generic painting pages.
+
+Primary conversion goal:
+Start pilot conversations.
+
+Secondary conversion goal:
+Allow users to self-explore facility-specific repaint calculators lower on the page.
+
+IMPORTANT CALCULATOR RULES:
+
+* NEVER place calculator CTA in hero section
+* NEVER make calculator CTA visually equal to the pilot CTA
+* Calculator CTA should appear once only
+* Calculator CTA should appear mid-to-lower page
+* Calculator CTA should feel consultative and secondary
+* Pilot/project CTA remains primary throughout page
+
+UNIVERSAL PAGE STRUCTURE:
+
+1. Hero
+2. Operational Pain Points
+3. PAINTLAB Positioning
+4. Pilot Project Model
+5. Decision-Maker Support
+6. Facility Scope Examples
+7. Calculator CTA Section
+8. Operational Outcomes
+9. CTA Section
+10. FAQ
+11. Final CTA
+
+PRIMARY CTA LANGUAGE:
+
+* Start With a Pilot Property
+* Start With a Pilot Project
+* Talk Through Your Repaint Process
+* Request Scope Review
+
+CALCULATOR CTA LANGUAGE:
+Headline:
+Want to Preview Maintenance Plan Scenarios?
+
+Body:
+If your team wants to explore how recurring repaint support could be structured, use the PAINTLAB planning calculator for this facility type before starting a pilot conversation.
+
+Button CTA:
+Build Your Repaint Plan
+
+Design:
+Soft secondary CTA band or premium card.
+NOT dominant.
+NOT oversized.
+
+---
+
+## CALCULATOR ROUTING RULES
+
+IMPORTANT:
+Each facility page calculator CTA must point to the matching facility calculator.
+
+Do NOT send all traffic to the top of /subscription-portal.
+
+Use either:
+
+* dedicated calculator routes
+  OR
+* anchor links that auto-scroll/open the matching calculator
+
+Preferred route structure:
+
+Multifamily:
+/subscription-portal/multifamily
+
+Office / CRE:
+/subscription-portal/office-cre
+
+Retail:
+/subscription-portal/retail
+
+Industrial:
+/subscription-portal/industrial
+
+Education:
+/subscription-portal/education
+
+Healthcare:
+/subscription-portal/healthcare
+
+Hospitality:
+/subscription-portal/hospitality
+
+Restaurants:
+/subscription-portal/restaurants
+
+Senior Living:
+/subscription-portal/senior-living
+
+Self Storage:
+/subscription-portal/self-storage
+
+HOA:
+/subscription-portal/hoa-community-associations
+
+If route-based structure is difficult, use anchor links:
+
+/subscription-portal#multifamily
+/subscription-portal#office-cre
+/subscription-portal#retail
+/subscription-portal#industrial
+/subscription-portal#education
+/subscription-portal#healthcare
+/subscription-portal#hospitality
+/subscription-portal#restaurants
+/subscription-portal#senior-living
+/subscription-portal#self-storage
+/subscription-portal#hoa-community-associations
+
+IMPORTANT:
+If calculators for Hospitality, Senior Living, Self Storage, or HOA do not yet exist:
+
+* create them
+* match styling of existing calculators
+* create facility-specific pricing logic and workflows
+* maintain same UX and design consistency as existing calculators
+
+---
+
+## MULTIFAMILY PAGE
+
+URL:
+/facility-solutions/multifamily-repaint-pilot
+
+SEO Title:
+Multifamily Repaint Support Austin | PAINTLAB
+
+Meta Description:
+PAINTLAB helps Austin multifamily property managers, regional property managers, and maintenance leaders simplify repaint execution across unit turns, common areas, amenities, and pilot property repaint programs.
+
+Hero Headline:
+Multifamily Repaint Support Built for Regional Property & Maintenance Leaders
+
+Hero Subheadline:
+PAINTLAB helps multifamily teams simplify repaint execution across unit turns, common areas, amenities, and ongoing property maintenance — starting with a focused pilot property before scaling the relationship.
+
+Pain Points:
+
+* Unit turns delayed by painter availability
+* Onsite teams stretched thin during peak season
+* Inconsistent workmanship across properties
+* Too much vendor chasing and follow-up
+* Common areas and amenities becoming reactive maintenance items
+* Regional leaders lacking visibility into repaint consistency
+
+Positioning:
+PAINTLAB is designed as a repaint operations partner for multifamily teams that need dependable execution, professional communication, cleaner scopes, and flexible support across recurring maintenance and project-based repaint needs.
+
+Support Areas:
+
+* Unit turns
+* Common areas
+* Leasing offices
+* Clubhouses
+* Amenities
+* Corridors
+* Stairwells
+* Exterior repaint projects
+* Monthly, quarterly, bi-annual, and one-off repaint support
+
+Pilot Section:
+Headline:
+Start With One Property. Prove the Value. Then Decide What Scales.
+
+Decision-Maker Cards:
+Regional Property Managers
+Maintenance Supervisors
+Property Managers
+Ownership / Asset Leaders
+
+Calculator CTA:
+Button:
+Build Your Multifamily Repaint Plan
+
+Link:
+/subscription-portal/multifamily
+
+Outcomes:
+
+* Faster repaint readiness
+* Less vendor chasing
+* More predictable execution
+* Cleaner communication
+* Professional crews
+* Standardized workmanship
+* Flexible support model
+* Scalable partnership path
+
+Final CTA:
+Headline:
+Test PAINTLAB on One Property Before Scaling the Relationship.
+
+CTA:
+Start the Pilot Conversation
+
+---
+
+## OFFICE / CRE PAGE
+
+URL:
+/facility-solutions/office-cre-repaint-support
+
+SEO Title:
+Office & CRE Repaint Support Austin | PAINTLAB
+
+Hero:
+Office & CRE Repaint Support Built Around Tenant Experience
+
+Calculator CTA Link:
+/subscription-portal/office-cre
+
+Pain Points:
+
+* Tenant spaces need fast refreshes before move-in
+* Lobbies and shared areas show wear quickly
+* Building teams juggle too many small vendor issues
+* Repaint work disrupts tenants when poorly scheduled
+* Spec suites and common areas need consistent presentation
+* Property teams need responsive project support
+
+Scopes:
+
+* Lobbies
+* Corridors
+* Tenant suites
+* Spec suites
+* Conference rooms
+* Shared workspaces
+* Parking areas
+* Doors, trim, walls, touch-ups
+
+Primary CTA:
+Start With a Building or Tenant Space Pilot
+
+---
+
+## RETAIL PAGE
+
+URL:
+/facility-solutions/retail-repaint-support
+
+SEO Title:
+Retail Repaint Support Austin | PAINTLAB
+
+Hero:
+Retail Repaint Support Built Around Customer-Facing Spaces
+
+Calculator CTA Link:
+/subscription-portal/retail
+
+Pain Points:
+
+* Customer-facing surfaces affect brand perception
+* Storefronts and common areas wear down quickly
+* Repaint work must avoid business disruption
+* Property managers need responsive vendor support
+* Shopping centers need consistent presentation
+* Small repaint issues become visible fast
+
+Primary CTA:
+Start With a Storefront or Center Pilot
+
+---
+
+## INDUSTRIAL PAGE
+
+URL:
+/facility-solutions/industrial-warehouse-repaint-support
+
+SEO Title:
+Industrial & Warehouse Repaint Support Austin | PAINTLAB
+
+Hero:
+Industrial & Warehouse Repaint Support Without Operational Disruption
+
+Calculator CTA Link:
+/subscription-portal/industrial
+
+Pain Points:
+
+* Operations cannot stop for repaint work
+* High-use areas wear quickly
+* Safety markings and surfaces need upkeep
+* Large spaces require coordinated execution
+* Facility teams need reliable scheduling
+* Appearance still matters for staff, vendors, and visitors
+
+Primary CTA:
+Start With a Defined Facility Scope
+
+---
+
+## HOSPITALITY PAGE
+
+URL:
+/facility-solutions/hospitality-repaint-support
+
+SEO Title:
+Hospitality Repaint Support Austin | PAINTLAB
+
+Hero:
+Hospitality Repaint Support Built Around Guest Experience
+
+Calculator CTA Link:
+/subscription-portal/hospitality
+
+IMPORTANT:
+Create the hospitality calculator if it does not already exist.
+
+Pain Points:
+
+* Guest-facing wear impacts reviews and perception
+* Rooms, corridors, and amenities need fast refreshes
+* Maintenance teams are stretched thin
+* Scheduling must work around occupancy
+* Quality must match brand standards
+* Small paint issues become noticeable quickly
+
+Primary CTA:
+Start With a Guest-Facing Pilot Area
+
+---
+
+## RESTAURANTS PAGE
+
+URL:
+/facility-solutions/restaurant-repaint-support
+
+SEO Title:
+Restaurant Repaint Support Austin | PAINTLAB
+
+Hero:
+Restaurant Repaint Support Built Around Brand, Cleanliness & Guest Experience
+
+Calculator CTA Link:
+/subscription-portal/restaurants
+
+IMPORTANT:
+Create the restaurant calculator if it does not already exist.
+
+Pain Points:
+
+* Dining room wear impacts guest perception
+* Repaint work must avoid service disruption
+* Brand colors and presentation matter
+* Back-of-house areas take heavy abuse
+* Small touch-ups become visible quickly
+* Operators need dependable after-hours support
+
+Primary CTA:
+Start With a Restaurant Refresh Pilot
+
+---
+
+## SENIOR LIVING PAGE
+
+URL:
+/facility-solutions/senior-living-repaint-support
+
+SEO Title:
+Senior Living Repaint Support Austin | PAINTLAB
+
+Hero:
+Senior Living Repaint Support With Clean, Professional Execution
+
+Calculator CTA Link:
+/subscription-portal/senior-living
+
+IMPORTANT:
+Create the senior living calculator if it does not already exist.
+
+Pain Points:
+
+* Resident comfort must be protected
+* Shared spaces need consistent upkeep
+* Crews must be professional and respectful
+* Scheduling requires sensitivity
+* Maintenance teams often need supplemental support
+* Cleanliness and communication matter more than usual
+
+Primary CTA:
+Start With a Low-Disruption Pilot Area
+
+---
+
+## SELF STORAGE PAGE
+
+URL:
+/facility-solutions/self-storage-repaint-support
+
+SEO Title:
+Self Storage Repaint Support Austin | PAINTLAB
+
+Hero:
+Self Storage Repaint Support That Protects Curb Appeal
+
+Calculator CTA Link:
+/subscription-portal/self-storage
+
+IMPORTANT:
+Create the self storage calculator if it does not already exist.
+
+Pain Points:
+
+* Curb appeal influences customer trust
+* Roll-up doors and corridors show wear
+* Offices and customer areas need clean presentation
+* Facility teams need low-disruption support
+* Multi-site operators need consistency
+* Deferred repainting makes properties feel dated
+
+Primary CTA:
+Start With One Facility Pilot
+
+---
+
+## HOA PAGE
+
+URL:
+/facility-solutions/hoa-community-repaint-support
+
+SEO Title:
+HOA & Community Repaint Support Austin | PAINTLAB
+
+Hero:
+HOA & Community Repaint Support for Shared Property Assets
+
+Calculator CTA Link:
+/subscription-portal/hoa-community-associations
+
+IMPORTANT:
+Create the HOA/community association calculator if it does not already exist.
+
+Pain Points:
+
+* Board approvals require clear scopes
+* Community assets need consistent presentation
+* Common areas wear over time
+* Vendor reliability affects resident satisfaction
+* Managers need professional communication
+* Repaint projects must be easy to explain and approve
+
+Primary CTA:
+Start With a Community Asset Review
+
+---
+
+## EDUCATION PAGE
+
+URL:
+/facility-solutions/education-facility-repaint-support
+
+SEO Title:
+Education Facility Repaint Support Austin | PAINTLAB
+
+Hero:
+Education Facility Repaint Support Built Around Academic Schedules
+
+Calculator CTA Link:
+/subscription-portal/education
+
+Pain Points:
+
+* Work must fit around school schedules
+* High-traffic areas wear quickly
+* Cleanliness and professionalism matter
+* Summer and break windows require reliable execution
+* Facility teams need scalable support
+* Repaint projects need clear planning
+
+Primary CTA:
+Start With a Campus Scope Review
+
+---
+
+## HEALTHCARE PAGE
+
+URL:
+/facility-solutions/healthcare-facility-repaint-support
+
+SEO Title:
+Healthcare Facility Repaint Support Austin | PAINTLAB
+
+Hero:
+Healthcare Facility Repaint Support for Professional, Patient-Facing Environments
+
+Calculator CTA Link:
+/subscription-portal/healthcare
+
+Pain Points:
+
+* Patient-facing spaces must look clean and cared for
+* Scheduling must reduce disruption
+* Crews must be professional and respectful
+* High-use areas show wear quickly
+* Facility teams need dependable support
+* Presentation affects patient confidence
+
+Primary CTA:
+Start With a Low-Disruption Pilot Scope
+
+GLOBAL UX REQUIREMENTS:
+
+* Sticky mobile CTA
+* Smooth scrolling
+* Premium transitions
+* Strong visual hierarchy
+* SEO optimized
+* Local Austin/Central Texas references naturally included
+* Fast load performance
+* Consistent CTA styling
+* Premium modern card layouts
+* Modern icons
+* Executive-level polish
+
+VERY IMPORTANT:
+These pages should feel like:
+
+* a modern facility operations platform
+* a repaint operations partner
+* a scalable maintenance solution
+
+NOT:
+
+* a local painter website
+* a handyman service
+* a generic contractor landing page
