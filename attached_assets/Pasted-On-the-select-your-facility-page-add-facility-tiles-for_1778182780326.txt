@@ -1,0 +1,30 @@
+On the select your facility page, add facility tiles for hoa/community associations, senior living, self storage, and hospitality. within each tile create relevant content (similar to other facility type tiles - orange sub header, light grey high level SEO-focused explanation) and in the calculator include relevant rooms/areas of the respective facility type that typically needs repainting. examples include:HOA / Community Associations - include relevant areas/rooms such as clubhouse/amenity center, pool area, mail/package center, gym/fitness center, doors/trim, exterior refreshes - use common placeholder sq footage for each.hospitality - include areas/rooms such as - lobby/waiting area, front desk/host station, entrance area, dining room, bar area, guest rooms (use 200 as placeholder sq ft), hallway corridors, elevator bays, conference rooms (use 800 as placeholder sq ft), ballrooms (use 3500 as placeholder sq ft), bathrooms, spa/pool area, private offices, door areas, etc.senior living - hallways, lobby/front desk, dining room, elevator bays, door areas, etc.self storage - office, public bathrooms (placeholder sq ft 50), interior corridors (recommend the best placeholder sq ft per corridor), unit rollup doors (calculate $100 per; do not show or require any data in the sq ft each and surface coverage fields), exterior walls, storage unit 5' x 5' (placeholder square feet 25), storage unit 5' x 10' (placeholder square feet 50), storage unit 5' x 15' (placeholder square feet 75), storage unit 10' x 10' (placeholder square feet 10), storage unit 10' x 15' (placeholder square feet 150), storage unit 10' x 20' (placeholder square feet 200), storage unit 10' x 25/30' (placeholder square feet 250).here is the code for the calculations of the 4 new facility calculators for hospitality, self storage, hoa/community associations and senior living. const facilityPricingModels = {
+  self_storage: {
+    name: "Self-Storage Facility",
+    full_repaint_pssf: 0.85,     // Lower cost; mostly hallway partitions and doors
+    touch_up_coverage_pct: 20,   // Low wear; focus on corners/loading areas
+    touch_up_cost_factor: 25     // Fast work; minimal detail required
+  },  HOA_Community_Associations: {
+    name: "HOA / Community Association Facility",
+    full_repaint_pssf: 3.50,     // Lower cost; mostly hallway partitions and doors
+    touch_up_coverage_pct: 20,   // Low wear; focus on corners/loading areas
+    touch_up_cost_factor: 25     // Fast work; minimal detail required
+  },
+  hospitality: {
+    name: "Hospitality (Hotels/Resorts)",
+    full_repaint_pssf: 1.50,     // High-end finishes, guest rooms, and accent walls
+    touch_up_coverage_pct: 25,   // Heavy luggage scuffs in corridors/lobbies
+    touch_up_cost_factor: 45     // High labor cost; must work around guests/staff
+  },
+  senior_living: {
+    name: "Senior Living Facility",
+    full_repaint_pssf: 1.35,     // Durable, low-VOC paints; lots of trim/handrails
+    touch_up_coverage_pct: 20,   // High wheelchair/medical cart scuffing
+    touch_up_cost_factor: 40     // Medium labor; sensitive environment/safety protocols
+  }
+};
+
+/** * FORMULA LOGIC FOR REPLIT:
+ * * 1. Base Project Cost = Total Surface SqFt * full_repaint_pssf
+ * 2. Subscription Monthly Rate = (Base Project Cost * touch_up_coverage_pct * touch_up_cost_factor) / 12
+ */

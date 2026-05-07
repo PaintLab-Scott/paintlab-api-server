@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { ArrowLeft, ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight, Dumbbell, Phone, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Heart, Factory, Briefcase, Car, GraduationCap, ShoppingCart, ChevronRight, Dumbbell, Phone, Mail, Home, Users, Package, Coffee } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -87,6 +87,42 @@ const facilities = [
     badge: "Commercial Calculator",
     path: "commercial",
   },
+  {
+    id: "hoa",
+    label: "HOA / Community Associations",
+    sub: "Residential Communities, Condos, Mixed-Use",
+    icon: <Home className="w-8 h-8" />,
+    desc: "Clubhouse, walkway, and amenity area refresh cycles that keep your community's shared spaces move-in ready year-round. Scheduled touch-up and repaint programs with no project surprises.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
+  {
+    id: "senior-living",
+    label: "Senior Living",
+    sub: "Assisted Living, Memory Care, Independent Living",
+    icon: <Users className="w-8 h-8" />,
+    desc: "Durable, low-VOC coatings and zero-disruption scheduling for senior communities. Resident corridors, dining halls, and activity rooms maintained on a subscription schedule.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
+  {
+    id: "self-storage",
+    label: "Self-Storage Facilities",
+    sub: "Climate-Controlled, Drive-Up, Mixed Storage",
+    icon: <Package className="w-8 h-8" />,
+    desc: "Front-office polish and hallway touch-up programs that keep your storage facility looking professional at every customer touchpoint — on a predictable monthly investment.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
+  {
+    id: "hospitality",
+    label: "Hospitality",
+    sub: "Hotels, Resorts, Extended Stay, Boutique",
+    icon: <Coffee className="w-8 h-8" />,
+    desc: "Guest corridor refresh cycles, lobby repaints, and dining area maintenance for hotels and hospitality venues. Delivered around your occupancy schedule with zero guest disruption.",
+    badge: "Commercial Calculator",
+    path: "commercial",
+  },
 ];
 
 export default function SubscriptionPortal() {
@@ -102,6 +138,10 @@ export default function SubscriptionPortal() {
     "education": "education-campus-painting-austin-tx",
     "retail": "retail-store-painting-austin-tx",
     "gyms-fitness": "gym-fitness-center-painting-austin-tx",
+    "hoa": "hoa-community-association-painting-austin-tx",
+    "senior-living": "senior-living-facility-painting-austin-tx",
+    "self-storage": "self-storage-facility-painting-austin-tx",
+    "hospitality": "hospitality-hotel-painting-austin-tx",
   };
 
   const handleSelect = (facility: typeof facilities[0]) => {
@@ -141,11 +181,8 @@ export default function SubscriptionPortal() {
             <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 leading-tight">
               Build Your <span className="text-primary">Repaint Plan.</span>
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-sm font-bold text-primary mb-3 leading-relaxed">
-              Select your facility type and we'll open the calculator to build your repaint plan — takes 60 seconds
-            </motion.p>
-            <motion.p variants={fadeInUp} className="text-xl text-muted-foreground leading-relaxed">
-              Start with a subscription estimate in under 60 seconds
+            <motion.p variants={fadeInUp} className="text-base text-muted-foreground/70 leading-relaxed">
+              Select your facility type and we'll open the calculator to build your repaint plan — <strong className="text-primary font-bold">takes 60 seconds</strong>
             </motion.p>
           </motion.div>
         </div>
@@ -183,10 +220,10 @@ export default function SubscriptionPortal() {
                 <p className="text-primary text-xs font-mono uppercase tracking-wider mb-4">{facility.sub}</p>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">{facility.desc}</p>
 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
-                  <span className="text-xs text-muted-foreground">Start Estimate →</span>
-                  <div className="w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background transition-colors flex-shrink-0">
-                    <ChevronRight className="w-4 h-4" />
+                <div className="flex items-center mt-auto pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 px-3 py-2 border border-primary/30 bg-primary/10 group-hover:bg-primary group-hover:border-primary transition-all duration-200">
+                    <span className="text-sm font-semibold text-primary group-hover:text-background transition-colors">Start Estimate</span>
+                    <ChevronRight className="w-4 h-4 text-primary group-hover:text-background transition-colors flex-shrink-0" />
                   </div>
                 </div>
               </motion.button>
@@ -215,15 +252,6 @@ export default function SubscriptionPortal() {
               </div>
             </motion.div>
           </motion.div>
-        </div>
-      </section>
-
-      <section className="py-5 bg-background border-t border-border">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground border border-border/40 bg-secondary/10 px-4 py-3">
-            <span><strong className="text-foreground">Minimum service visit: $500.</strong> Final scope and pricing confirmed after your walkthrough.</span>
-            <span className="text-muted-foreground/60 text-[10px] italic">One-time onboarding fee: $250</span>
-          </div>
         </div>
       </section>
 

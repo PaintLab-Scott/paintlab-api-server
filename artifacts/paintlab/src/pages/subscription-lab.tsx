@@ -59,6 +59,10 @@ const FACILITY_REPAINT_RATES: Record<string, number> = {
   education:            1.75,
   industrial_warehouse: 1.00,
   gyms_fitness:         2.00,
+  hoa_community:        3.50,
+  self_storage:         0.85,
+  hospitality:          1.50,
+  senior_living:        1.35,
 };
 
 const FACILITY_TOUCHUP_CONFIG: Record<string, { touchupCoveragePercent: number; touchupCostFactor: number }> = {
@@ -70,6 +74,10 @@ const FACILITY_TOUCHUP_CONFIG: Record<string, { touchupCoveragePercent: number; 
   education:            { touchupCoveragePercent: 0.15, touchupCostFactor: 0.40 },
   industrial_warehouse: { touchupCoveragePercent: 0.20, touchupCostFactor: 0.30 },
   gyms_fitness:         { touchupCoveragePercent: 0.15, touchupCostFactor: 0.50 },
+  hoa_community:        { touchupCoveragePercent: 0.20, touchupCostFactor: 0.25 },
+  self_storage:         { touchupCoveragePercent: 0.20, touchupCostFactor: 0.25 },
+  hospitality:          { touchupCoveragePercent: 0.25, touchupCostFactor: 0.45 },
+  senior_living:        { touchupCoveragePercent: 0.20, touchupCostFactor: 0.40 },
 };
 
 const MINIMUM_SERVICE_VISIT = 500;
@@ -168,6 +176,10 @@ const FACILITY_PARAM_TO_PRICING_KEY: Record<string, string> = {
   automotive:         "automotive",
   education:          "education",
   "gyms-fitness":     "gyms_fitness",
+  hoa:                "hoa_community",
+  "senior-living":    "senior_living",
+  "self-storage":     "self_storage",
+  hospitality:        "hospitality",
 };
 
 function getFacilityPricing(facilityParam: string): { repaintRate: number; tuCoverage: number; tuCostFactor: number } {
@@ -290,6 +302,10 @@ const FACILITY_LABELS: Record<string, string> = {
   education: "Education",
   retail: "Retail",
   "gyms-fitness": "Gyms & Fitness Centers",
+  hoa: "HOA / Community Associations",
+  "senior-living": "Senior Living",
+  "self-storage": "Self-Storage",
+  hospitality: "Hospitality",
   commercial: "Commercial / Industrial",
 };
 
@@ -441,6 +457,72 @@ const FACILITY_CONFIGS: Record<string, FacilityConfig> = {
       { key: "offices", label: "Offices & Staff Areas", info: "Manager offices, trainer offices, and staff-only back areas. Enter combined floor sqft.", defaultSqFt: 300 },
     ],
   },
+  hoa: {
+    touchUpDesc: "Touch-up zones are the covered walkways, breezeways, and shared corridor areas throughout your community — high-traffic paths where daily foot traffic and move-in/move-out activity causes surface wear. Precision touch-ups keep walkway walls, stairwell landings, and community entry paths consistently fresh.",
+    hubDesc: "Full repaint zones are the destination amenity spaces your residents gather in — the clubhouse great room, fitness center, pool cabana, and meeting rooms. Full repaints at each service cycle keep these premium community spaces inviting and well-maintained.",
+    touchUpZones: [
+      { key: "coveredWalkways", label: "Covered Walkways & Breezeways", info: "Covered exterior and semi-exterior walkways connecting building entries and units. Measure total walkway length × width. These surfaces see daily foot traffic and are the highest-wear common area in most HOA properties.", defaultSqFt: 800 },
+      { key: "stairwells", label: "Stairwells & Landing Areas", info: "Interior and covered stairwells connecting floors or building sections. Enter footprint sqft of the stair shaft per landing. Surface coverage is calculated automatically.", defaultSqFt: 80 },
+      { key: "mailroomCorridor", label: "Mailroom Corridor & Entry", info: "Hallway and entry area approaching the mailroom or mail kiosk area. High daily traffic from residents. Enter sqft of the approach corridor.", defaultSqFt: 200 },
+      { key: "parkingWalkways", label: "Parking Structure Walkways", info: "Covered walkways, stairwells, and pedestrian paths within or adjacent to parking structures. Enter total sqft of painted wall surface in these areas.", defaultSqFt: 400 },
+    ],
+    hubZones: [
+      { key: "clubhouse", label: "Clubhouse / Great Room", info: "Main clubhouse common area including great room, lounge, and social areas. Full repaint at each cycle. Enter total floor sqft.", defaultSqFt: 2500 },
+      { key: "fitnessRoom", label: "Fitness / Workout Area", info: "Community fitness room or gym. High-humidity, impact-prone surfaces. Enter floor sqft.", defaultSqFt: 1200 },
+      { key: "poolCabana", label: "Pool Deck / Cabana Area", info: "Interior walls of pool cabana structures, pool restrooms, and covered deck areas adjacent to the pool. Enter floor sqft of enclosed/covered pool area.", defaultSqFt: 600 },
+      { key: "meetingRoom", label: "Meeting / Event Room", info: "Community meeting room or event space. Full repaint keeps this space fresh for resident gatherings and HOA board meetings. Enter floor sqft.", defaultSqFt: 800 },
+      { key: "managementOffice", label: "Community Management Office", info: "On-site HOA or property management office. Enter floor sqft.", defaultSqFt: 400 },
+      { key: "bathrooms", label: "Common Area Restrooms", info: "Shared restrooms in clubhouse, pool area, or common building. Moisture-resistant finishes required. Enter combined floor sqft.", defaultSqFt: 300 },
+    ],
+  },
+  "senior-living": {
+    touchUpDesc: "Touch-up zones are the resident corridors and hallways where daily wheelchair, walker, and mobility-aid traffic causes scuffing along the lower wall surface. PaintLab uses durable, scrubbable, low-VOC finishes designed for sensitive resident environments — touch-ups are completed with minimal disruption to daily care schedules.",
+    hubDesc: "Full repaint zones are the communal gathering spaces where residents spend their time — the main lobby, dining hall, activity room, and chapel. Full repaints maintain a warm, welcoming atmosphere that reflects the quality of care your facility provides.",
+    touchUpZones: [
+      { key: "residentCorridors", label: "Resident Room Corridors", info: "Primary hallways running past resident room doors. High daily traffic from wheelchairs, walkers, and medical carts. Enter sqft per floor (hallway length × width).", defaultSqFt: 1200 },
+      { key: "diningCorridors", label: "Dining Hall Approach Corridors", info: "Hallways leading residents from their rooms to the dining hall. High mobility-aid traffic during meal times. Enter sqft of corridor area.", defaultSqFt: 400 },
+      { key: "therapyHallways", label: "Therapy & Wellness Hallways", info: "Corridors leading to physical therapy, occupational therapy, and wellness areas. Enter sqft per floor.", defaultSqFt: 300 },
+      { key: "serviceCorridors", label: "Staff Service Corridors", info: "Back-of-house staff corridors used for medication carts, laundry, and supply movement. Enter sqft of these pathways.", defaultSqFt: 400 },
+    ],
+    hubZones: [
+      { key: "mainLobby", label: "Main Lobby / Reception", info: "Primary entry lobby and reception area — the first impression for residents, families, and visitors. Enter floor sqft.", defaultSqFt: 1000 },
+      { key: "diningHall", label: "Dining Hall / Bistro", info: "Main dining area where residents gather for meals. High humidity and food service activity require scrubbable finishes. Enter floor sqft.", defaultSqFt: 2500 },
+      { key: "activityRoom", label: "Activity & Common Room", info: "Main multi-purpose common room for activities, social events, and group programming. Enter floor sqft.", defaultSqFt: 1500 },
+      { key: "chapelRoom", label: "Chapel / Meditation Room", info: "Chapel, meditation room, or spiritual care space. Enter floor sqft.", defaultSqFt: 600 },
+      { key: "adminOffices", label: "Administrative Offices", info: "Administrative suite including director's office, social services, and care coordination areas. Enter combined floor sqft.", defaultSqFt: 600 },
+      { key: "bathrooms", label: "Resident & Common Restrooms", info: "Shared restrooms in common areas. ADA-compliant, moisture-resistant finishes. Enter combined floor sqft.", defaultSqFt: 500 },
+    ],
+  },
+  "self-storage": {
+    touchUpDesc: "Touch-up zones are the interior storage hallways and loading corridors where tenant cart traffic, hand trucks, and move-in/move-out activity scuffs the lower wall surface. Touch-ups target corner zones, door surrounds, and wainscot areas that take the most daily damage.",
+    hubDesc: "Full repaint zones are the customer-facing front office and entry areas that define the first impression of your facility. Full repaints at each service cycle keep the front-of-house professional and reassuring to customers considering your storage options.",
+    touchUpZones: [
+      { key: "storageHallways", label: "Climate-Controlled Storage Hallways", info: "Interior hallways within climate-controlled storage buildings. Wall surface between unit door frames is the primary touch-up target. Enter sqft per hallway (length × width).", defaultSqFt: 600 },
+      { key: "loadingCorridors", label: "Loading & Receiving Corridors", info: "Wide corridors connecting the loading dock or drive-in bay to the storage hallways. Heavy cart and furniture traffic. Enter sqft per corridor.", defaultSqFt: 300 },
+    ],
+    hubZones: [
+      { key: "frontOffice", label: "Front Office / Rental Center", info: "Main customer service and rental office. Professional appearance supports conversion of walk-in inquiries. Enter floor sqft.", defaultSqFt: 600 },
+      { key: "entryVestibule", label: "Entry Vestibule / Lobby", info: "Entry vestibule between the exterior door and the rental office or hallway entry. First impression zone. Enter floor sqft.", defaultSqFt: 250 },
+      { key: "bathrooms", label: "Customer Restrooms", info: "Customer-accessible restrooms adjacent to office or loading area. Enter floor sqft.", defaultSqFt: 150 },
+    ],
+  },
+  hospitality: {
+    touchUpDesc: "Touch-up zones are the guest room floor corridors and elevator lobbies that accumulate luggage scuffs, housekeeping cart damage, and constant foot traffic wear. Precision touch-ups maintain the premium finish quality that defines the guest experience in hospitality environments.",
+    hubDesc: "Full repaint zones are the brand-defining public spaces of your property — the main lobby, restaurant, conference rooms, and lounge. Full repaints at each service cycle preserve the elevated aesthetic that defines your guest experience and supports repeat bookings.",
+    touchUpZones: [
+      { key: "guestCorridors", label: "Guest Room Floor Corridors", info: "Hallways on guest room floors. High wear from luggage, housekeeping carts, and constant foot traffic. Enter sqft per floor (length × width).", defaultSqFt: 800 },
+      { key: "elevatorLobbies", label: "Elevator Lobbies & Landings", info: "Elevator vestibule areas on each guest floor. High daily traffic concentration. Enter sqft per landing (typical: 10 × 15 ft = 150 sqft).", defaultSqFt: 150 },
+      { key: "bohCorridors", label: "Back-of-House Service Corridors", info: "Staff-only service corridors used for housekeeping carts, linen transport, and room service. Enter total sqft of these pathways.", defaultSqFt: 400 },
+    ],
+    hubZones: [
+      { key: "mainLobby", label: "Main Lobby / Check-In Area", info: "Primary arrival and check-in area. The brand's most visible surface. Enter floor sqft.", defaultSqFt: 2000 },
+      { key: "restaurantDining", label: "Restaurant / Dining Area", info: "Hotel restaurant or dining room. High humidity and food service environment require scrubbable finishes. Enter floor sqft.", defaultSqFt: 2500 },
+      { key: "conferenceRooms", label: "Conference & Event Rooms", info: "Meeting and event spaces. Enter combined floor sqft.", defaultSqFt: 1500 },
+      { key: "fitnessCenter", label: "Fitness Center", info: "Hotel fitness room or gym. Impact-resistant finishes required. Enter floor sqft.", defaultSqFt: 1200 },
+      { key: "barLounge", label: "Bar / Lounge Area", info: "Hotel bar, lounge, or social area. Premium finishes and high visibility. Enter floor sqft.", defaultSqFt: 800 },
+      { key: "bathrooms", label: "Public & Guest Restrooms", info: "Public restrooms in lobby, restaurant, and event areas. Moisture-resistant, high-durability finishes. Enter combined floor sqft.", defaultSqFt: 400 },
+    ],
+  },
   commercial: {
     touchUpDesc: "Touch-up zones are the shared circulation paths in your facility — hallways, corridors, and transition areas. We apply precision spot coating, edge blending, and color matching at the scheduled frequency of your chosen tier.",
     hubDesc: "Full repaint zones are the primary destination spaces in your facility that receive a complete, two-coat full repaint at every service cycle. These are the anchor spaces that define the aesthetic quality of your property.",
@@ -547,6 +629,10 @@ const SLUG_TO_FACILITY: Record<string, { type: string; facility: string }> = {
   "education-campus-painting-austin-tx": { type: "commercial", facility: "education" },
   "retail-store-painting-austin-tx": { type: "commercial", facility: "retail" },
   "gym-fitness-center-painting-austin-tx": { type: "commercial", facility: "gyms-fitness" },
+  "hoa-community-association-painting-austin-tx": { type: "commercial", facility: "hoa" },
+  "senior-living-facility-painting-austin-tx": { type: "commercial", facility: "senior-living" },
+  "self-storage-facility-painting-austin-tx": { type: "commercial", facility: "self-storage" },
+  "hospitality-hotel-painting-austin-tx": { type: "commercial", facility: "hospitality" },
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -875,8 +961,12 @@ export default function SubscriptionLab() {
                 </button>
               </Link>
             </motion.div>
-            <motion.h1 variants={fadeInUp} className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Configure Your Plan.</motion.h1>
-            <motion.p variants={fadeInUp} className="text-muted-foreground">Facility type: <strong className="text-primary">{facilityLabel}</strong></motion.p>
+            <motion.div variants={fadeInUp} className="flex flex-wrap items-start gap-3 mb-2">
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">{facilityLabel} <span className="text-primary">Repaint Plan.</span></h1>
+              <span className="self-start mt-1.5 px-2.5 py-1 bg-primary text-background text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Takes ~60 sec</span>
+            </motion.div>
+            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary subscription estimate for your property</motion.p>
+            <motion.p variants={fadeInUp} className="text-muted-foreground/50 text-xs">Need a one-time project instead? We'll scope it onsite.</motion.p>
             {!isMultiFamily && (
               <motion.div variants={fadeInUp} className="mt-4">
                 <button type="button" onClick={() => setPricingOpen(o => !o)}
@@ -1403,6 +1493,42 @@ export default function SubscriptionLab() {
             "Ceiling water stain paint touch-up adds $125 per stain area.",
             "Full ceiling repaint needs are scoped as needed.",
           ],
+          hoa: [
+            "Pricing is based on standard maintenance conditions for selected areas. Final scope is confirmed during onboarding walkthrough. Additional prep or restoration may require a one-time adjustment.",
+            "Includes scheduling coordination with HOA management or property management company.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per area.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          "senior-living": [
+            "Pricing is based on standard maintenance conditions for selected areas. Final scope is confirmed during onboarding walkthrough. Additional prep or restoration may require a one-time adjustment.",
+            "All coatings are low-VOC and scrubbable, appropriate for sensitive resident environments.",
+            "Service is coordinated with facility administration to minimize disruption to resident care schedules.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per area.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+          ],
+          "self-storage": [
+            "Pricing is based on standard maintenance conditions for selected areas. Final scope is confirmed during onboarding walkthrough. Additional prep or restoration may require a one-time adjustment.",
+            "Service is typically scheduled during off-peak rental hours or overnight.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per area.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+            "Full ceiling repaint needs are scoped as needed.",
+          ],
+          hospitality: [
+            "Pricing is based on standard maintenance conditions for selected areas. Final scope is confirmed during onboarding walkthrough. Additional prep or restoration may require a one-time adjustment.",
+            "Service is coordinated with hotel operations to avoid peak occupancy periods.",
+            "Guest room floor corridors are serviced floor-by-floor to minimize guest impact.",
+            "Same-color full repaint includes 1 coat.",
+            "New-color repaint usually requires 2 coats and adds 50% to cost, scoped as needed.",
+            "Full repaint includes walls, trim touch-ups, and ceiling touch-up if under 4 total nail/screw holes per area.",
+            "Ceiling water stain paint touch-up adds $125 per stain area.",
+          ],
         };
         const notes = pricingNotes[facilityParam] ?? pricingNotes["office-corporate"];
         return (
@@ -1735,6 +1861,46 @@ export default function SubscriptionLab() {
               { h3: "High-Impact Surface Maintenance for Gyms", body: "Gym interiors sustain intense surface wear from equipment contact, chalk, and high membership volume. PaintLab's fitness facility subscription delivers scheduled touch-up and repaint cycles using impact-resistant finishes suited to active training environments — keeping your facility looking sharp and well-maintained for members." },
               { h3: "After-Hours Gym Painting Services", body: "Fitness facility painting is delivered during early morning or late-night windows to minimize member impact. PaintLab coordinates all service delivery around your gym's peak hours, ensuring painting and coating maintenance never competes with member experience or class schedules." },
               { h3: "Fitness Centers We Serve Across Austin Metro", body: "We serve independent gyms, national fitness franchises, CrossFit affiliates, yoga studios, and multi-sport complexes in Austin, Round Rock, Cedar Park, Georgetown, Kyle, Buda, Westlake, Bee Cave, and Lakeway. PaintLab's subscription gives fitness operators a consistent painting maintenance partner instead of reactive spot-fix contractors." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details and requirements.",
+          },
+          hoa: {
+            h2: "HOA & Community Association Painting Services in Austin, TX",
+            intro: "PaintLab delivers recurring common area painting maintenance for HOA communities, condominium associations, and mixed-use residential developments across Austin, Cedar Park, Round Rock, Georgetown, and the greater Central Texas metro. Our HOA subscription plans keep clubhouses, covered walkways, amenity spaces, and community facilities consistently maintained — on a predictable monthly investment without surprise project invoices.",
+            sections: [
+              { h3: "Clubhouse & Amenity Area Maintenance", body: "HOA clubhouses, fitness rooms, pool cabanas, and meeting spaces accumulate wear from regular resident use. PaintLab's HOA subscription plans deliver scheduled touch-up and repaint cycles for your community's most-used gathering spaces, keeping them fresh and welcoming without disruptive one-time projects." },
+              { h3: "Walkway & Common Area Corridor Touch-Ups", body: "Covered breezeways, stairwells, and community walkways see daily foot traffic from residents and their families. PaintLab's precision touch-up programs address scuffing, surface wear, and finish degradation proactively — maintaining a consistently well-maintained appearance across all shared pathways." },
+              { h3: "Serving HOA Communities Across Austin Metro", body: "We serve HOA communities, condominium associations, and master-planned neighborhoods in Austin, Round Rock, Cedar Park, Georgetown, Pflugerville, Hutto, Buda, Kyle, Westlake, Bee Cave, and Lakeway. PaintLab's subscription gives HOA boards and property managers a reliable, accountable painting maintenance partner." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details and requirements.",
+          },
+          "senior-living": {
+            h2: "Senior Living Facility Painting Services in Austin, TX",
+            intro: "PaintLab provides specialized recurring painting maintenance for assisted living communities, memory care facilities, and independent living developments across Austin and the greater Central Texas metro. Our senior living subscription plans use durable, low-VOC, scrubbable coatings appropriate for sensitive environments — delivered on a zero-disruption schedule coordinated with facility administration.",
+            sections: [
+              { h3: "Resident Corridor & Common Area Maintenance", body: "Senior living corridors, dining halls, and activity rooms sustain consistent surface wear from mobility aids, medical carts, and daily resident activity. PaintLab's senior living subscription delivers scheduled touch-up and repaint cycles using durable, scrubbable, low-VOC finishes suited to the demands of active senior communities." },
+              { h3: "Zero-Disruption Service Around Resident Schedules", body: "Senior living environments require careful coordination to protect resident comfort and safety during service visits. PaintLab works directly with facility administrators, care coordinators, and housekeeping teams to schedule every service visit during low-activity periods — ensuring maintenance never disrupts resident daily routines." },
+              { h3: "Senior Living Facilities We Serve in Austin", body: "We serve assisted living communities, memory care facilities, independent living developments, and continuing care retirement communities in Austin, Round Rock, Cedar Park, Georgetown, Pflugerville, Kyle, Buda, and Westlake. PaintLab's subscription provides senior living operators with a consistent, accountable maintenance partner." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details and requirements.",
+          },
+          "self-storage": {
+            h2: "Self-Storage Facility Painting Services in Austin, TX",
+            intro: "PaintLab delivers recurring interior painting maintenance for climate-controlled and standard self-storage facilities across Austin, Round Rock, Cedar Park, Georgetown, and the greater Central Texas region. Our self-storage subscription plans keep front-office presentation professional, hallway surfaces maintained, and customer-facing areas sharp — on a predictable monthly investment without reactive project spending.",
+            sections: [
+              { h3: "Storage Hallway & Interior Maintenance Programs", body: "Climate-controlled storage hallways accumulate scuffing and surface wear from tenant cart traffic, hand trucks, and constant move-in/move-out activity. PaintLab's touch-up programs address the wainscot zone, door surrounds, and corner areas that take the most daily damage — keeping your interior looking clean and professionally maintained." },
+              { h3: "Front Office & Customer-Facing Area Maintenance", body: "Self-storage rental conversions start at the front office. A professionally maintained reception and entry area builds customer confidence and supports higher rental rates. PaintLab's subscription plans keep your customer-facing spaces in premium condition without interrupting rental operations." },
+              { h3: "Self-Storage Facilities We Serve Across Austin", body: "We serve climate-controlled, drive-up, and multi-story self-storage facilities in Austin, Round Rock, Cedar Park, Georgetown, Pflugerville, Kyle, Buda, and surrounding communities. PaintLab's subscription model gives storage facility operators a reliable painting maintenance partner instead of reactive, one-time contractors." },
+            ],
+            cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details and requirements.",
+          },
+          hospitality: {
+            h2: "Hotel & Hospitality Painting Services in Austin, TX",
+            intro: "PaintLab provides recurring interior painting maintenance for hotels, resorts, extended-stay properties, and boutique hospitality venues across Austin and the greater Central Texas region. Our hospitality subscription plans keep guest corridors, lobbies, dining areas, and event spaces in premium condition — delivered around your occupancy schedule with zero guest disruption.",
+            sections: [
+              { h3: "Guest Floor Corridor & Lobby Maintenance Programs", body: "Hotel guest corridors sustain continuous surface wear from luggage, housekeeping carts, and constant foot traffic. PaintLab's hospitality subscription delivers scheduled touch-up and repaint cycles for guest floor hallways, elevator lobbies, and public areas — maintaining the premium finish quality that defines your brand and drives repeat bookings." },
+              { h3: "Coordinated Service Around Hotel Occupancy", body: "Hospitality facility painting requires careful scheduling around room blocks, group events, and occupancy patterns. PaintLab coordinates all service delivery with hotel operations teams — working floor by floor during low-occupancy windows to ensure painting maintenance never impacts the guest experience." },
+              { h3: "Hotels & Hospitality Properties We Serve in Austin", body: "We serve full-service hotels, select-service properties, extended-stay facilities, boutique hotels, and resort properties in Austin, Round Rock, Cedar Park, Georgetown, Westlake, Bee Cave, and across the greater Central Texas market. PaintLab's subscription gives hospitality operators a consistent painting maintenance partner for every guest-facing surface." },
             ],
             cta: "Need a site-specific scope? Submit the proposal form above and PaintLab will review your facility details and requirements.",
           },
