@@ -138,11 +138,14 @@ export default function SubscriptionPortal() {
               <div className="h-[1px] w-10 bg-primary" />
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Subscription Portal</span>
             </motion.div>
-            <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-bold tracking-tighter mb-6 leading-tight">
-              Select Your <span className="text-primary">Facility Type.</span>
+            <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 leading-tight">
+              Build Your <span className="text-primary">Repaint Plan.</span>
             </motion.h1>
+            <motion.p variants={fadeInUp} className="text-sm font-bold text-primary mb-3 leading-relaxed">
+              Select your facility type and we'll open the calculator to build your repaint plan — takes 60 seconds
+            </motion.p>
             <motion.p variants={fadeInUp} className="text-xl text-muted-foreground leading-relaxed">
-              Choose the category that best describes your property. We'll open the right calculator to build your <strong className="text-foreground">custom subscription plan</strong>.
+              Start with a subscription estimate in under 60 seconds
             </motion.p>
           </motion.div>
         </div>
@@ -181,7 +184,7 @@ export default function SubscriptionPortal() {
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">{facility.desc}</p>
 
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
-                  <span className="text-xs text-muted-foreground">Configure plan →</span>
+                  <span className="text-xs text-muted-foreground">Start Estimate →</span>
                   <div className="w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background transition-colors flex-shrink-0">
                     <ChevronRight className="w-4 h-4" />
                   </div>

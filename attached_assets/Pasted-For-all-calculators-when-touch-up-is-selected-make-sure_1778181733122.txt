@@ -1,0 +1,120 @@
+For all calculators, when touch-up is selected, make sure to calculate and visualize the touch-up “wall square feet” amount. For example, if full repaint for the area selected is 1000 wall sq ft, and the user selects touch-up, calculate the pre-determined % of touch-up per facility calculator and visualize that as the amount of wall sq ft. —— as a reminder, the FINAL FACILITY TOUCH-UP CONFIGURATION + PRICING ENGINE rules are below.  On the homepage, change the hero BUTTON text to: Build Your Repaint PlanOn the select your facility page, add facility tiles for senior living, self storage, and hospitality. within each tile create relevant content (similar to other facility type tiles - orange sub header, light grey high level SEO-focused explanation) and in the calculator include relevant rooms/areas of the respective facility type that typically needs repainting. examples include:HOA / Community Associations - include relevant areas/rooms such as clubhouse/amenity center, pool area, mail/package center, gym/fitness center, doors/trim, exterior refreshes - use common placeholder sq footage for each.hospitality - include areas/rooms such as - lobby/waiting area, front desk/host station, entrance area, dining room, bar area, guest rooms (use 200 as placeholder sq ft), hallway corridors, elevator bays, conference rooms (use 800 as placeholder sq ft), ballrooms (use 3500 as placeholder sq ft), bathrooms, spa/pool area, private offices, door areas, etc.senior living - hallways, lobby/front desk, dining room, elevator bays, door areas, etc.self storage - office, public bathrooms (placeholder sq ft 50), interior corridors (recommend the best placeholder sq ft per corridor), unit rollup doors (calculate $100 per; do not show or require any data in the sq ft each and surface coverage fields), exterior walls, storage unit 5' x 5' (placeholder square feet 25), storage unit 5' x 10' (placeholder square feet 50), storage unit 5' x 15' (placeholder square feet 75), storage unit 10' x 10' (placeholder square feet 10), storage unit 10' x 15' (placeholder square feet 150), storage unit 10' x 20' (placeholder square feet 200), storage unit 10' x 25/30' (placeholder square feet 250).here is the code for the calculations of the 4 new facility calculators for hospitality, self storage, hoa/community associations and senior living. const facilityPricingModels = {
+  self_storage: {
+    name: "Self-Storage Facility",
+    full_repaint_pssf: 0.85,     // Lower cost; mostly hallway partitions and doors
+    touch_up_coverage_pct: 20,   // Low wear; focus on corners/loading areas
+    touch_up_cost_factor: 25     // Fast work; minimal detail required
+  },  HOA_Community_Associations: {
+    name: "HOA / Community Association Facility",
+    full_repaint_pssf: 3.50,     // Lower cost; mostly hallway partitions and doors
+    touch_up_coverage_pct: 20,   // Low wear; focus on corners/loading areas
+    touch_up_cost_factor: 25     // Fast work; minimal detail required
+  },
+  hospitality: {
+    name: "Hospitality (Hotels/Resorts)",
+    full_repaint_pssf: 1.50,     // High-end finishes, guest rooms, and accent walls
+    touch_up_coverage_pct: 25,   // Heavy luggage scuffs in corridors/lobbies
+    touch_up_cost_factor: 45     // High labor cost; must work around guests/staff
+  },
+  senior_living: {
+    name: "Senior Living Facility",
+    full_repaint_pssf: 1.35,     // Durable, low-VOC paints; lots of trim/handrails
+    touch_up_coverage_pct: 20,   // High wheelchair/medical cart scuffing
+    touch_up_cost_factor: 40     // Medium labor; sensitive environment/safety protocols
+  }
+};
+
+/** * FORMULA LOGIC FOR REPLIT:
+ * * 1. Base Project Cost = Total Surface SqFt * full_repaint_pssf
+ * 2. Subscription Monthly Rate = (Base Project Cost * touch_up_coverage_pct * touch_up_cost_factor) / 12
+ */
+On Select Your Facility page, change the following:Headline: Build Your Repaint Plan - make sure 'Repaint Plan' is in orangeUnder that in smaller text: Select your facility type and we'll open the calculator to build your repaint plan  - takes 60 seconds (in bold orange)Then subheadline: Start with a subscription estimate in under 60 secondsWithin the box, change the text "configure plan" to "Start Estimate"Next to text under select your facility type to - Choose the category that best describes your property. We'll open the right calculator to build your custom repaint plan.On all facility calculator pages, change "Configure Your Plan" to the facility type and "Repaint Plan" (ie Multifamily Residential Repaint Plan), with a subheader "Build a preliminary subscription estimate for your property" and microtext near it that says, "Need a one-time project instead? We’ll scope it onsite" and next to the hero text in a smal orange box, have text inside the box that says, "Takes ~60 seconds" which will reduce abandonment.Under Select Your Tier, change "4-tier multi-family autopilot plan" to "Select Your Preliminary Repaint Plan" with a subheader "Based on your inputs, here’s a recommended starting structure for your property." remove the one-time onboarding fee language, but still include 6-month minimum subscription required.Under get your proposal, change "Fill this form to get your proposal" to "Schedule Your Property Walkthrough.Remove the existing sub-header text and replace it with "Need a one-time project instead? Request an onsite scope."MFR calculator page - add the same step 2 optional box in step 3. Have the drop down expand text read, "Exterior paint & cleaning services are completely optional. Tier 1 always covers unit turns regardless of what you select here. Tiers 2–4 become available once you select at least one zone below.At the top of each specific calculator, under Configure Your Plan, include a very clean, easy to read text flow including:This tool provides a subscription estimate. For one-time projects, we’ll complete a walkthrough and provide a custom scope.Facility type: have the facility name in orange like it currently isKeep the pricing assumptions drop down and add that functionality to the multifamily residential calculator AT THE END (conversion moment) After they finish or see results:Need a one-time project instead? Request an onsite walkthrough here or email us (link 'here' to the contact area and link 'email us' to auto open email client to hello@paintlabpro.com). Change home page 'configure your subscription' button to 'configure your repaint plan'For all calculators, when touch-up is selected, calculate and visualize the touch-up “wall square feet” amount. For example, if full repaint for the area selected is 1000 wall sq ft, if the user selects touch-up, calculate the pre-determined % of touch-up per facility calculator and visualize that as the amount of wall sq ft. (using that 1000 sq ft example, if the touch-up coverage % is 20, then factor that into the wall sq ft amount—— as a reminder, the FINAL FACILITY TOUCH-UP CONFIGURATION + PRICING ENGINE rules are below. This was shared with you last week.   FINAL FACILITY TOUCH-UP CONFIGURATION + PRICING ENGINE
+Implement the finalized facility-specific touch-up configuration and pricing logic exactly as outlined below.
+==================================================1. FINAL FULL REPAINT RATES==================================================
+Use these exact full repaint rates:
+const FACILITY_REPAINT_RATES = {  multifamily: 0.65,  office_corporate: 1.75,  retail: 1.50,  medical_healthcare: 3.20,  automotive: 1.75,  education: 1.75,  industrial_warehouse: 1.00,  gyms_fitness: 2.00};
+These are the ONLY approved full repaint PSSF rates.
+==================================================2. FINAL TOUCH-UP CONFIGURATION==================================================
+Touch-up logic has TWO parts:
+A) Touch-Up Definition (% of total PSSF affected)B) Touch-Up Cost Factor (% of full repaint pricing)
+Use this exact configuration:
+const FACILITY_TOUCHUP_CONFIG = {  multifamily: {    touchupCoveragePercent: 0.20,    touchupCostFactor: 0.35  },
+  office_corporate: {    touchupCoveragePercent: 0.15,    touchupCostFactor: 0.35  },
+  retail: {    touchupCoveragePercent: 0.15,    touchupCostFactor: 0.35  },
+  medical_healthcare: {    touchupCoveragePercent: 0.15,    touchupCostFactor: 0.60  },
+  automotive: {    touchupCoveragePercent: 0.15,    touchupCostFactor: 0.35  },
+  education: {    touchupCoveragePercent: 0.15,    touchupCostFactor: 0.40  },
+  industrial_warehouse: {    touchupCoveragePercent: 0.20,    touchupCostFactor: 0.30  },
+  gyms_fitness: {    touchupCoveragePercent: 0.15,    touchupCostFactor: 0.50  }};
+==================================================3. GLOBAL TOUCH-UP CALCULATION LOGIC==================================================
+For ALL non-multifamily facility calculators, use:
+Touch-Up Cost =PSSF × touchupCoveragePercent × fullRepaintRate × touchupCostFactor
+Full Repaint Cost =PSSF × fullRepaintRate
+Implement:
+function calculateFacilityServiceCost({  facilityType,  pssf,  service}) {  const repaintRate =    FACILITY_REPAINT_RATES[facilityType];
+  const config =    FACILITY_TOUCHUP_CONFIG[facilityType];
+  if (!repaintRate || !pssf) return 0;
+  if (service === "repaint") {    return pssf * repaintRate;  }
+  if (service === "touchup") {    return (      pssf *      config.touchupCoveragePercent *      repaintRate *      config.touchupCostFactor    );  }
+  return 0;}
+==================================================4. MULTIFAMILY SPECIAL RULES==================================================
+Multifamily has TWO separate touch-up systems.
+--------------------------------------------------STEP 1 — UNIT TURNS--------------------------------------------------
+Use:
+const UNIT_TURN_REPAINT_RATE = 0.475;const UNIT_SURFACE_MULTIPLIER = 2.9;
+const UNIT_TOUCHUP_COVERAGE = 0.20;const UNIT_TOUCHUP_COST_FACTOR = 0.35;
+Unit-turn touch-up formula:
+touchupCost =unitPSSF ×0.20 ×0.475 ×0.35
+This equals an effective unit-turn touch-up rate of:
+$0.03325 / PSSF
+Unit-turn full repaint formula:
+fullRepaintCost =unitPSSF ×0.475
+IMPORTANT:- Turns/Mo is ACTUAL unit turns/month- NOT a percentage- Unit turns are already monthly- Do NOT apply tier cadence- Do NOT apply $500 minimum to unit turns
+--------------------------------------------------UNIT TURN VOLUME EFFICIENCY--------------------------------------------------
+Apply ONLY to Step 1 unit turns:
+function getUnitTurnEfficiency(totalMonthlyTurns) {  if (totalMonthlyTurns > 25) return 0.90;  if (totalMonthlyTurns > 15) return 0.95;  return 1.0;}
+Apply efficiency only to final Step 1 monthly total.
+--------------------------------------------------STEP 2 — COMMON AREAS--------------------------------------------------
+CRITICAL:Multifamily Step 2 common areas DO NOT use the 20% touch-up coverage reduction.
+Reason:The selected common-area zone already represents the intended maintained surface area.
+Use:
+const MF_COMMON_REPAINT_RATE = 0.65;const MF_COMMON_TOUCHUP_FACTOR = 0.35;
+Step 2 formulas:
+Full Repaint:PSSF × 0.65
+Touch-Up:PSSF × 0.65 × 0.35
+Effective Step 2 touch-up rate:
+$0.2275 / PSSF
+Do NOT multiply Step 2 by 20% coverage.That causes double-discounting and underpricing.
+==================================================5. MULTIFAMILY TIER CADENCE==================================================
+Use:
+const MF_VISITS = {  essential: 0,  asset_shield: 1,  asset_shield_plus: 4,  signature: 12};
+Step 2 common areas:monthly =(perVisitCost × visitsPerYear ÷ 12)
+Apply efficiency ONLY to Step 2:
+asset_shield_plus:× 0.95
+signature:× 0.90
+Do NOT apply:- efficiency to unit turns- efficiency to wash- efficiency to exterior services
+==================================================6. TOUCH-UP UI + LEGEND==================================================
+Update the legend language globally.
+Remove any universal statement implying all touch-up is “35% coverage”.
+Replace with:
+Full Repaint → 100% surface coverage, higher rate
+Touch-Up → targeted surface coverage, lower rate
+Optional helper tooltip:
+“Touch-up pricing varies by facility type based on expected coverage, durability requirements, access conditions, and finish standards.”
+Do NOT expose detailed formulas to users.
+==================================================7. DEFAULT SERVICE TOGGLES==================================================
+ALL service toggles across ALL calculators must:
+- Default to TOUCH-UP- NEVER default to FULL REPAINT- FULL REPAINT should only activate when user clicks/taps it
+No orange/active Full Repaint buttons should appear by default anywhere.
+This applies to:- Multifamily Step 1- Multifamily Step 2- All commercial calculators
+==================================================8. LABEL CLEANUP==================================================
+Change:
+“Wall Surface”to:“Surface Coverage”
+Helper text:“calculated automatically”
+Do NOT show:- x3.5- ×3.5- multiplier language- wall surface multipliers
+==================================================9. VALIDATION RULES==================================================
+Validation expectations:
+1. Touch-Up and Full Repaint must NEVER calculate the same price.2. Medical/Healthcare touch-up pricing should be materially higher than Office/Retail due to 60% touch-up cost factor.3. Multifamily Step 2 common areas should meaningfully increase Tier 2, Tier 3, and Tier 4 pricing.4. Tier 1 Essential should remain unit-turn-only.5. Multifamily Step 2 should NOT be double-discounted with 20% coverage.6. Unit-turn efficiency should reduce large monthly turn volume pricing.7. Office/Retail touch-up pricing should remain relatively affordable compared to full repaint.8. Industrial/Warehouse touch-up pricing should remain the lowest due to lower finish sensitivity.9. Gym/Fitness touch-up pricing should remain elevated due to durability and wear requirements.
+==================================================10. FINAL QA CHECKLIST==================================================
+Confirm:
+1. Full repaint rates match exactly.2. Facility touch-up config matches exactly.3. Multifamily Step 1 and Step 2 use different touch-up formulas.4. Unit turns use actual Turns/Mo count.5. Unit-turn efficiency works.6. Step 2 common areas are not double-discounted.7. Tier cadence works correctly.8. All service toggles default to touch-up.9. Full repaint never defaults active.10. Surface Coverage label is correct.11. No multiplier language appears in UI.12. No old universal 35% logic remains.13. No condition pricing logic exists.14. No total-building-square-footage pricing logic exists.15. Existing UI structure remains intact.

@@ -219,7 +219,7 @@ export default function Home() {
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8" asChild>
-                <Link href="/subscription-portal">Configure Your Subscription <ArrowRight className="ml-2 w-4 h-4" /></Link>
+                <Link href="/subscription-portal">Build Your Repaint Plan <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-none border-border hover:bg-secondary hover:text-secondary-foreground font-semibold uppercase tracking-wider h-14 px-8" asChild>
                 <a href="#services">Explore Services</a>

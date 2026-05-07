@@ -1189,6 +1189,7 @@ export default function SubscriptionLab() {
                     {/* Zone table — rendered from FACILITY_CONFIGS for this facility */}
                     {(() => {
                       const cfg = FACILITY_CONFIGS[facilityParam] ?? FACILITY_CONFIGS["commercial"];
+                      const { tuCoverage } = getFacilityPricing(facilityParam);
                       const tuKeySet = new Set((cfg?.touchUpZones ?? []).map(z => z.key));
                       const seenZK = new Set<string>();
                       const allZ = [...(cfg?.touchUpZones ?? []), ...(cfg?.hubZones ?? [])].filter(z => {
@@ -1225,7 +1226,7 @@ export default function SubscriptionLab() {
                                   {numInput(row.floors, v => setRow(z.key, { floors: Math.max(1, v) }))}
                                   {numInput(row.sqft, v => setRow(z.key, { sqft: v }), z.defaultSqFt?.toString() ?? "sqft")}
                                   <div className={`h-10 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
-                                    <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>{wall > 0 ? wall.toLocaleString() : "—"}</span>
+                                    <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>{wall > 0 ? (row.service === "repaint" ? wall.toLocaleString() : Math.round(wall * tuCoverage).toLocaleString()) : "—"}</span>
                                   </div>
                                   <button type="button" onClick={() => setRow(z.key, { service: row.service === "repaint" ? "touch-up" : "repaint" })}
                                     className={`h-10 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border hover:border-primary/50"}`}>
@@ -1257,7 +1258,7 @@ export default function SubscriptionLab() {
                                       className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
                                       {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
                                     </button>
-                                    {wall > 0 && <span className="text-[10px] text-muted-foreground">{wall.toLocaleString()} wall sqft</span>}
+                                    {wall > 0 && <span className="text-[10px] text-muted-foreground">{(row.service === "repaint" ? wall : Math.round(wall * tuCoverage)).toLocaleString()} sqft</span>}
                                   </div>
                                 </div>
                               );
@@ -1273,10 +1274,10 @@ export default function SubscriptionLab() {
                                 </strong>
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                Touch-up zones:&nbsp;<strong className="text-foreground">
-                                  {allZ.filter(z => getRow(z.key).service === "touch-up").reduce((a, z) => a + wallSurface(z), 0).toLocaleString()} sqft
+                                Touch-up coverage:&nbsp;<strong className="text-foreground">
+                                  {allZ.filter(z => getRow(z.key).service === "touch-up").reduce((a, z) => a + Math.round(wallSurface(z) * tuCoverage), 0).toLocaleString()} sqft
                                 </strong>
-                                <span className="ml-1 text-[10px] italic">(coverage calculated automatically)</span>
+                                <span className="ml-1 text-[10px] italic">({Math.round(tuCoverage * 100)}% of wall surface)</span>
                               </span>
                             </div>
                           )}
