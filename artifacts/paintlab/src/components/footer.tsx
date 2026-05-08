@@ -26,6 +26,7 @@ export default function Footer() {
               <li><a href="/#sectors" className="text-muted-foreground hover:text-primary transition-colors text-sm">Sectors</a></li>
               <li><a href="/#approach" className="text-muted-foreground hover:text-primary transition-colors text-sm">Our Approach</a></li>
               <li><Link href="/about" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-muted-foreground hover:text-primary transition-colors text-sm">About</Link></li>
+              <li><a href="/#quote" className="text-muted-foreground hover:text-primary transition-colors text-sm">Contact</a></li>
             </ul>
           </div>
 

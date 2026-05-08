@@ -176,10 +176,6 @@ export default function FacilitySolutions() {
             variants={stagger}
             className="mb-14"
           >
-            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-4">
-              <div className="h-[1px] w-10 bg-primary" />
-              <span className="text-primary font-mono text-xs tracking-widest uppercase">Select Your Sector</span>
-            </motion.div>
             <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl font-black tracking-tighter">
               Choose Your Facility Type
             </motion.h2>
@@ -214,6 +210,20 @@ export default function FacilitySolutions() {
                 </Link>
               </motion.div>
             ))}
+            {/* 12th tile — Contact CTA */}
+            <motion.div variants={fadeInUp}>
+              <div className="bg-card p-8 md:p-10 flex flex-col items-center justify-center gap-6 h-full min-h-[280px] border-t border-border">
+                <img src="/images/pl-logo.png" alt="PaintLab" className="h-10 w-auto object-contain" style={{ mixBlendMode: "lighten" }} />
+                <p className="text-muted-foreground text-xs text-center leading-relaxed max-w-[200px]">Not sure which solution fits your facility?</p>
+                <a
+                  href="mailto:hello@paintlabpro.com?subject=Facility%20Solutions%20Inquiry"
+                  className="inline-flex items-center gap-2 px-6 py-3 border border-primary text-primary text-sm font-semibold uppercase tracking-wider hover:bg-primary hover:text-background transition-colors"
+                >
+                  Contact Us
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -258,7 +268,7 @@ export default function FacilitySolutions() {
 
               <motion.div variants={fadeInUp}>
                 <a
-                  href="/#quote"
+                  href="#facility-types"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
                 >
                   Start With a Pilot Property

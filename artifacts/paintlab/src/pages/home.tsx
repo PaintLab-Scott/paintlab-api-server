@@ -73,10 +73,10 @@ const sectors = [
     ext: "Elastomeric coatings, weatherproof sealers, fluoropolymer/urethane coatings, anti-graffiti coatings, DTM acrylics"
   },
   {
-    title: "Retail, Hotels & Restaurants",
-    sub: "Facades, Dining, Hospitality Venues",
-    int: "High-gloss interior finish coats, scuff-grease-resistant kitchen wall systems",
-    ext: "Anti-graffiti coatings, UV-stable exterior facade finishes"
+    title: "Retail",
+    sub: "Storefronts, Shopping Centers, Facades",
+    int: "High-gloss interior finish coats, scuff-resistant acrylics, anti-graffiti coatings",
+    ext: "UV-stable exterior facade finishes, anti-graffiti coatings"
   },
   {
     title: "Medical / Healthcare",
@@ -119,7 +119,10 @@ const sectors = [
 const projectTypes = [
   { id: "multifamily", label: "Multi-Family Residential" },
   { id: "office", label: "Office Buildings" },
-  { id: "retail", label: "Retail, Hotels & Restaurants" },
+  { id: "retail", label: "Retail" },
+  { id: "hospitality", label: "Hospitality" },
+  { id: "selfStorage", label: "Self Storage" },
+  { id: "hoa", label: "HOA / Community Associations" },
   { id: "medical", label: "Medical / Healthcare" },
   { id: "warehouse", label: "Warehouse & Distribution" },
   { id: "industrial", label: "Industrial / Manufacturing" },
@@ -213,16 +216,19 @@ export default function Home() {
               Your Property's Aesthetic on <span className="text-primary">Autopilot.</span>
             </motion.p>
 
-            <motion.p variants={fadeInUp} className="text-sm md:text-base text-muted-foreground max-w-2xl mb-10 leading-relaxed">
-              Stop bidding. Start subscribing. Austin's 1st <strong className="text-foreground">fixed-cost painting utility</strong> for commercial assets. Flexible subscription care or expert project execution. Always reliable. Zero hassle.
+            <motion.p variants={fadeInUp} className="text-sm md:text-base text-muted-foreground max-w-xl mb-10 leading-relaxed">
+              Stop bidding. Start subscribing. Austin's 1st <strong className="text-foreground">fixed-cost painting utility</strong> for commercial assets. Flexible maintenance plan care or expert execution. Always reliable. Zero hassle.
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row flex-wrap gap-4">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 px-8" asChild>
                 <Link href="/subscription-portal">Build Your Repaint Plan <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-none border-border hover:bg-secondary hover:text-secondary-foreground font-semibold uppercase tracking-wider h-14 px-8" asChild>
+              <Button size="lg" className="rounded-none bg-card border border-primary/40 text-foreground hover:border-primary hover:bg-secondary font-semibold uppercase tracking-wider h-14 px-8" asChild>
                 <a href="#services">Explore Services</a>
+              </Button>
+              <Button size="lg" className="rounded-none bg-card border border-primary/40 text-foreground hover:border-primary hover:bg-secondary font-semibold uppercase tracking-wider h-14 px-8" asChild>
+                <Link href="/facility-solutions">Facility Solutions <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -270,7 +276,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-2">The <span className="text-primary">PaintLab</span> Autopilot.</h2>
             <p className="text-primary font-mono text-xs uppercase tracking-widest mb-6">Managed Maintenance</p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              Automated maintenance for <strong className="text-foreground">Multi-Family, Corporate, Retail, Hospitality, Industrial, Medical, Education & Automotive</strong> assets. <strong className="text-foreground">One flat monthly fee.</strong>
+              Automated maintenance for <strong className="text-foreground">Multi-Family, Office/Corp, Retail, Hospitality, Industrial, Medical, Self-Storage, Senior Care, Education & Automotive</strong> assets. <strong className="text-foreground">One flat monthly fee.</strong>
             </p>
             <Link href="/subscription-portal">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8 w-fit">
@@ -563,7 +569,7 @@ export default function Home() {
                 </div>
 
                 <Button type="submit" className="w-full rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14">
-                  Send Quote Request
+                  Send
                 </Button>
               </form>
             </div>

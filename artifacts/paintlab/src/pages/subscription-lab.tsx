@@ -148,7 +148,7 @@ const EXT_ZONE_INFO: Record<string, string> = {
 };
 
 // ─── Commercial Constants ───────────────────────────────────────────────────
-const COMM_WALL_MULTIPLIER = 3.5;
+const COMM_WALL_MULTIPLIER = 3;
 const COMM_EXT_COST: Record<string, number> = {
   commFacade: 250, commEntranceFloor: 250, commDumpsterPad: 200,
   commEntries: 150, commGarage: 150, commCladding: 0, windowCleaning: 0,
@@ -230,7 +230,7 @@ function calculateCommonAreaPerVisitCost(areas: CommonAreaInput[]): number {
     const floors = area.floors || 1;
     const sqft   = area.sqft   || 0;
     if (qty === 0 || sqft === 0) return;
-    const pssf = qty * floors * sqft * 3.5;
+    const pssf = qty * floors * sqft * 3;
     if (area.service === "repaint") {
       total += pssf * MF_COMMON_REPAINT_RATE;
     } else {
@@ -965,8 +965,7 @@ export default function SubscriptionLab() {
               <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">{facilityLabel} <span className="text-primary">Repaint Plan.</span></h1>
               <span className="self-start mt-1.5 px-2.5 py-1 bg-primary text-background text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Takes ~60 sec</span>
             </motion.div>
-            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary subscription estimate for your property</motion.p>
-            <motion.p variants={fadeInUp} className="text-muted-foreground/50 text-xs">Need a one-time project instead? We'll scope it onsite.</motion.p>
+            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary maintenance plan estimate</motion.p>
             {!isMultiFamily && (
               <motion.div variants={fadeInUp} className="mt-4">
                 <button type="button" onClick={() => setPricingOpen(o => !o)}
@@ -1095,7 +1094,7 @@ export default function SubscriptionLab() {
                         </div>
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
-                          const totalWall = row.qty * row.floors * eff * 3.5;
+                          const totalWall = row.qty * row.floors * eff * 3;
                           const effectiveWall = totalWall;
                           return (
                             <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
@@ -1121,7 +1120,7 @@ export default function SubscriptionLab() {
                       <div className="sm:hidden space-y-3 mb-1">
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
-                          const totalWall = row.qty * row.floors * eff * 3.5;
+                          const totalWall = row.qty * row.floors * eff * 3;
                           const effectiveWall = totalWall;
                           return (
                             <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
@@ -1160,7 +1159,7 @@ export default function SubscriptionLab() {
                         </div>
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
-                          const totalWall = row.qty * eff * 3.5;
+                          const totalWall = row.qty * eff * 3;
                           const effectiveWall = totalWall;
                           return (
                             <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
@@ -1182,7 +1181,7 @@ export default function SubscriptionLab() {
                       <div className="sm:hidden space-y-3">
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
-                          const totalWall = row.qty * eff * 3.5;
+                          const totalWall = row.qty * eff * 3;
                           const effectiveWall = totalWall;
                           return (
                             <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>

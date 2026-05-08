@@ -467,15 +467,15 @@ export default function FacilitySolutionsDetail() {
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
               <a
-                href="/#quote"
+                href="#pain-points"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
               >
-                {config.primaryCta}
+                Scroll Down for Details
                 <ArrowRight className="w-4 h-4" />
               </a>
               <a
-                href="/#quote"
-                className="inline-flex items-center gap-2 px-8 py-4 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors"
+                href="mailto:hello@paintlabpro.com?subject=Pilot%20Conversation%20Request"
+                className="inline-flex items-center gap-2 px-8 py-4 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
               >
                 Request a Pilot Conversation
                 <ChevronRight className="w-4 h-4" />
@@ -486,7 +486,7 @@ export default function FacilitySolutionsDetail() {
       </section>
 
       {/* ── PAIN POINTS ──────────────────────────────────────────────────── */}
-      <section className="py-20 bg-card border-t border-border">
+      <section id="pain-points" className="py-20 bg-card border-t border-border">
         <div className="container mx-auto px-6 md:px-12">
           <motion.div
             initial="hidden"

@@ -27,6 +27,7 @@ export function Navbar() {
     { name: "Sectors", href: `${prefix}#sectors` },
     { name: "Approach", href: `${prefix}#approach` },
     { name: "About", href: "/about", isRoute: true },
+    { name: "Contact", href: "/#quote" },
   ];
 
   const initials = isSignedIn && user
@@ -92,14 +93,14 @@ export function Navbar() {
                     Sign In
                   </button>
                 </SignInButton>
-                <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-xs px-6 py-5">
+                <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-[10px] px-4 py-3">
                   <a href="/#quote">Get a Quote</a>
                 </Button>
               </div>
             )
           )}
           {!isLoaded && (
-            <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-xs px-6 py-5">
+            <Button asChild className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider text-[10px] px-4 py-3">
               <a href="/#quote">Get a Quote</a>
             </Button>
           )}
