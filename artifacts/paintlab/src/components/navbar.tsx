@@ -24,7 +24,6 @@ export function Navbar() {
     { name: "Services", href: `${prefix}#services` },
     { name: "Subscriptions", href: "/subscription-portal", isRoute: true },
     { name: "Facility Solutions", href: "/facility-solutions", isRoute: true },
-    { name: "Sectors", href: `${prefix}#sectors` },
     { name: "Approach", href: `${prefix}#approach` },
     { name: "About", href: "/about", isRoute: true },
     { name: "Contact", href: "/#quote" },

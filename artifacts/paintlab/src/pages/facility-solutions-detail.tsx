@@ -48,7 +48,7 @@ const CONFIGS: FacilityConfig[] = [
     seoDesc: "PAINTLAB helps Austin multifamily property managers, regional property managers, and maintenance leaders simplify repaint execution across unit turns, common areas, amenities, and pilot property repaint programs.",
     tag: "Multifamily · Apartments · HOAs",
     heroHeadline: "Multifamily Repaint Support Built for Regional Property & Maintenance Leaders",
-    heroSub: "PAINTLAB helps multifamily teams simplify repaint execution across unit turns, common areas, amenities, and ongoing property maintenance — starting with a focused pilot property before scaling the relationship.",
+    heroSub: "PAINTLAB helps multifamily teams simplify repaint execution across unit turns, common areas, amenities, and ongoing property maintenance with more predictable budgeting and a low-risk pilot-first approach before scaling.",
     primaryCta: "Start the Pilot Conversation",
     painPoints: [
       "Unit turns delayed by painter availability",

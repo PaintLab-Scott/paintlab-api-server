@@ -146,7 +146,7 @@ export default function FacilitySolutions() {
               variants={fadeInUp}
               className="text-muted-foreground text-lg sm:text-xl leading-relaxed max-w-2xl mb-10"
             >
-              PAINTLAB helps property, maintenance, and facilities leaders simplify repaint execution through reliable project support, recurring maintenance options, and low-risk pilot programs designed to prove value before scaling.
+              PAINTLAB helps property, maintenance, and facilities leaders simplify repaint operations through reliable execution, proactive maintenance planning, improved budgeting predictability, and low-risk pilot programs designed to prove value before scaling.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">

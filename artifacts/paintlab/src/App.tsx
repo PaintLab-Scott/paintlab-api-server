@@ -14,6 +14,7 @@ import MemberPortal from "@/pages/member-portal";
 import About from "@/pages/about";
 import FacilitySolutions from "@/pages/facility-solutions";
 import FacilitySolutionsDetail from "@/pages/facility-solutions-detail";
+import Blog from "@/pages/blog";
 
 const queryClient = new QueryClient();
 
@@ -150,6 +151,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/facility-solutions" component={FacilitySolutions} />
       <Route path="/facility-solutions/:slug" component={FacilitySolutionsDetail} />
+      <Route path="/blog" component={Blog} />
       <Route path="/member-portal" component={ProtectedMemberPortal} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />

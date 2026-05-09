@@ -965,7 +965,7 @@ export default function SubscriptionLab() {
               <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">{facilityLabel} <span className="text-primary">Repaint Plan.</span></h1>
               <span className="self-start mt-1.5 px-2.5 py-1 bg-primary text-background text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Takes ~60 sec</span>
             </motion.div>
-            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary maintenance plan estimate</motion.p>
+            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary repaint maintenance estimate designed to simplify planning, budgeting, and property oversight.</motion.p>
             {!isMultiFamily && (
               <motion.div variants={fadeInUp} className="mt-4">
                 <button type="button" onClick={() => setPricingOpen(o => !o)}

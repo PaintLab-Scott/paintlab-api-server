@@ -109,10 +109,28 @@ const sectors = [
     ext: "UV-stable gloss finishes, weatherproof showroom facades"
   },
   {
-    title: "Data Centers",
-    sub: "Server Farms, Colocation Facilities, Tech Campuses",
-    int: "ESD epoxy floors, anti-static wall coatings, raised floor finishes",
-    ext: "Vapor-barrier exterior systems, reflective roof coatings"
+    title: "Self Storage",
+    sub: "Storage Facilities, Climate-Controlled Units, Drive-Up Storage",
+    int: "Moisture-resistant wall finishes, epoxy corridor coatings, unit interior touch-up systems",
+    ext: "Weatherproof metal panel coatings, facade refresh, exterior signage surround finishes"
+  },
+  {
+    title: "Hospitality",
+    sub: "Hotels, Resorts, Extended Stay, Boutique Properties",
+    int: "Durable washable finishes, hallway & guest room coatings, lobby feature wall systems",
+    ext: "Elastomeric exterior facades, weatherproof finishes, poolside & amenity coatings"
+  },
+  {
+    title: "Senior Care Living",
+    sub: "Assisted Living, Memory Care, Independent Living Communities",
+    int: "Low-VOC anti-microbial coatings, slip-resistant floor systems, interior finish systems for sensitive environments",
+    ext: "Weather-resistant exterior finishes, balcony systems, courtyard and common area coatings"
+  },
+  {
+    title: "Restaurants",
+    sub: "Quick Service, Full Service, Franchise Locations, Food Halls",
+    int: "Scrubbable interior finishes, kitchen-adjacent coatings, high-traffic dining area systems",
+    ext: "UV-stable storefront finishes, signage surround coatings, anti-graffiti exterior systems"
   }
 ];
 
@@ -272,7 +290,7 @@ export default function Home() {
             </p>
             <Link href="/subscription-portal">
               <Button size="lg" className="rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-12 px-8 w-fit">
-                Explore Packages <ArrowRight className="ml-2 w-4 h-4" />
+                Explore Plans <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
           </motion.div>
