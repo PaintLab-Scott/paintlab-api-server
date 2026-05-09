@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Building2, Briefcase, ShoppingBag, Factory, Building,
   Utensils, Heart, Package, Home, GraduationCap, Activity,
-  ArrowRight, ChevronRight, Target
+  ArrowRight, ChevronRight, ChevronDown, Target
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -99,6 +99,9 @@ const facilities = [
 ];
 
 export default function FacilitySolutions() {
+  const [, navigate] = useLocation();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Facility Repaint Solutions | PAINTLAB Austin";
@@ -174,11 +177,42 @@ export default function FacilitySolutions() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="mb-14"
+            className="mb-10"
           >
-            <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl font-black tracking-tighter">
+            <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl font-black tracking-tighter mb-6">
               Choose Your Facility Type
             </motion.h2>
+
+            {/* Facility Selector Dropdown */}
+            <motion.div variants={fadeInUp} className="relative max-w-xl">
+              <button
+                type="button"
+                onClick={() => setDropdownOpen(o => !o)}
+                className="w-full flex items-center justify-between gap-3 px-5 py-4 border border-primary/50 bg-card hover:border-primary transition-colors text-left"
+              >
+                <span className="text-sm font-medium text-muted-foreground">Jump to a facility type…</span>
+                <ChevronDown className={`w-4 h-4 text-primary flex-shrink-0 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute top-full left-0 right-0 z-20 border border-primary/30 border-t-0 bg-card shadow-xl max-h-72 overflow-y-auto">
+                  {facilities.map((f) => (
+                    <button
+                      key={f.slug}
+                      type="button"
+                      onClick={() => { setDropdownOpen(false); navigate(f.slug); }}
+                      className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-secondary/50 hover:text-primary transition-colors border-b border-border/40 last:border-b-0 group"
+                    >
+                      <span className="text-primary flex-shrink-0">{f.icon}</span>
+                      <div className="flex-grow min-w-0">
+                        <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors block leading-tight">{f.label}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">{f.sub}</span>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-primary/40 group-hover:text-primary flex-shrink-0 transition-colors" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           </motion.div>
 
           <motion.div

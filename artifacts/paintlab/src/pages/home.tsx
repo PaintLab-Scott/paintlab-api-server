@@ -217,7 +217,7 @@ export default function Home() {
             </motion.p>
 
             <motion.p variants={fadeInUp} className="text-sm md:text-base text-muted-foreground max-w-xl mb-10 leading-relaxed">
-              Stop bidding. Start subscribing. Austin's 1st <strong className="text-foreground">fixed-cost painting utility</strong> for commercial assets. Flexible maintenance plan care or expert execution. Always reliable. Zero hassle.
+              Predictable repaint operations for modern properties. Subscription maintenance care or project-based execution, professionally managed, consistently delivered, and built to scale.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row flex-wrap gap-4">
@@ -225,10 +225,10 @@ export default function Home() {
                 <Link href="/subscription-portal">Build Your Repaint Plan <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
               <Button size="lg" className="rounded-none bg-card border border-primary/40 text-foreground hover:border-primary hover:bg-secondary font-semibold uppercase tracking-wider h-14 px-8" asChild>
-                <a href="#services">Explore Services</a>
+                <Link href="/facility-solutions">Facility Solutions <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
               <Button size="lg" className="rounded-none bg-card border border-primary/40 text-foreground hover:border-primary hover:bg-secondary font-semibold uppercase tracking-wider h-14 px-8" asChild>
-                <Link href="/facility-solutions">Facility Solutions <ArrowRight className="ml-2 w-4 h-4" /></Link>
+                <a href="#services">Explore Services <ArrowRight className="ml-2 w-4 h-4" /></a>
               </Button>
             </motion.div>
           </motion.div>
@@ -244,10 +244,6 @@ export default function Home() {
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
             className="px-10 md:px-16 py-20 border-b lg:border-b-0 lg:border-r border-border flex flex-col justify-center"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-[1px] w-10 bg-border"></div>
-              <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">The System</span>
-            </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Repaint Specialists.</h2>
             <p className="text-primary font-mono text-xs uppercase tracking-widest mb-6">Expert Commercial Repaints</p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
@@ -269,10 +265,6 @@ export default function Home() {
             className="px-10 md:px-16 py-20 bg-primary/5 flex flex-col justify-center relative overflow-hidden cursor-pointer"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-[1px] w-10 bg-primary"></div>
-              <span className="text-primary font-mono text-xs tracking-widest uppercase">The Subscription</span>
-            </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-2">The <span className="text-primary">PaintLab</span> Autopilot.</h2>
             <p className="text-primary font-mono text-xs uppercase tracking-widest mb-6">Managed Maintenance</p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">

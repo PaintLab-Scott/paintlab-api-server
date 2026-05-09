@@ -615,10 +615,10 @@ export default function FacilitySolutionsDetail() {
 
             <motion.div variants={fadeInUp}>
               <a
-                href="/#quote"
+                href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
               >
-                {config.primaryCta}
+                Explore a Pilot
                 <ArrowRight className="w-4 h-4" />
               </a>
             </motion.div>
@@ -714,14 +714,14 @@ export default function FacilitySolutionsDetail() {
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="/#quote"
+                href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
                 className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
               >
-                {config.finalCta}
+                Explore a Pilot
                 <ArrowRight className="w-4 h-4" />
               </a>
               <a
-                href="mailto:hello@paintlabpro.com?subject=Facility%20Repaint%20Pilot%20Inquiry"
+                href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
                 className="inline-flex items-center gap-2 px-10 py-5 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors"
               >
                 Email Our Team
