@@ -86,6 +86,13 @@ function applyMinimumPerVisit(perVisitCost: number): number {
   return Math.max(perVisitCost, MINIMUM_SERVICE_VISIT);
 }
 
+// ─── Non-MF Managed-Service Monthly Minimums ──────────────────────────────────
+const COMM_TIER_MINIMUMS: Record<string, number> = {
+  annual_shield:    99,
+  bi_annual_shield: 199,
+  quarterly_guard:  399,
+};
+
 // Internal pricing test:
 //   Full repaint cost  = pssf × repaintRate  (e.g. $1,000)
 //   Touch-up cost      = full repaint cost × touchupCostFactor  (e.g. $1,000 × 0.40 = $400)
@@ -748,7 +755,7 @@ export default function SubscriptionLab() {
       };
     } else {
       // ── Commercial Zone-Based Pricing ──────────────────────────────────────
-      const { repaintRate, tuCoverage, tuCostFactor } = getFacilityPricing(facilityParam);
+      const { tuCoverage } = getFacilityPricing(facilityParam);
       const pricingKey = FACILITY_PARAM_TO_PRICING_KEY[facilityParam] ?? "office_corporate";
 
       // Get facility-specific zones from FACILITY_CONFIGS
@@ -765,7 +772,8 @@ export default function SubscriptionLab() {
         return true;
       });
 
-      // Zone-by-zone direct cost calculation using facility-specific rates
+      // Zone-by-zone cost — touch-up uses the same reduced surface shown in the display
+      // (effectivePssf for touch-up = fullWall * tuCoverage, matching displayed sqft)
       let totalVisitCost = 0;
       allZonesList.forEach(z => {
         const row = commZones[z.key];
@@ -774,36 +782,43 @@ export default function SubscriptionLab() {
         const floors = row?.floors ?? 1;
         const sqft   = (row?.sqft ?? 0) > 0 ? row!.sqft : (z.defaultSqFt ?? 0);
         if (sqft === 0) return;
-        const pssf = qty * floors * sqft * COMM_WALL_MULTIPLIER;
-        const svc  = row?.service ?? (touchUpKeySet.has(z.key) ? "touch-up" : "repaint");
-        totalVisitCost += calculateAreaServiceCost({ facilityType: pricingKey, pssf, service: svc === "repaint" ? "repaint" : "touchup" });
+        const fullWallPssf = qty * floors * sqft * COMM_WALL_MULTIPLIER;
+        const svc = row?.service ?? (touchUpKeySet.has(z.key) ? "touch-up" : "repaint");
+        const effectivePssf = svc === "touch-up" ? fullWallPssf * tuCoverage : fullWallPssf;
+        totalVisitCost += calculateAreaServiceCost({ facilityType: pricingKey, pssf: effectivePssf, service: svc === "repaint" ? "repaint" : "touchup" });
       });
 
-      // Apply $500 minimum per visit before annualising
-      const visitCostWithMin = applyMinimumPerVisit(totalVisitCost);
-
-      // Monthly subscription = annualised visit cost ÷ 12, driven by COMMERCIAL_TIERS
+      // Apply managed-service monthly minimums per tier (no per-visit minimum for non-MF)
       const commTierIds = ["annual_shield", "bi_annual_shield", "quarterly_guard"] as const;
-      const [r1, r2, r3] = commTierIds.map(id => {
+      const commCalcResults = commTierIds.map(id => {
         const visits = VISITS_PER_YEAR[id] ?? 0;
         const washMonthly = calculateWashMonthly(commExtZones, id, COMM_EXT_COST, SCOPED_EXT_ZONES);
-        return Math.round((visitCostWithMin * visits) / 12 + washMonthly);
+        const calcMonthly = Math.round(totalVisitCost * visits / 12 + washMonthly);
+        const minimum = COMM_TIER_MINIMUMS[id] ?? 0;
+        const minApplied = totalVisitCost > 0 && calcMonthly < minimum;
+        return { calcMonthly, displayMonthly: minApplied ? minimum : calcMonthly, minApplied };
       });
-      void repaintRate; void tuCoverage; void tuCostFactor;
-      const t2 = Math.round(r2 * 0.98);
-      const t3 = Math.round(r3 * 0.97);
-      return { tiers: [r1, t2, t3], tiersRaw: [r1, r2, r3], onboarding: 250, mfSavings: [0,0,0], mfSavingsPct: [0,0,0] };
+
+      return {
+        tiers:    commCalcResults.map(r => r.displayMonthly),
+        tiersRaw: commCalcResults.map(r => r.calcMonthly),
+        onboarding: 250,
+        mfSavings: [0, 0, 0],
+        mfSavingsPct: [0, 0, 0],
+        commMinimumsApplied: commCalcResults.map(r => r.minApplied),
+      };
     }
   }, [unitMix, resDistZones, singularHubs, resExtZones, commZones, commExtZones, isMultiFamily, facilityParam]);
 
   // Discounted display prices
   const displayPrices = useMemo(() => {
     if (isMultiFamily) return calc.tiers;
-    const [r1, r2, r3] = calc.tiersRaw;
+    // Apply user-selected annual upfront discount on top of managed-service display prices
+    const [d1, d2, d3] = calc.tiers;
     return [
-      annualUpfront.t1 ? Math.round(r1 * 0.98) : r1,
-      annualUpfront.t2 ? Math.round(r2 * 0.96) : Math.round(r2 * 0.98),
-      annualUpfront.t3 ? Math.round(r3 * 0.95) : Math.round(r3 * 0.97),
+      annualUpfront.t1 ? Math.round(d1 * 0.98) : d1,
+      annualUpfront.t2 ? Math.round(d2 * 0.96) : d2,
+      annualUpfront.t3 ? Math.round(d3 * 0.95) : d3,
     ];
   }, [calc, annualUpfront, isMultiFamily]);
 
@@ -812,11 +827,11 @@ export default function SubscriptionLab() {
 
   const annualSavings = useMemo(() => {
     if (isMultiFamily) return [0, 0, 0, 0];
-    const [r1, r2, r3] = calc.tiersRaw;
+    const [d1, d2, d3] = calc.tiers;
     return [
-      annualUpfront.t1 ? Math.round(r1 * 0.02 * 12) : 0,
-      annualUpfront.t2 ? Math.round(r2 * 0.04 * 12) : Math.round(r2 * 0.02 * 12),
-      annualUpfront.t3 ? Math.round(r3 * 0.05 * 12) : Math.round(r3 * 0.03 * 12),
+      annualUpfront.t1 ? Math.round(d1 * 0.02 * 12) : 0,
+      annualUpfront.t2 ? Math.round(d2 * 0.04 * 12) : 0,
+      annualUpfront.t3 ? Math.round(d3 * 0.05 * 12) : 0,
     ];
   }, [calc, annualUpfront, isMultiFamily]);
 
@@ -1261,7 +1276,7 @@ export default function SubscriptionLab() {
                 {/* ── COMM STEP 1: Select Paint Zones ── */}
                 {sectionCard(<>Select <span className="text-primary">Paint Zones</span></>, "STEP 1", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> for that zone. Repaints coat 100% of the zone's wall surface. Touch-Up service is intended for targeted repaint maintenance of high-contact areas, scuffs, patches, and visible wear. Zones requiring broader or full-surface repainting should be marked as <strong className="text-foreground">Full Repaint</strong>. Surface coverage is calculated automatically based on your facility type.</p>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong>. Full Repaint covers the calculated surface coverage for that zone. Touch-Up is intended for targeted repaint maintenance of high-contact areas, scuffs, patches, and visible wear. Zones requiring broader repainting should be marked as <strong className="text-foreground">Full Repaint</strong>.</p>
 
                     {/* Legend */}
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-5 px-3 py-2.5 border border-border/50 bg-secondary/20 rounded-sm">
@@ -1586,8 +1601,17 @@ export default function SubscriptionLab() {
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Select Your Tier</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">Select Your Preliminary Repaint Plan</h2>
-            <p className="text-muted-foreground text-sm mt-2">Based on your inputs, here's a recommended starting structure for your property.</p>
+            <p className="text-muted-foreground text-sm mt-2">{isMultiFamily ? "Based on your inputs, here's a recommended starting structure for your property." : "Based on your selected scope, this preliminary estimate calculates repaint pricing by service frequency. Minimum managed-service pricing may apply for smaller scopes."}</p>
           </motion.div>
+
+          {/* Minimum service pricing notice — non-MF only, shown when at least one tier hits the managed-service floor */}
+          {!isMultiFamily && (calc.commMinimumsApplied ?? []).some(Boolean) && (
+            <div className="mb-6 p-4 border border-border/60 bg-secondary/10">
+              <p className="text-xs font-bold text-foreground mb-1">Minimum service pricing applied</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">Your selected scope is below the managed-service minimum for one or more plans. You can continue with the minimum plan price or add more repaint scope to see pricing based fully on your selected work.</p>
+              <p className="text-xs text-muted-foreground mt-1.5 italic">Minimums help cover scheduling, coordination, recurring availability, and professionally managed execution.</p>
+            </div>
+          )}
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
             className={`grid gap-4 ${isMultiFamily ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"}`}>
@@ -1628,14 +1652,15 @@ export default function SubscriptionLab() {
                           <span className="text-2xl font-bold">{fmt(price)}</span>
                           <span className="text-muted-foreground text-xs">/mo</span>
                         </div>
-                        {!isMultiFamily && i === 0 && (
-                          <p className="text-[10px] text-muted-foreground mt-1">No discount applied by default. Check below to activate 2% off.</p>
-                        )}
-                        {!isMultiFamily && i === 1 && (
-                          <p className="text-[10px] text-primary mt-1 font-medium">2% discount applied</p>
-                        )}
-                        {!isMultiFamily && i === 2 && (
-                          <p className="text-[10px] text-primary mt-1 font-medium">3% discount applied</p>
+                        {!isMultiFamily && (
+                          (calc.commMinimumsApplied ?? [])[i] ? (
+                            <>
+                              <p className="text-[10px] text-muted-foreground mt-1">Minimum managed-service price</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">Calculated scope price: {fmt(calc.tiersRaw[i] ?? 0)}/mo</p>
+                            </>
+                          ) : (
+                            <p className="text-[10px] text-muted-foreground mt-1">Based on selected scope</p>
+                          )
                         )}
                         {savings > 0 && (
                           <div className="mt-1 px-2 py-1 bg-primary/10 border border-primary/20 inline-block">
@@ -1690,6 +1715,11 @@ export default function SubscriptionLab() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               <strong className="text-foreground">Important:</strong> The PaintLab Subscription covers precision touch-ups for your selected touch-up zones and full repaints for your selected full repaint zones at the chosen tier frequency. Large-surface color changes or specialty coatings will be scoped as separate projects to ensure the highest quality results.
             </p>
+            {!isMultiFamily && (
+              <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                Preliminary pricing reflects selected surface coverage, facility type, service type, visit frequency, and minimum managed-service thresholds. Final pricing is confirmed after onsite scope review.
+              </p>
+            )}
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5 border border-primary/20 bg-primary/5 px-5 py-4">

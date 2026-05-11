@@ -1,0 +1,202 @@
+Update ONLY the non-multifamily facility calculators.
+
+Do NOT change the multifamily residential calculator logic, helper copy, pricing model, unit-turn logic, or display behavior.
+
+This update applies only to non-multifamily calculators, including:
+- office/corporate
+- retail
+- industrial/warehouse
+- hospitality
+- education
+- medical/healthcare
+- gyms/fitness
+- automotive
+- HOA/community associations
+- storage
+- senior living
+- any other non-multifamily facility calculator
+
+Primary goal:
+Fix non-multifamily calculator pricing so touch-up scopes are not overpriced, while also applying transparent monthly minimum managed-service pricing.
+
+Important business logic:
+For non-multifamily calculators, the selected service type should calculate the actual customer-facing repaint cost for that service cycle.
+
+Definitions:
+- Full Repaint = 100% of the selected calculated surface coverage
+- Touch-Up = targeted repaint maintenance of the selected calculated touch-up surface coverage
+- Touch-up cost factor = customer-facing cost percentage of a full repaint for the selected touch-up surface
+- Service frequency = number of times per year that selected scope is serviced
+- Monthly minimum = managed-service pricing floor used when the calculated monthly price is below the operational minimum
+
+Do NOT apply extra tier multipliers.
+Do NOT apply extra operational multipliers.
+Do NOT multiply by touch-up coverage percentage twice.
+Do NOT replace the calculation logic with arbitrary plan pricing.
+
+Core pricing logic:
+
+For each selected zone/scope:
+
+If service type = Full Repaint:
+zoneServiceCycleCost = zoneSurfaceCoverageSqft * facilityFullRepaintPssfRate
+
+If service type = Touch-Up:
+zoneServiceCycleCost = zoneSurfaceCoverageSqft * facilityFullRepaintPssfRate * facilityTouchUpCostFactor
+
+Important:
+If the calculator already calculates and displays reduced touch-up surface coverage, do NOT multiply by touchUpCoveragePercent again.
+
+Example:
+Retail assumptions:
+- Full repaint PSSF = $1.35
+- Touch-up coverage = 18%
+- Touch-up cost factor = 45%
+- Displayed touch-up surface coverage = 351 sqft
+
+Correct touch-up service cycle cost:
+351 * 1.35 * 0.45 = $213.23
+
+Incorrect:
+351 * 1.35 * 0.18 * 0.45
+
+The 351 sqft already reflects the 18% touch-up coverage.
+
+Total service cycle cost:
+totalServiceCycleCost = sum(zoneServiceCycleCost for all selected zones/scopes)
+
+Tier frequency logic:
+
+Annual Shield:
+serviceVisitsPerYear = 1
+calculatedAnnualCost = totalServiceCycleCost * 1
+calculatedMonthlyPrice = calculatedAnnualCost / 12
+
+Bi-Annual Shield:
+serviceVisitsPerYear = 2
+calculatedAnnualCost = totalServiceCycleCost * 2
+calculatedMonthlyPrice = calculatedAnnualCost / 12
+
+Quarterly Guard:
+serviceVisitsPerYear = 4
+calculatedAnnualCost = totalServiceCycleCost * 4
+calculatedMonthlyPrice = calculatedAnnualCost / 12
+
+Monthly minimums for non-multifamily calculators:
+
+Annual Shield minimum = $99/mo
+Bi-Annual Shield minimum = $199/mo
+Quarterly Guard minimum = $399/mo
+
+Minimum pricing logic:
+
+For each tier:
+if calculatedMonthlyPrice < tierMonthlyMinimum:
+  minimumApplied = true
+  displayMonthlyPrice = tierMonthlyMinimum
+else:
+  minimumApplied = false
+  displayMonthlyPrice = calculatedMonthlyPrice
+
+Do NOT hide pricing when the minimum is applied.
+Always show the final displayed monthly price.
+
+Pricing card display rules:
+
+Each pricing card should show:
+1. Final displayed monthly price prominently
+2. Whether the price is based on selected scope or minimum managed-service pricing
+
+If minimumApplied = true, show directly under the monthly price:
+“Minimum managed-service price”
+
+Also show:
+“Calculated scope price: $X/mo”
+
+Example:
+Annual Shield
+$99/mo
+Minimum managed-service price
+Calculated scope price: $18/mo
+
+If minimumApplied = false, show directly under the monthly price:
+“Based on selected scope”
+
+User notification logic:
+
+If one or more tier minimums are applied, show a subtle notice directly above the pricing cards.
+
+Notice headline:
+“Minimum service pricing applied”
+
+Notice body:
+“Your selected scope is below the managed-service minimum for one or more plans. You can continue with the minimum plan price or add more repaint scope to see pricing based fully on your selected work.”
+
+Optional supporting sentence:
+“Minimums help cover scheduling, coordination, recurring availability, and professionally managed execution.”
+
+This notice should appear only when at least one tier has minimumApplied = true.
+
+If all tiers exceed their minimums, hide this notice.
+
+Important:
+This notice is not an error state.
+Do not make it red.
+Do not make it feel punitive.
+Style it as a helpful, transparent, professional explanation.
+
+Update non-multifamily helper copy:
+
+Step 1 helper copy:
+“Select each zone in your facility and choose Full Repaint or Touch-Up. Full Repaint covers the calculated surface coverage for that zone. Touch-Up is intended for targeted repaint maintenance of high-contact areas, scuffs, patches, and visible wear. Zones requiring broader repainting should be marked as Full Repaint.”
+
+Tier section helper copy:
+“Based on your selected scope, this preliminary estimate calculates repaint pricing by service frequency. Minimum managed-service pricing may apply for smaller scopes.”
+
+Pricing footnote:
+“Preliminary pricing reflects selected surface coverage, facility type, service type, visit frequency, and minimum managed-service thresholds. Final pricing is confirmed after onsite scope review.”
+
+Validation test:
+
+Retail calculator:
+- Touch-up surface coverage = 351 sqft
+- Retail full repaint PSSF = 1.35
+- Retail touch-up cost factor = 45%
+
+Expected raw service cycle cost:
+351 * 1.35 * 0.45 = 213.23
+
+Expected calculated monthly prices before minimums:
+Annual Shield:
+213.23 * 1 / 12 = 17.77/mo
+
+Bi-Annual Shield:
+213.23 * 2 / 12 = 35.54/mo
+
+Quarterly Guard:
+213.23 * 4 / 12 = 71.08/mo
+
+Expected displayed monthly prices after minimums:
+Annual Shield = $99/mo
+Bi-Annual Shield = $199/mo
+Quarterly Guard = $399/mo
+
+Expected card helper text:
+Annual Shield:
+Minimum managed-service price
+Calculated scope price: $18/mo
+
+Bi-Annual Shield:
+Minimum managed-service price
+Calculated scope price: $36/mo
+
+Quarterly Guard:
+Minimum managed-service price
+Calculated scope price: $71/mo
+
+Expected notice above pricing cards:
+Minimum service pricing applied
+Your selected scope is below the managed-service minimum for one or more plans. You can continue with the minimum plan price or add more repaint scope to see pricing based fully on your selected work.
+
+Final instruction:
+Apply this consistently across ONLY non-multifamily calculators. Do not modify the multifamily calculator.
