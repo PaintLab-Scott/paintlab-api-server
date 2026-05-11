@@ -799,13 +799,16 @@ export default function SubscriptionLab() {
         return { calcMonthly, displayMonthly: minApplied ? minimum : calcMonthly, minApplied };
       });
 
+      // Auto-discounts: T2 = 2% off, T3 = 3% off (applied to the post-minimum base)
+      const [b0, b1, b2] = commCalcResults.map(r => r.displayMonthly);
       return {
-        tiers:    commCalcResults.map(r => r.displayMonthly),
+        tiers:    [b0, Math.round(b1 * 0.98), Math.round(b2 * 0.97)],
         tiersRaw: commCalcResults.map(r => r.calcMonthly),
         onboarding: 250,
         mfSavings: [0, 0, 0],
         mfSavingsPct: [0, 0, 0],
         commMinimumsApplied: commCalcResults.map(r => r.minApplied),
+        commDisplayBase: [b0, b1, b2],
       };
     }
   }, [unitMix, resDistZones, singularHubs, resExtZones, commZones, commExtZones, isMultiFamily, facilityParam]);
@@ -813,12 +816,13 @@ export default function SubscriptionLab() {
   // Discounted display prices
   const displayPrices = useMemo(() => {
     if (isMultiFamily) return calc.tiers;
-    // Apply user-selected annual upfront discount on top of managed-service display prices
-    const [d1, d2, d3] = calc.tiers;
+    // Base = post-minimum, pre-auto-discount. Auto-discounts: T2 = 2%, T3 = 3%.
+    // Annual upfront replaces (not stacks) the auto discount: T1 +2%, T2 +4% total, T3 +5% total.
+    const [b0, b1, b2] = calc.commDisplayBase ?? calc.tiers;
     return [
-      annualUpfront.t1 ? Math.round(d1 * 0.98) : d1,
-      annualUpfront.t2 ? Math.round(d2 * 0.96) : d2,
-      annualUpfront.t3 ? Math.round(d3 * 0.95) : d3,
+      annualUpfront.t1 ? Math.round(b0 * 0.98) : b0,
+      annualUpfront.t2 ? Math.round(b1 * 0.96) : Math.round(b1 * 0.98),
+      annualUpfront.t3 ? Math.round(b2 * 0.95) : Math.round(b2 * 0.97),
     ];
   }, [calc, annualUpfront, isMultiFamily]);
 
@@ -827,11 +831,11 @@ export default function SubscriptionLab() {
 
   const annualSavings = useMemo(() => {
     if (isMultiFamily) return [0, 0, 0, 0];
-    const [d1, d2, d3] = calc.tiers;
+    const [b0, b1, b2] = calc.commDisplayBase ?? calc.tiers;
     return [
-      annualUpfront.t1 ? Math.round(d1 * 0.02 * 12) : 0,
-      annualUpfront.t2 ? Math.round(d2 * 0.04 * 12) : 0,
-      annualUpfront.t3 ? Math.round(d3 * 0.05 * 12) : 0,
+      annualUpfront.t1 ? Math.round(b0 * 0.02 * 12) : 0,
+      annualUpfront.t2 ? Math.round(b1 * 0.04 * 12) : Math.round(b1 * 0.02 * 12),
+      annualUpfront.t3 ? Math.round(b2 * 0.05 * 12) : Math.round(b2 * 0.03 * 12),
     ];
   }, [calc, annualUpfront, isMultiFamily]);
 
@@ -1658,8 +1662,12 @@ export default function SubscriptionLab() {
                               <p className="text-[10px] text-muted-foreground mt-1">Minimum managed-service price</p>
                               <p className="text-[10px] text-muted-foreground mt-0.5">Calculated scope price: {fmt(calc.tiersRaw[i] ?? 0)}/mo</p>
                             </>
+                          ) : i === 0 ? (
+                            <p className="text-[10px] text-muted-foreground mt-1">No discount applied by default. Check below to activate 2% off.</p>
+                          ) : i === 1 ? (
+                            <p className="text-[10px] text-primary mt-1 font-medium">2% discount applied</p>
                           ) : (
-                            <p className="text-[10px] text-muted-foreground mt-1">Based on selected scope</p>
+                            <p className="text-[10px] text-primary mt-1 font-medium">3% discount applied</p>
                           )
                         )}
                         {savings > 0 && (
