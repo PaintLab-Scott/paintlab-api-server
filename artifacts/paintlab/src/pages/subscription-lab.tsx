@@ -103,8 +103,9 @@ const UNIT_TOUCHUP_COVERAGE    = 0.20;
 const UNIT_TOUCHUP_COST_FACTOR = 0.35;
 
 // ─── MF Common Area Constants ─────────────────────────────────────────────────
-const MF_COMMON_REPAINT_RATE   = 0.65;
-const MF_COMMON_TOUCHUP_FACTOR = 0.35;
+const MF_COMMON_REPAINT_RATE          = 0.65;
+const MF_COMMON_TOUCHUP_COVERAGE      = 0.25; // 25% of full repaint wall surface
+const MF_COMMON_TOUCHUP_COST_FACTOR   = 0.40; // cost multiplier relative to repaint rate
 
 // ─── Visits Per Year (unified tier → frequency map) ──────────────────────────
 const VISITS_PER_YEAR: Record<string, number> = {
@@ -234,7 +235,7 @@ function calculateCommonAreaPerVisitCost(areas: CommonAreaInput[]): number {
     if (area.service === "repaint") {
       total += pssf * MF_COMMON_REPAINT_RATE;
     } else {
-      total += pssf * MF_COMMON_REPAINT_RATE * MF_COMMON_TOUCHUP_FACTOR;
+      total += pssf * MF_COMMON_REPAINT_RATE * MF_COMMON_TOUCHUP_COVERAGE * MF_COMMON_TOUCHUP_COST_FACTOR;
     }
   });
   return total;
@@ -1095,7 +1096,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_COVERAGE);
                           return (
                             <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <div className="flex items-center pl-1">
@@ -1121,7 +1122,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_COVERAGE);
                           return (
                             <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <div className="flex items-center gap-1 mb-3">
@@ -1165,7 +1166,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_COVERAGE);
                           return (
                             <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
@@ -1187,7 +1188,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_COVERAGE);
                           return (
                             <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
