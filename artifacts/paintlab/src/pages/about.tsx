@@ -325,7 +325,7 @@ export default function About() {
                 href="/subscription-portal"
                 className="inline-flex items-center justify-center px-8 py-4 border border-primary/40 text-foreground font-bold uppercase tracking-widest text-xs hover:border-primary transition-colors"
               >
-                View Subscriptions
+                View Maintenance Plans
               </a>
             </motion.div>
           </motion.div>

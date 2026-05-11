@@ -712,13 +712,13 @@ export default function FacilitySolutionsDetail() {
               No commitment required. We'll define the scope, walk the property, and show you what a professional repaint program looks like before you decide anything.
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div variants={fadeInUp} className="flex justify-center">
               <a
                 href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
-                className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold uppercase tracking-wider text-xs hover:bg-primary/90 transition-colors"
               >
                 Email Our Team
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </a>
             </motion.div>
 

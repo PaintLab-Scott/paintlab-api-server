@@ -230,7 +230,7 @@ export default function Home() {
               Repaint Systems.
             </motion.h1>
 
-            <motion.p variants={fadeInUp} className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-muted-foreground mb-8 leading-[1.15] max-w-3xl">
+            <motion.p variants={fadeInUp} className="text-[15px] md:text-2xl lg:text-3xl font-bold tracking-tight text-muted-foreground mb-8 leading-[1.15] max-w-3xl">
               Reliable. Predictable. <span className="text-primary">Professionally Managed.</span>
             </motion.p>
 

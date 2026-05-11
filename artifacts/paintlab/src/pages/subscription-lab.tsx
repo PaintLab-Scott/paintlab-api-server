@@ -1095,7 +1095,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(row.qty * row.floors * eff * 0.25);
                           return (
                             <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <div className="flex items-center pl-1">
@@ -1121,7 +1121,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(row.qty * row.floors * eff * 0.25);
                           return (
                             <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <div className="flex items-center gap-1 mb-3">
@@ -1133,13 +1133,18 @@ export default function SubscriptionLab() {
                                 <div><p className="text-[10px] text-muted-foreground mb-1">Floors</p>{numInput(row.floors, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], floors: v } })))}</div>
                                 <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], sqft: v } })), RES_DIST_SQFT[zone].toString())}</div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <button type="button" onClick={() => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], service: p[zone].service === "repaint" ? "touch-up" : "repaint" } }))}
-                                  className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
-                                  {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
-                                </button>
-                                {effectiveWall > 0 && <span className="text-[10px] text-muted-foreground">{Math.round(effectiveWall).toLocaleString()} wall sqft</span>}
+                              <div className="mb-2">
+                                <p className="text-[10px] text-muted-foreground mb-1">Surface Coverage</p>
+                                <div className={`h-9 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
+                                  <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>
+                                    {effectiveWall > 0 ? Math.round(effectiveWall).toLocaleString() : "—"}
+                                  </span>
+                                </div>
                               </div>
+                              <button type="button" onClick={() => setResDistZones(p => ({ ...p, [zone]: { ...p[zone], service: p[zone].service === "repaint" ? "touch-up" : "repaint" } }))}
+                                className={`w-full h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
+                                {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                              </button>
                             </div>
                           );
                         })}
@@ -1160,7 +1165,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(row.qty * eff * 0.25);
                           return (
                             <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
@@ -1182,7 +1187,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(row.qty * eff * 0.25);
                           return (
                             <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
@@ -1190,13 +1195,18 @@ export default function SubscriptionLab() {
                                 <div><p className="text-[10px] text-muted-foreground mb-1">Qty</p>{numInput(row.qty, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], qty: v } })))}</div>
                                 <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], sqft: v } })), RES_HUB_SQFT[hub].toString())}</div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <button type="button" onClick={() => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], service: p[hub].service === "repaint" ? "touch-up" : "repaint" } }))}
-                                  className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
-                                  {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
-                                </button>
-                                {effectiveWall > 0 && <span className="text-[10px] text-muted-foreground">{Math.round(effectiveWall).toLocaleString()} wall sqft</span>}
+                              <div className="mb-2">
+                                <p className="text-[10px] text-muted-foreground mb-1">Surface Coverage</p>
+                                <div className={`h-9 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
+                                  <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>
+                                    {effectiveWall > 0 ? Math.round(effectiveWall).toLocaleString() : "—"}
+                                  </span>
+                                </div>
                               </div>
+                              <button type="button" onClick={() => setSingularHubs(p => ({ ...p, [hub]: { ...p[hub], service: p[hub].service === "repaint" ? "touch-up" : "repaint" } }))}
+                                className={`w-full h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
+                                {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                              </button>
                             </div>
                           );
                         })}
