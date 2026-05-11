@@ -1,0 +1,80 @@
+Update the big orange 'get a quote' button on the top right of the homepage to direct to the command your outcome sectionOn the subscription portal page, change headline to, 'Select your facility type to open the calculator and build a fully burdened repaint plan estimate — including labor, materials, and production costs - takes 60 seconds'On the multifamily calculator, in step 2, make sure the surface coverage updates to reflect surface coverage for full repaint vs touch-up. For example, if surface coverage for full repaint is 1,000 and repaint % is 25%, the surface coverage amount displayed when touch-up is selected should = 250On the multifamily calculator, under step, update the text to 'Enter the number of each unit type, estimated monthly unit turns, and the percentage of turns that typically require a full repaint versus touch-up only. Touch-ups are priced using 25% surface coverage by default. Update the square footage fields to match your actual unit sizes.'On facility solutions page, direct the request a pilot black button to open users email client and send email to hello@paintlabpro.com with subject For the 5th time, make sure footer text ‘contact’ directs to the command your outcome contact form sectionOn the facility solutions page, change 'scoped before every job' to 'Budget predictability' and remove 'austin & central texas'On blog page, make sure orange button 'start a pilot conversation' auto opens users email client, sends email to hello@paintlabpro.com with subject line 'PAINTLAB - Let's Talk'On each service landing page, make sure the orange button ‘request a system assessment’ directs to the command your outcome section/contact form On facility solutions landing pages, sprinkle in mentions of some of the updated strategic positioning such as improved budgeting predictability, proactive maintenance planning, etc. On all facility solutions landing pages, remove the orange 'explore a pilot' button. update the the 'email our team' button to be orange. update the text below that button say 'Or call/text us directly: (512) 484-3124Change the phone number in the footer to 512.484.3124On mobile, for all non multifamily residential calculators, make sure it's the same visual user experience as desktop. Currently, on mobile step 1, it does not show 'surface coverage (calculated automatically)' and instead it only shows sqft each. make sure it has the same function/visuals as desktop - very important. Make sure mobile is responsive for this and all functionality. Change homepage hero sub-headers to - 'Reliable. Predictable. Professionally Managed.' Change the Supporting copy to the following and decrease the font size 20% - 'Predictable repaint operations for modern properties. Professionally managed and built to scale, PAINTLAB delivers reliable execution, stabilized budgeting, and consistent craftsmanship for recurring maintenance and large-scale repaint projects — all backed by responsive support and a 2-year guarantee. Property aesthetics on autopilot. (autopilot should be orange).On the About Paintlab section, change the header to: Headline to 'Built to Scale. Professionally Managed.' Change the Subheadline to 'PAINTLAB was created to replace the fragmented, reactive repaint process with a professionally managed system built for modern commercial properties. We help operators stabilize budgeting, reduce vendor oversight, and maintain consistent property aesthetics through reliable execution, recurring maintenance solutions, and scalable repaint programs.' And update the entire page to reflect more of the strategic positioning we've been discussing.Change the full repaint PSSF calculator calculation numbers to the following and confirm you made the changes accurately-
+
+const FACILITY_REPAINT_RATES = {
+  multifamily: 0.75,
+  office_corporate: 1.45,
+  retail: 1.35,
+  medical_healthcare: 2.25,
+  automotive: 1.55,
+  education: 1.50,
+  industrial_warehouse: 0.95,
+  gyms_fitness: 1.65,
+  self_storage: 0.80,
+  hospitality: 1.95,
+  senior_living: 1.85,
+  HOA_Community_Associations: 1.75
+};
+
+Update the Touch-Up Configuration to the following:
+
+const FACILITY_TOUCHUP_CONFIG = {
+  multifamily: {
+    touchupCoveragePercent: 0.25,
+    touchupCostFactor: 0.40
+  },
+
+  office_corporate: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.40
+  },
+
+  retail: {
+    touchupCoveragePercent: 0.18,
+    touchupCostFactor: 0.45
+  },
+
+  medical_healthcare: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.65
+  },
+
+  automotive: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.45
+  },
+
+  education: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.45
+  },
+
+  industrial_warehouse: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.30
+  },
+
+  gyms_fitness: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.55
+  },
+
+  self_storage: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.25
+  },
+
+  hospitality: {
+    touchupCoveragePercent: 0.25,
+    touchupCostFactor: 0.60
+  },
+
+  senior_living: {
+    touchupCoveragePercent: 0.22,
+    touchupCostFactor: 0.55
+  },
+
+  HOA_Community_Associations: {
+    touchupCoveragePercent: 0.20,
+    touchupCostFactor: 0.40
+  }
+};

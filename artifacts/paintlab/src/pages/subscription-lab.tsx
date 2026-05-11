@@ -51,33 +51,33 @@ const RES_HUB_LABELS: Record<string, string> = {
 };
 // ─── Facility Pricing Config ─────────────────────────────────────────────────
 const FACILITY_REPAINT_RATES: Record<string, number> = {
-  multifamily:          0.65,
-  office_corporate:     1.75,
-  retail:               1.50,
-  medical_healthcare:   3.20,
-  automotive:           1.75,
-  education:            1.75,
-  industrial_warehouse: 1.00,
-  gyms_fitness:         2.00,
-  hoa_community:        3.50,
-  self_storage:         0.85,
-  hospitality:          1.50,
-  senior_living:        1.35,
+  multifamily:          0.75,
+  office_corporate:     1.45,
+  retail:               1.35,
+  medical_healthcare:   2.25,
+  automotive:           1.55,
+  education:            1.50,
+  industrial_warehouse: 0.95,
+  gyms_fitness:         1.65,
+  hoa_community:        1.75,
+  self_storage:         0.80,
+  hospitality:          1.95,
+  senior_living:        1.85,
 };
 
 const FACILITY_TOUCHUP_CONFIG: Record<string, { touchupCoveragePercent: number; touchupCostFactor: number }> = {
-  multifamily:          { touchupCoveragePercent: 0.20, touchupCostFactor: 0.35 },
-  office_corporate:     { touchupCoveragePercent: 0.15, touchupCostFactor: 0.35 },
-  retail:               { touchupCoveragePercent: 0.15, touchupCostFactor: 0.35 },
-  medical_healthcare:   { touchupCoveragePercent: 0.15, touchupCostFactor: 0.60 },
-  automotive:           { touchupCoveragePercent: 0.15, touchupCostFactor: 0.35 },
-  education:            { touchupCoveragePercent: 0.15, touchupCostFactor: 0.40 },
+  multifamily:          { touchupCoveragePercent: 0.25, touchupCostFactor: 0.40 },
+  office_corporate:     { touchupCoveragePercent: 0.20, touchupCostFactor: 0.40 },
+  retail:               { touchupCoveragePercent: 0.18, touchupCostFactor: 0.45 },
+  medical_healthcare:   { touchupCoveragePercent: 0.20, touchupCostFactor: 0.65 },
+  automotive:           { touchupCoveragePercent: 0.20, touchupCostFactor: 0.45 },
+  education:            { touchupCoveragePercent: 0.20, touchupCostFactor: 0.45 },
   industrial_warehouse: { touchupCoveragePercent: 0.20, touchupCostFactor: 0.30 },
-  gyms_fitness:         { touchupCoveragePercent: 0.15, touchupCostFactor: 0.50 },
-  hoa_community:        { touchupCoveragePercent: 0.20, touchupCostFactor: 0.25 },
+  gyms_fitness:         { touchupCoveragePercent: 0.20, touchupCostFactor: 0.55 },
+  hoa_community:        { touchupCoveragePercent: 0.20, touchupCostFactor: 0.40 },
   self_storage:         { touchupCoveragePercent: 0.20, touchupCostFactor: 0.25 },
-  hospitality:          { touchupCoveragePercent: 0.25, touchupCostFactor: 0.45 },
-  senior_living:        { touchupCoveragePercent: 0.20, touchupCostFactor: 0.40 },
+  hospitality:          { touchupCoveragePercent: 0.25, touchupCostFactor: 0.60 },
+  senior_living:        { touchupCoveragePercent: 0.22, touchupCostFactor: 0.55 },
 };
 
 const MINIMUM_SERVICE_VISIT = 500;
@@ -1095,7 +1095,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
                           return (
                             <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <div className="flex items-center pl-1">
@@ -1121,7 +1121,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
                           return (
                             <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <div className="flex items-center gap-1 mb-3">
@@ -1160,7 +1160,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
                           return (
                             <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
@@ -1182,7 +1182,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = totalWall;
+                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
                           return (
                             <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>

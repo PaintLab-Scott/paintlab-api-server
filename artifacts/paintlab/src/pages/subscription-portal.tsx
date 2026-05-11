@@ -182,7 +182,7 @@ export default function SubscriptionPortal() {
               Build Your <span className="text-primary">Repaint Plan.</span>
             </motion.h1>
             <motion.p variants={fadeInUp} className="text-base text-muted-foreground/70 leading-relaxed">
-              Select your facility type and we'll open the calculator to build your repaint plan — <strong className="text-primary font-bold">takes 60 seconds</strong>
+              Select your facility type to open the calculator and build a fully burdened repaint plan estimate — including labor, materials, and production costs — <strong className="text-primary font-bold">takes 60 seconds</strong>
             </motion.p>
           </motion.div>
         </div>
