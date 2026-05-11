@@ -182,7 +182,7 @@ export default function Blog() {
                             </div>
                             <div className="mt-10 pt-8 border-t border-border/60">
                               <a
-                                href="/#quote"
+                                href="mailto:hello@paintlabpro.com?subject=PAINTLAB%20-%20Let%27s%20Talk"
                                 className="inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-background font-bold uppercase tracking-wider text-xs hover:bg-primary/90 transition-colors"
                               >
                                 Start a Pilot Conversation <ArrowRight className="w-3.5 h-3.5" />

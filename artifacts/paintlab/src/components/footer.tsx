@@ -34,7 +34,7 @@ export default function Footer() {
             <h4 className="text-foreground font-semibold mb-6 uppercase tracking-wider text-xs">Contact</h4>
             <ul className="flex flex-col gap-3 text-sm text-muted-foreground">
               <li>
-                <a href="tel:+18007246852" className="hover:text-primary transition-colors">1-800-PAINTLAB</a>
+                <a href="tel:+15124843124" className="hover:text-primary transition-colors">512.484.3124</a>
               </li>
               <li>
                 <a href="mailto:hello@paintlabpro.com?subject=PaintLab%20Interest" className="hover:text-primary transition-colors">hello@paintlabpro.com</a>

@@ -158,7 +158,7 @@ export default function FacilitySolutions() {
                 <ArrowRight className="w-4 h-4" />
               </a>
               <a
-                href="/#quote"
+                href="mailto:hello@paintlabpro.com?subject=Pilot%20Conversation%20Request%20-%20PAINTLAB"
                 className="inline-flex items-center gap-2 px-8 py-4 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors"
               >
                 Request a Pilot Conversation
@@ -319,8 +319,7 @@ export default function FacilitySolutions() {
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex flex-wrap items-center justify-center gap-x-16 gap-y-6">
             {[
-              { icon: <Target className="w-4 h-4" />, text: "Scoped before every job" },
-              { icon: <Building2 className="w-4 h-4" />, text: "Austin & Central Texas" },
+              { icon: <Target className="w-4 h-4" />, text: "Budget predictability" },
               { icon: <Activity className="w-4 h-4" />, text: "Pilot-first approach" },
               { icon: <Heart className="w-4 h-4" />, text: "Zero-disruption scheduling" },
             ].map((item) => (

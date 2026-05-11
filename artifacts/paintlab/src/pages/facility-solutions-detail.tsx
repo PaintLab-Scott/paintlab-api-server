@@ -541,9 +541,9 @@ export default function FacilitySolutionsDetail() {
 
               <motion.div variants={stagger} className="space-y-4">
                 {[
-                  { icon: <Target className="w-4 h-4" />, title: "Scoped Before Every Job", desc: "Clear proposals with no ambiguous line items, no scope creep, and no surprises at closeout." },
-                  { icon: <Repeat2 className="w-4 h-4" />, title: "Repeatable Execution", desc: "Disciplined crews and defined processes that deliver consistent results every time." },
-                  { icon: <Shield className="w-4 h-4" />, title: "Low-Risk Pilot Model", desc: "Start on one property or area before committing to a broader program or portfolio relationship." },
+                  { icon: <Target className="w-4 h-4" />, title: "Predictable Budgeting", desc: "Fixed-scope pricing with no surprises at closeout. PAINTLAB helps operators plan and stabilize repaint budgets across recurring maintenance and one-off projects." },
+                  { icon: <Repeat2 className="w-4 h-4" />, title: "Proactive Maintenance Planning", desc: "We help teams move from reactive repaint cycles to structured maintenance programs — reducing emergency spend and keeping properties consistently presentation-ready." },
+                  { icon: <Shield className="w-4 h-4" />, title: "Low-Risk Pilot Model", desc: "Start on one property or area before committing to a broader program or portfolio relationship. Prove value first, then scale." },
                 ].map((item) => (
                   <motion.div key={item.title} variants={fadeInUp} className="flex items-start gap-4 p-4 border border-border bg-card">
                     <div className="flex-shrink-0 w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mt-0.5">
@@ -717,19 +717,13 @@ export default function FacilitySolutionsDetail() {
                 href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
                 className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
               >
-                Explore a Pilot
-                <ArrowRight className="w-4 h-4" />
-              </a>
-              <a
-                href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
-                className="inline-flex items-center gap-2 px-10 py-5 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors"
-              >
                 Email Our Team
+                <ArrowRight className="w-4 h-4" />
               </a>
             </motion.div>
 
             <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mt-8">
-              Or call us directly:{" "}
+              Or call/text us directly:{" "}
               <a href="tel:+15124843124" className="text-primary hover:underline font-semibold">(512) 484-3124</a>
             </motion.p>
           </motion.div>

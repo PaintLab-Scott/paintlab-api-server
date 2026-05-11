@@ -231,11 +231,11 @@ export default function Home() {
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-muted-foreground mb-8 leading-[1.15] max-w-3xl">
-              Your Property's Aesthetic on <span className="text-primary">Autopilot.</span>
+              Reliable. Predictable. <span className="text-primary">Professionally Managed.</span>
             </motion.p>
 
-            <motion.p variants={fadeInUp} className="text-sm md:text-base text-muted-foreground max-w-xl mb-10 leading-relaxed">
-              Predictable repaint operations for modern properties. Subscription maintenance care or project-based execution, professionally managed, consistently delivered, and built to scale.
+            <motion.p variants={fadeInUp} className="text-xs md:text-sm text-muted-foreground max-w-xl mb-10 leading-relaxed">
+              Predictable repaint operations for modern properties. Professionally managed and built to scale, PAINTLAB delivers reliable execution, stabilized budgeting, and consistent craftsmanship for recurring maintenance and large-scale repaint projects — all backed by responsive support and a 2-year guarantee. Property aesthetics on <span className="text-primary">autopilot.</span>
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row flex-wrap gap-4">

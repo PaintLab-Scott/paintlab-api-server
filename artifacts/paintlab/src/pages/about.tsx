@@ -15,24 +15,24 @@ const stagger = {
 
 const pillars = [
   {
-    icon: <Target className="w-5 h-5" />,
-    title: "Systems, Not Projects",
-    desc: "Every scope is designed for consistency, durability, and repeatable execution—not one-off bids that disappear after closeout.",
+    icon: <ShieldCheck className="w-5 h-5" />,
+    title: "Stabilized Budgeting",
+    desc: "Predictable, transparent pricing with no surprise escalations. PAINTLAB helps operators plan repaint budgets with confidence across recurring maintenance and project-based programs.",
   },
   {
-    icon: <ShieldCheck className="w-5 h-5" />,
-    title: "Operator-First Mindset",
-    desc: "We think like operators because we've worked as operators. Predictable costs, clear timelines, and zero surprises are the baseline—not the exception.",
+    icon: <Target className="w-5 h-5" />,
+    title: "Proactive Maintenance Planning",
+    desc: "We help teams move from reactive repaint cycles to structured maintenance programs — reducing emergency spend, extending surface life, and keeping properties consistently presentable.",
   },
   {
     icon: <Repeat2 className="w-5 h-5" />,
-    title: "Repeatable Execution",
-    desc: "Clearly defined scopes, disciplined crews, and accountability at every step. Quality doesn't waver whether it's your first building or your fifteenth.",
+    title: "Reliable Execution",
+    desc: "Clearly defined scopes, disciplined crews, and accountability at every step. Quality and communication don't waver whether it's your first building or your fifteenth.",
   },
   {
     icon: <Users2 className="w-5 h-5" />,
     title: "Long-Term Partnership",
-    desc: "We don't disappear after the job. We operate as embedded partners with a vested interest in the long-term performance of your asset.",
+    desc: "We operate as embedded partners with a vested interest in long-term asset performance — not a vendor who shows up, paints, and disappears.",
   },
 ];
 
@@ -71,17 +71,15 @@ export default function About() {
               variants={fadeInUp}
               className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-none mb-6"
             >
-              We Engineer<br />
-              <span className="text-primary">Outcomes.</span>
+              Built to Scale.<br />
+              <span className="text-primary">Professionally Managed.</span>
             </motion.h1>
 
             <motion.p
               variants={fadeInUp}
               className="text-muted-foreground text-lg sm:text-xl leading-relaxed max-w-2xl"
             >
-              PAINTLAB exists to fix what's broken in commercial painting—unpredictable
-              pricing, unreliable timelines, uneven quality, and constant rebidding. That
-              doesn't work for operators managing real assets, real budgets, and real expectations.
+              PAINTLAB was created to replace the fragmented, reactive repaint process with a professionally managed system built for modern commercial properties. We help operators stabilize budgeting, reduce vendor oversight, and maintain consistent property aesthetics through reliable execution, recurring maintenance solutions, and scalable repaint programs.
             </motion.p>
           </motion.div>
         </div>
@@ -102,14 +100,14 @@ export default function About() {
                 <span className="text-primary font-mono text-xs tracking-widest uppercase">The Problem</span>
               </motion.div>
               <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-black tracking-tighter mb-6">
-                The industry runs on<br />inconsistency.
+                The old model is<br />holding operators back.
               </motion.h2>
               <motion.div variants={stagger} className="space-y-4">
                 {[
-                  "Unpredictable pricing that changes after the contract",
-                  "Vendors who disappear the moment the last coat dries",
-                  "Quality that varies crew to crew, job to job",
-                  "Constant rebidding instead of trusted partnerships",
+                  "Unpredictable repaint budgets that spike without warning",
+                  "Reactive, one-off vendor relationships with no long-term accountability",
+                  "Inconsistent workmanship that degrades asset presentation over time",
+                  "Time lost to constant rebidding instead of proactive maintenance planning",
                 ].map((item, i) => (
                   <motion.div key={i} variants={fadeInUp} className="flex items-start gap-3">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0 mt-2" />
@@ -128,7 +126,7 @@ export default function About() {
             >
               <div className="border-l-2 border-primary/40 pl-8">
                 <p className="text-xl sm:text-2xl font-bold tracking-tight leading-snug text-foreground mb-6">
-                  "This isn't about painting walls. It's about creating a dependable, scalable way to maintain and elevate your asset—without the friction."
+                  "This isn't about painting walls. It's about creating a professionally managed system that helps operators stabilize budgets, reduce vendor friction, and maintain consistent asset presentation — at scale."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="h-[1px] w-8 bg-primary" />
@@ -158,7 +156,7 @@ export default function About() {
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Our Approach</span>
             </motion.div>
             <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-black tracking-tighter">
-              We built PAINTLAB to be different.
+              PAINTLAB is built for how operators actually work.
             </motion.h2>
           </motion.div>
 

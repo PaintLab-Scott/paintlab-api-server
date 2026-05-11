@@ -995,7 +995,7 @@ export default function SubscriptionLab() {
                 {/* ── MF STEP 1: Unit Mix ── */}
                 {sectionCard("Unit Mix", "STEP 1", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the count of each unit type, average turns per month, and the average percentage of turns that require a <strong className="text-foreground">full repaint</strong> vs. touch-up only. Override sqft for your actual unit sizes.</p>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the number of each unit type, estimated monthly unit turns, and the percentage of turns that typically require a <strong className="text-foreground">full repaint</strong> versus touch-up only. Touch-ups are priced using 25% surface coverage by default. Update the square footage fields to match your actual unit sizes.</p>
                     {/* Desktop */}
                     <div className="hidden sm:block">
                       <div className="grid grid-cols-[2fr_0.7fr_0.7fr_0.9fr_1fr_1fr] gap-2 mb-2 px-1">
@@ -1095,7 +1095,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = totalWall;
                           return (
                             <div key={zone} className="grid grid-cols-[2.2fr_0.7fr_0.7fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <div className="flex items-center pl-1">
@@ -1121,7 +1121,7 @@ export default function SubscriptionLab() {
                         {Object.entries(resDistZones).map(([zone, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_DIST_SQFT[zone] ?? 0);
                           const totalWall = row.qty * row.floors * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = totalWall;
                           return (
                             <div key={zone} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <div className="flex items-center gap-1 mb-3">
@@ -1160,7 +1160,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = totalWall;
                           return (
                             <div key={hub} className="grid grid-cols-[2.2fr_0.9fr_1fr_1fr_1.1fr] gap-2 items-center mb-2">
                               <p className="text-sm font-medium text-foreground pl-1">{RES_HUB_LABELS[hub]}</p>
@@ -1182,7 +1182,7 @@ export default function SubscriptionLab() {
                         {Object.entries(singularHubs).map(([hub, row]) => {
                           const eff = row.sqft > 0 ? row.sqft : (RES_HUB_SQFT[hub] ?? 0);
                           const totalWall = row.qty * eff * 3;
-                          const effectiveWall = row.service === "repaint" ? totalWall : Math.round(totalWall * MF_COMMON_TOUCHUP_FACTOR);
+                          const effectiveWall = totalWall;
                           return (
                             <div key={hub} className={`border p-3 ${row.service === "repaint" ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/10"}`}>
                               <p className="text-sm font-bold mb-3">{RES_HUB_LABELS[hub]}</p>
@@ -1332,13 +1332,18 @@ export default function SubscriptionLab() {
                                     <div><p className="text-[10px] text-muted-foreground mb-1">Floors</p>{numInput(row.floors, v => setRow(z.key, { floors: Math.max(1, v) }))}</div>
                                     <div><p className="text-[10px] text-muted-foreground mb-1">SQFT each</p>{numInput(row.sqft, v => setRow(z.key, { sqft: v }), z.defaultSqFt?.toString() ?? "sqft")}</div>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => setRow(z.key, { service: row.service === "repaint" ? "touch-up" : "repaint" })}
-                                      className={`flex-1 h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
-                                      {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
-                                    </button>
-                                    {wall > 0 && <span className="text-[10px] text-muted-foreground">{(row.service === "repaint" ? wall : Math.round(wall * tuCoverage)).toLocaleString()} sqft</span>}
+                                  <div className="mb-2">
+                                    <p className="text-[10px] text-muted-foreground mb-1">Surface Coverage</p>
+                                    <div className={`h-9 border flex items-center justify-center ${row.service === "repaint" ? "bg-primary/5 border-primary/20" : "bg-secondary/30 border-border"}`}>
+                                      <span className={`text-xs font-mono ${row.service === "repaint" ? "text-primary" : "text-muted-foreground"}`}>
+                                        {wall > 0 ? (row.service === "repaint" ? wall.toLocaleString() : Math.round(wall * tuCoverage).toLocaleString()) : "—"}
+                                      </span>
+                                    </div>
                                   </div>
+                                  <button type="button" onClick={() => setRow(z.key, { service: row.service === "repaint" ? "touch-up" : "repaint" })}
+                                    className={`w-full h-9 border text-[10px] font-bold uppercase tracking-wider transition-colors ${row.service === "repaint" ? "bg-primary text-background border-primary" : "bg-background text-muted-foreground border-border"}`}>
+                                    {row.service === "repaint" ? "Full Repaint" : "Touch-Up"}
+                                  </button>
                                 </div>
                               );
                             })}
