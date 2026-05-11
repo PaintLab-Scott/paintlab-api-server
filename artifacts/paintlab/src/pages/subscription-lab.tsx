@@ -86,14 +86,17 @@ function applyMinimumPerVisit(perVisitCost: number): number {
   return Math.max(perVisitCost, MINIMUM_SERVICE_VISIT);
 }
 
+// Internal pricing test:
+//   Full repaint cost  = pssf × repaintRate  (e.g. $1,000)
+//   Touch-up cost      = full repaint cost × touchupCostFactor  (e.g. $1,000 × 0.40 = $400)
+//   touchupCoveragePercent is used ONLY for surface-coverage display — NOT applied to dollar cost.
 function calculateAreaServiceCost({ facilityType, pssf, service }: { facilityType: string; pssf: number; service: string }): number {
   const fullRepaintRate = FACILITY_REPAINT_RATES[facilityType];
   const touchupConfig   = FACILITY_TOUCHUP_CONFIG[facilityType];
   if (!fullRepaintRate) return 0;
   if (service === "repaint") return pssf * fullRepaintRate;
-  const coveragePercent = touchupConfig?.touchupCoveragePercent ?? 0.15;
-  const costFactor      = touchupConfig?.touchupCostFactor      ?? 0.35;
-  return pssf * coveragePercent * fullRepaintRate * costFactor;
+  const costFactor = touchupConfig?.touchupCostFactor ?? 0.40;
+  return pssf * fullRepaintRate * costFactor;
 }
 
 // ─── MF Unit Turn Constants ───────────────────────────────────────────────────
@@ -209,7 +212,7 @@ function calculateMultifamilyMonthlyCost(units: MFUnit[]): number {
     const touchupUnits = monthlyTurns - repaintUnits;
     const unitPSSF     = avgSqFt * UNIT_SURFACE_MULTIPLIER;
     const repaintCost  = repaintUnits * unitPSSF * UNIT_TURN_REPAINT_RATE;
-    const touchupCost  = touchupUnits * unitPSSF * UNIT_TOUCHUP_COVERAGE * UNIT_TURN_REPAINT_RATE * UNIT_TOUCHUP_COST_FACTOR;
+    const touchupCost  = touchupUnits * unitPSSF * UNIT_TURN_REPAINT_RATE * UNIT_TOUCHUP_COST_FACTOR;
     totalMonthlyCost  += repaintCost + touchupCost;
   });
   return totalMonthlyCost;
@@ -235,7 +238,7 @@ function calculateCommonAreaPerVisitCost(areas: CommonAreaInput[]): number {
     if (area.service === "repaint") {
       total += pssf * MF_COMMON_REPAINT_RATE;
     } else {
-      total += pssf * MF_COMMON_REPAINT_RATE * MF_COMMON_TOUCHUP_COVERAGE * MF_COMMON_TOUCHUP_COST_FACTOR;
+      total += pssf * MF_COMMON_REPAINT_RATE * MF_COMMON_TOUCHUP_COST_FACTOR;
     }
   });
   return total;
@@ -996,7 +999,7 @@ export default function SubscriptionLab() {
                 {/* ── MF STEP 1: Unit Mix ── */}
                 {sectionCard("Unit Mix", "STEP 1", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the number of each unit type, estimated monthly unit turns, and the percentage of turns that typically require a <strong className="text-foreground">full repaint</strong> versus touch-up only. Touch-ups are priced using 25% surface coverage by default. Update the square footage fields to match your actual unit sizes.</p>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the number of each unit type, estimated monthly unit turns, and the percentage of turns that typically require a <strong className="text-foreground">full repaint</strong> versus touch-up only. Touch-up service is intended for targeted repainting of approximately 25% of a unit's wall surface area (high-traffic areas, scuffs, patches, and visible wear). Units requiring broader repaint coverage should be marked as Full Repaint. Update square footage fields to match your actual unit sizes.</p>
                     {/* Desktop */}
                     <div className="hidden sm:block">
                       <div className="grid grid-cols-[2fr_0.7fr_0.7fr_0.9fr_1fr_1fr] gap-2 mb-2 px-1">
@@ -1063,7 +1066,7 @@ export default function SubscriptionLab() {
                   "STEP 2",
                   (
                     <div>
-                      <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the quantity of each zone type and select <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> per zone. Repaints receive a complete two-coat repaint and drywall patches at each service cycle. Touch-ups restore appearance with precision spot coating, scuff repair, and color matching.</p>
+                      <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Enter the quantity of each zone type and select <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> per zone. Repaints receive a complete two-coat repaint and drywall patches at each service cycle. Touch-Up service is intended for targeted repaint maintenance of high-contact areas, scuffs, patches, and visible wear. Areas requiring broader or full-surface repainting should be marked as <strong className="text-foreground">Full Repaint</strong>.</p>
 
                       {/* Service legend — redesigned compact inline */}
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-5 px-3 py-2.5 border border-border/50 bg-secondary/20 rounded-sm">
@@ -1076,7 +1079,7 @@ export default function SubscriptionLab() {
                         <div className="flex items-center gap-2">
                           <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
                           <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                          <span className="text-[10px] text-muted-foreground">targeted surface coverage, lower rate</span>
+                          <span className="text-[10px] text-muted-foreground">targeted repaint maintenance for visible wear and high-contact areas</span>
                           <InfoTip text="Touch-up pricing varies by facility type based on expected coverage, access, durability needs, and finish standards." />
                         </div>
                       </div>
@@ -1258,7 +1261,7 @@ export default function SubscriptionLab() {
                 {/* ── COMM STEP 1: Select Paint Zones ── */}
                 {sectionCard(<>Select <span className="text-primary">Paint Zones</span></>, "STEP 1", (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> for that zone. Repaints coat 100% of the zone's wall surface. Touch-ups cover targeted sections — typically high-contact spots, scuffed areas, and visible damage — at a lower cost per cycle. Surface coverage is calculated automatically based on your facility type.</p>
+                    <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Select each zone in your facility and choose <strong className="text-foreground">Full Repaint</strong> or <strong className="text-foreground">Touch-Up</strong> for that zone. Repaints coat 100% of the zone's wall surface. Touch-Up service is intended for targeted repaint maintenance of high-contact areas, scuffs, patches, and visible wear. Zones requiring broader or full-surface repainting should be marked as <strong className="text-foreground">Full Repaint</strong>. Surface coverage is calculated automatically based on your facility type.</p>
 
                     {/* Legend */}
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-5 px-3 py-2.5 border border-border/50 bg-secondary/20 rounded-sm">
@@ -1271,7 +1274,7 @@ export default function SubscriptionLab() {
                       <div className="flex items-center gap-2">
                         <span className="w-3 h-3 bg-secondary border border-border flex-shrink-0 inline-block" />
                         <span className="text-xs font-semibold text-foreground">Touch-Up</span>
-                        <span className="text-[10px] text-muted-foreground">targeted surface coverage, lower rate</span>
+                        <span className="text-[10px] text-muted-foreground">targeted repaint maintenance for visible wear and high-contact areas</span>
                         <InfoTip text="Touch-up pricing varies by facility type based on expected coverage, access, durability needs, and finish standards." />
                       </div>
                     </div>
