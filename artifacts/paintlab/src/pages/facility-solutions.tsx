@@ -121,7 +121,7 @@ export default function FacilitySolutions() {
             src="/images/commercial-complex.jpg"
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover opacity-30 object-right"
+            className="absolute inset-0 w-full h-full object-cover opacity-55 object-right"
           />
           {/* Left dissolve — strong, protects text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-transparent" />

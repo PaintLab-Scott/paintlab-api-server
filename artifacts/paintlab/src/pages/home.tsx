@@ -363,7 +363,12 @@ export default function Home() {
                 <p className="text-muted-foreground text-lg mb-8">
                   The result is a repeatable, predictable experience—projects delivered on time, on budget, and to the exacting standards you expect.
                 </p>
-                <img src="/images/handshake-lobby.jpg" alt="Professional meeting in modern office lobby" className="w-full aspect-square object-cover border border-border" />
+                <div className="relative w-full aspect-square overflow-hidden">
+                  <img src="/images/handshake-lobby.jpg" alt="Professional meeting in modern office lobby" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/30 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-l from-background/40 via-transparent to-transparent pointer-events-none" />
+                </div>
               </motion.div>
             </div>
 

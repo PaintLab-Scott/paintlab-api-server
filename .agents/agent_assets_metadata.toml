@@ -60,6 +60,36 @@ uri = "file://artifacts/paintlab/public/images/specialty.png"
 type = "image"
 title = "pressure washing apartment facade"
 
+[[generated]]
+id = "4sB1-Y-0fRCnq94LViheK"
+uri = "file://attached_assets/generated_images/two_business_professionals_shaking_cfb5.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Jpz3_tU5sRiSZsoTxmCYD"
+uri = "file://attached_assets/generated_images/modern_upscale_restaurant_interior_a503.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "RAyLAGM5isUapiSILAWJv"
+uri = "file://attached_assets/generated_images/senior_living_assisted_living_d4b0.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "bvOrykwID43ccx3VNlPbj"
+uri = "file://attached_assets/generated_images/modern_luxury_apartment_building_8d1c.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "hzV5wjg7dv9-h3Cdh8Ds4"
+uri = "file://attached_assets/generated_images/modern_commercial_office_complex_b4ac.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "IZ_bxn88OeBkAQMdhtjr3"
 uri = "file://attached_assets/stock_images/retail_interior.jpg"
@@ -287,3 +317,9 @@ id = "z_TppPiT8UEJIB5MKnL5W"
 uri = "file://attached_assets/stock_images/classroom_interior.jpg"
 type = "image"
 title = "elementary school kindergarten classroom interior colorful bright modern education facility"
+
+[[outputs]]
+id = "639PzJhKUATARkw5zgiEu"
+uri = "file://artifacts/paintlab/public/images/handshake-lobby.jpg"
+type = "image"
+title = "Approach Section — Handshake Lobby Photo"
