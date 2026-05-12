@@ -115,18 +115,20 @@ export default function FacilitySolutions() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-40 pb-28">
-        {/* Background building photo — right side */}
-        <div className="pointer-events-none absolute inset-0 select-none">
-          <div className="absolute inset-y-0 right-0 w-[55%] hidden lg:block">
-            <img
-              src="/images/commercial-complex.jpg"
-              alt=""
-              aria-hidden
-              className="w-full h-full object-cover opacity-20"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-background/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/30" />
-          </div>
+        {/* Background building photo — right side, naturally dissolving into dark bg */}
+        <div className="pointer-events-none absolute inset-0 select-none hidden lg:block">
+          <img
+            src="/images/commercial-complex.jpg"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover opacity-30 object-right"
+          />
+          {/* Left dissolve — strong, protects text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-transparent" />
+          {/* Top dissolve */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent to-transparent" />
+          {/* Bottom dissolve */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
 

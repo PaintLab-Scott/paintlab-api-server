@@ -496,22 +496,24 @@ export default function FacilitySolutionsDetail() {
             {/* Facility photo — right column, desktop only */}
             {detailHeroImage && (
               <motion.div
-                initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.9, delay: 0.3 }}
-                className="hidden lg:block flex-shrink-0 w-[400px] xl:w-[480px] mt-10 lg:mt-0"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1.1, delay: 0.25 }}
+                className="hidden lg:block flex-shrink-0 w-[440px] xl:w-[520px] mt-10 lg:mt-0 self-center"
               >
-                <div className="relative h-[320px] xl:h-[380px] overflow-hidden border border-border/20">
+                <div className="relative h-[400px] xl:h-[460px] overflow-hidden">
                   <img
                     src={detailHeroImage}
                     alt={config.label}
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-background/50" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex items-center gap-2">
-                    <div className="h-[1px] flex-1 bg-primary/30" />
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-foreground/40">{config.label}</span>
-                  </div>
+                  {/* Left edge dissolve — primary blend into text */}
+                  <div className="absolute inset-y-0 left-0 w-[50%] bg-gradient-to-r from-background via-background/75 to-transparent" />
+                  {/* Right edge dissolve */}
+                  <div className="absolute inset-y-0 right-0 w-[25%] bg-gradient-to-l from-background/80 to-transparent" />
+                  {/* Top edge dissolve */}
+                  <div className="absolute inset-x-0 top-0 h-[35%] bg-gradient-to-b from-background/90 via-background/40 to-transparent" />
+                  {/* Bottom edge dissolve */}
+                  <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-background via-background/55 to-transparent" />
                 </div>
               </motion.div>
             )}

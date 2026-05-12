@@ -363,7 +363,7 @@ export default function Home() {
                 <p className="text-muted-foreground text-lg mb-8">
                   The result is a repeatable, predictable experience—projects delivered on time, on budget, and to the exacting standards you expect.
                 </p>
-                <img src="/images/facilities/office-corporate.jpg" alt="Modern commercial office building interior" className="w-full aspect-square object-cover border border-border" />
+                <img src="/images/handshake-lobby.jpg" alt="Professional meeting in modern office lobby" className="w-full aspect-square object-cover border border-border" />
               </motion.div>
             </div>
 
