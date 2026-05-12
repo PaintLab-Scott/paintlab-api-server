@@ -211,12 +211,11 @@ export default function Home() {
       {/* HERO SECTION */}
       <section className="relative min-h-[100dvh] flex items-center pt-24 pb-12 overflow-hidden border-b border-border">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/50 to-background/10 z-10" />
           <img
             src="/images/hero.png"
             alt="Large-scale commercial painting on an industrial building"
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-90"
           />
         </div>
 
@@ -364,7 +363,7 @@ export default function Home() {
                 <p className="text-muted-foreground text-lg mb-8">
                   The result is a repeatable, predictable experience—projects delivered on time, on budget, and to the exacting standards you expect.
                 </p>
-                <img src="/images/painters.png" alt="Commercial painters at work in a large modern facility" className="w-full aspect-square object-cover border border-border filter grayscale" />
+                <img src="/images/painters-exterior.jpg" alt="Commercial painters at work on a large building exterior" className="w-full aspect-square object-cover border border-border" />
               </motion.div>
             </div>
 

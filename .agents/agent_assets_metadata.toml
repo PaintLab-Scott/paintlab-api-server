@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "TrvEdgAbCk9vm_vIN4ogH"
@@ -60,3 +59,93 @@ id = "THCiK6E_j5DdZ2aWPjMqz"
 uri = "file://artifacts/paintlab/public/images/specialty.png"
 type = "image"
 title = "pressure washing apartment facade"
+
+[[outputs]]
+id = "IZ_bxn88OeBkAQMdhtjr3"
+uri = "file://attached_assets/stock_images/retail_interior.jpg"
+type = "image"
+title = "upscale retail store interior showroom freshly painted bright clean commercial space"
+
+[[outputs]]
+id = "bCV28mT8U3koWQbpxNfqC"
+uri = "file://attached_assets/stock_images/automotive_dealership.jpg"
+type = "image"
+title = "car dealership auto service center showroom interior clean painted walls automotive facility"
+
+[[outputs]]
+id = "Kp9s61z37SF25STWOVfg4"
+uri = "file://attached_assets/stock_images/medical_hallway.jpg"
+type = "image"
+title = "modern medical clinic hospital hallway clean white painted walls healthcare facility interior"
+
+[[outputs]]
+id = "BchwEZHgteuOt3xtOY3r9"
+uri = "file://attached_assets/stock_images/education_campus.jpg"
+type = "image"
+title = "university school campus building interior hallway freshly painted clean education facility"
+
+[[outputs]]
+id = "7Ek4i5_jCpM2ZW5Y35x5i"
+uri = "file://attached_assets/stock_images/gym_fitness.jpg"
+type = "image"
+title = "modern fitness gym interior freshly painted walls equipment athletic facility clean"
+
+[[outputs]]
+id = "pUxAm9ONXpzq0OSK9BIdF"
+uri = "file://attached_assets/stock_images/hoa_community.jpg"
+type = "image"
+title = "luxury HOA residential community exterior buildings freshly painted neighborhood homes"
+
+[[outputs]]
+id = "BJsYYbFHrL4TwgqoOQ5qG"
+uri = "file://attached_assets/stock_images/senior_living.jpg"
+type = "image"
+title = "senior care assisted living facility interior warm freshly painted hallway comfortable"
+
+[[outputs]]
+id = "-uGMePZE2oGy8QQw2Y8F9"
+uri = "file://attached_assets/stock_images/self_storage.jpg"
+type = "image"
+title = "self storage facility interior corridors freshly painted clean unit doors rows"
+
+[[outputs]]
+id = "vh9e_wcdYFwn6JBPkC8ze"
+uri = "file://attached_assets/stock_images/office_corporate_interior.jpg"
+type = "image"
+title = "modern professional office building interior clean painted walls open workspace corporate"
+
+[[outputs]]
+id = "hySuDH1HLI0PIKJxRk3bg"
+uri = "file://attached_assets/stock_images/hospitality_hotel.jpg"
+type = "image"
+title = "luxury hotel lobby reception freshly painted premium interior hospitality"
+
+[[outputs]]
+id = "UeS0cr6HGbPnZ5aaF1NLV"
+uri = "file://attached_assets/stock_images/multifamily_apartment.jpg"
+type = "image"
+title = "luxury apartment complex hallway corridor interior freshly painted modern residential building"
+
+[[outputs]]
+id = "xynKXvx-iFwB4aayVXjKS"
+uri = "file://attached_assets/stock_images/industrial_warehouse.jpg"
+type = "image"
+title = "large industrial warehouse interior painted walls distribution center manufacturing facility"
+
+[[outputs]]
+id = "-8gXdqMfEO2wYppSJ9YZL"
+uri = "file://attached_assets/stock_images/interior_painting_premium.jpg"
+type = "image"
+title = "premium commercial interior painting fresh clean walls professional finish modern building"
+
+[[outputs]]
+id = "kSnCOYWnTIZdgv4qcWHRn"
+uri = "file://attached_assets/stock_images/commercial_painters_exterior.jpg"
+type = "image"
+title = "professional commercial painters painting building exterior large scale job site workers"
+
+[[outputs]]
+id = "ErOOgBMFn4S5zzSxaSwGx"
+uri = "file://attached_assets/stock_images/austin_commercial_buildings.jpg"
+type = "image"
+title = "Austin Texas commercial real estate skyline buildings downtown urban property"

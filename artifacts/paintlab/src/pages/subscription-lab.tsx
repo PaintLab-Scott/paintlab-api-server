@@ -193,6 +193,22 @@ const FACILITY_PARAM_TO_PRICING_KEY: Record<string, string> = {
   hospitality:        "hospitality",
 };
 
+// Hero photos — one per facility type (stock photography)
+const FACILITY_HERO_IMAGES: Record<string, string> = {
+  "multi-family":     "/images/facilities/multifamily.jpg",
+  "office-corporate": "/images/facilities/office-corporate.jpg",
+  medical:            "/images/facilities/medical-healthcare.jpg",
+  retail:             "/images/facilities/retail.jpg",
+  industrial:         "/images/facilities/industrial.jpg",
+  automotive:         "/images/facilities/automotive.jpg",
+  education:          "/images/facilities/education.jpg",
+  "gyms-fitness":     "/images/facilities/gyms-fitness.jpg",
+  hoa:                "/images/facilities/hoa.jpg",
+  "senior-living":    "/images/facilities/senior-living.jpg",
+  "self-storage":     "/images/facilities/self-storage.jpg",
+  hospitality:        "/images/facilities/hospitality.jpg",
+};
+
 function getFacilityPricing(facilityParam: string): { repaintRate: number; tuCoverage: number; tuCostFactor: number } {
   const key = FACILITY_PARAM_TO_PRICING_KEY[facilityParam] ?? "office_corporate";
   return {
@@ -658,6 +674,7 @@ export default function SubscriptionLab() {
   const facilityParam = slugData?.facility ?? qParams.get("facility") ?? typeParam;
   const isMultiFamily = typeParam === "multi-family";
   const facilityLabel = FACILITY_LABELS[facilityParam] ?? "Commercial";
+  const facilityHeroImage = FACILITY_HERO_IMAGES[facilityParam] ?? null;
 
   const [extInfoZone, setExtInfoZone] = useState<string | null>(null);
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -974,37 +991,65 @@ export default function SubscriptionLab() {
       <Navbar />
 
       {/* HEADER */}
-      <section className="pt-28 sm:pt-32 pb-10 border-b border-border bg-card">
+      <section className="pt-28 sm:pt-32 pb-10 border-b border-border bg-card overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 md:px-12">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
-            <motion.div variants={fadeInUp} className="mb-6">
-              <Link href="/subscription-portal">
-                <button className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Back to Facility Selection
-                </button>
-              </Link>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-20">
+
+            {/* Left: Text content */}
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="flex-1 min-w-0">
+              <motion.div variants={fadeInUp} className="mb-6">
+                <Link href="/subscription-portal">
+                  <button className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Facility Selection
+                  </button>
+                </Link>
+              </motion.div>
+              <motion.div variants={fadeInUp} className="flex flex-wrap items-start gap-3 mb-2">
+                <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">{facilityLabel} <span className="text-primary">Repaint Plan.</span></h1>
+                <span className="self-start mt-1.5 px-2.5 py-1 bg-primary text-background text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Takes ~60 sec</span>
+              </motion.div>
+              <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary repaint maintenance estimate designed to simplify planning, budgeting, and property oversight.</motion.p>
+              {!isMultiFamily && (
+                <motion.div variants={fadeInUp} className="mt-4">
+                  <button type="button" onClick={() => setPricingOpen(o => !o)}
+                    className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
+                    <span className="w-4 h-4 rounded-full border border-primary text-primary text-[9px] flex items-center justify-center flex-shrink-0">i</span>
+                    <span>Pricing assumptions</span>
+                    {pricingOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+                  {pricingOpen && (
+                    <div className="mt-2 max-w-2xl text-xs text-muted-foreground leading-relaxed border border-border/40 bg-secondary/10 p-4">
+                      All inputs assume 10-ft ceiling height. Surface coverage is calculated automatically from your floor sqft inputs. <strong className="text-foreground">Full repaint zones</strong> are priced at a higher rate than <strong className="text-foreground">touch-up zones</strong> (precision spot coating). Actual ceiling heights and square footages are confirmed during your complimentary walk-through — no commitment required before that conversation.
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </motion.div>
-            <motion.div variants={fadeInUp} className="flex flex-wrap items-start gap-3 mb-2">
-              <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">{facilityLabel} <span className="text-primary">Repaint Plan.</span></h1>
-              <span className="self-start mt-1.5 px-2.5 py-1 bg-primary text-background text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Takes ~60 sec</span>
-            </motion.div>
-            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mb-0.5">Build a preliminary repaint maintenance estimate designed to simplify planning, budgeting, and property oversight.</motion.p>
-            {!isMultiFamily && (
-              <motion.div variants={fadeInUp} className="mt-4">
-                <button type="button" onClick={() => setPricingOpen(o => !o)}
-                  className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
-                  <span className="w-4 h-4 rounded-full border border-primary text-primary text-[9px] flex items-center justify-center flex-shrink-0">i</span>
-                  <span>Pricing assumptions</span>
-                  {pricingOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                </button>
-                {pricingOpen && (
-                  <div className="mt-2 max-w-2xl text-xs text-muted-foreground leading-relaxed border border-border/40 bg-secondary/10 p-4">
-                    All inputs assume 10-ft ceiling height. Surface coverage is calculated automatically from your floor sqft inputs. <strong className="text-foreground">Full repaint zones</strong> are priced at a higher rate than <strong className="text-foreground">touch-up zones</strong> (precision spot coating). Actual ceiling heights and square footages are confirmed during your complimentary walk-through — no commitment required before that conversation.
+
+            {/* Right: Facility photo — desktop only */}
+            {facilityHeroImage && (
+              <motion.div
+                initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="hidden lg:block flex-shrink-0 w-[380px] xl:w-[460px] mt-6 lg:mt-0"
+              >
+                <div className="relative h-[240px] xl:h-[280px] overflow-hidden border border-border/20">
+                  <img
+                    src={facilityHeroImage}
+                    alt={`${facilityLabel} facility`}
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-card/60" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card/50 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex items-center gap-2">
+                    <div className="h-[1px] flex-1 bg-primary/30" />
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-foreground/40">{facilityLabel}</span>
                   </div>
-                )}
+                </div>
               </motion.div>
             )}
-          </motion.div>
+
+          </div>
         </div>
       </section>
 
