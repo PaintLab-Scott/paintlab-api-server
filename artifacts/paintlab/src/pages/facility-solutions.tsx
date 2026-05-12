@@ -115,14 +115,18 @@ export default function FacilitySolutions() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-40 pb-28">
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden select-none">
-          <img
-            src="/images/pl-icon-new.png"
-            alt=""
-            aria-hidden
-            className="opacity-[0.035] w-[600px] sm:w-[800px] max-w-none translate-x-32"
-            style={{ mixBlendMode: "lighten" }}
-          />
+        {/* Background building photo — right side */}
+        <div className="pointer-events-none absolute inset-0 select-none">
+          <div className="absolute inset-y-0 right-0 w-[55%] hidden lg:block">
+            <img
+              src="/images/commercial-complex.jpg"
+              alt=""
+              aria-hidden
+              className="w-full h-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-background/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/30" />
+          </div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
 

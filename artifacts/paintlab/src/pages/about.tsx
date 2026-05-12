@@ -44,18 +44,15 @@ export default function About() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-40 pb-24 sm:pb-32">
-        {/* Premium photo — right side */}
-        <div className="pointer-events-none absolute inset-0 select-none">
-          <div className="absolute inset-y-0 right-0 w-[55%] hidden lg:block">
-            <img
-              src="/images/interior-premium.jpg"
-              alt=""
-              aria-hidden
-              className="w-full h-full object-cover opacity-25"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-background/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/40" />
-          </div>
+        {/* Large PL icon watermark */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden select-none">
+          <img
+            src="/images/pl-icon-new.png"
+            alt=""
+            aria-hidden
+            className="opacity-[0.04] w-[560px] sm:w-[720px] max-w-none translate-x-24 sm:translate-x-32"
+            style={{ mixBlendMode: "lighten" }}
+          />
         </div>
 
         <div className="relative container mx-auto px-6 md:px-12">

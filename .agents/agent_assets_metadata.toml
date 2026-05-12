@@ -149,3 +149,45 @@ id = "ErOOgBMFn4S5zzSxaSwGx"
 uri = "file://attached_assets/stock_images/austin_commercial_buildings.jpg"
 type = "image"
 title = "Austin Texas commercial real estate skyline buildings downtown urban property"
+
+[[outputs]]
+id = "YBg-VPaC5vSvu63O7cUX1"
+uri = "file://attached_assets/stock_images/automotive_facility.jpg"
+type = "image"
+title = "modern automotive car dealership service center building interior exterior facility"
+
+[[outputs]]
+id = "0xMY4aWBaYqpnNKa90U_p"
+uri = "file://attached_assets/stock_images/gym_fitness_facility.jpg"
+type = "image"
+title = "modern fitness gym health club interior building facility clean"
+
+[[outputs]]
+id = "_Ywn22DCv8mu3jnhkaTR6"
+uri = "file://attached_assets/stock_images/commercial_complex_exterior.jpg"
+type = "image"
+title = "modern commercial real estate building complex exterior Austin Texas professional wide angle"
+
+[[outputs]]
+id = "NaW8LjLWXBo-aXMQx2Atr"
+uri = "file://attached_assets/stock_images/modern_apartment_complex.jpg"
+type = "image"
+title = "modern luxury apartment complex exterior architecture contemporary residential building"
+
+[[outputs]]
+id = "Phs0PIAvqmIxHgyU_3IBi"
+uri = "file://attached_assets/stock_images/commercial_office_exterior.jpg"
+type = "image"
+title = "modern large commercial office building complex exterior glass steel architecture downtown"
+
+[[outputs]]
+id = "sewnQXxz5OqgnkvOQqmWK"
+uri = "file://attached_assets/stock_images/modern_apartment_exterior.jpg"
+type = "image"
+title = "modern urban apartment complex exterior building contemporary architecture multi-story residential"
+
+[[outputs]]
+id = "HnPGwzbO0jb6xereF0z1M"
+uri = "file://attached_assets/stock_images/hotel_lobby_interior.jpg"
+type = "image"
+title = "luxury hotel lobby interior architecture modern grand atrium no people empty elegant"

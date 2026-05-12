@@ -395,9 +395,25 @@ const CONFIGS: FacilityConfig[] = [
   },
 ];
 
+// Hero photos keyed by facility slug
+const DETAIL_HERO_IMAGES: Record<string, string> = {
+  "multifamily-repaint-pilot":           "/images/facilities/multifamily.jpg",
+  "office-cre-repaint-support":          "/images/facilities/office-corporate.jpg",
+  "retail-repaint-support":              "/images/facilities/retail.jpg",
+  "industrial-warehouse-repaint-support":"/images/facilities/industrial.jpg",
+  "hospitality-repaint-support":         "/images/facilities/hospitality.jpg",
+  "restaurant-repaint-support":          "/images/facilities/restaurant.jpg",
+  "senior-living-repaint-support":       "/images/facilities/senior-living.jpg",
+  "self-storage-repaint-support":        "/images/facilities/self-storage.jpg",
+  "hoa-community-repaint-support":       "/images/facilities/hoa.jpg",
+  "education-facility-repaint-support":  "/images/facilities/education.jpg",
+  "healthcare-facility-repaint-support": "/images/facilities/medical-healthcare.jpg",
+};
+
 export default function FacilitySolutionsDetail() {
   const params = useParams<{ slug: string }>();
   const config = CONFIGS.find((c) => c.slug === params.slug);
+  const detailHeroImage = config ? (DETAIL_HERO_IMAGES[config.slug] ?? null) : null;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -427,61 +443,80 @@ export default function FacilitySolutionsDetail() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-40 pb-28">
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden select-none">
-          <img
-            src="/images/pl-icon-new.png"
-            alt=""
-            aria-hidden
-            className="opacity-[0.03] w-[600px] sm:w-[800px] max-w-none translate-x-32"
-            style={{ mixBlendMode: "lighten" }}
-          />
-        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
 
         <div className="relative container mx-auto px-6 md:px-12">
-          <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-3xl">
-            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-2">
-              <Link href="/facility-solutions" className="text-muted-foreground text-xs font-mono uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-1">
-                ← Facility Solutions
-              </Link>
-            </motion.div>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:gap-16 xl:gap-24">
 
-            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6 mt-4">
-              <div className="h-[1px] w-10 bg-primary" />
-              <span className="text-primary font-mono text-xs tracking-widest uppercase">{config.tag}</span>
-            </motion.div>
+            {/* Text column */}
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="flex-1 min-w-0">
+              <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-2">
+                <Link href="/facility-solutions" className="text-muted-foreground text-xs font-mono uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-1">
+                  ← Facility Solutions
+                </Link>
+              </motion.div>
 
-            <motion.h1
-              variants={fadeInUp}
-              className="text-4xl sm:text-5xl md:text-[3.25rem] font-black tracking-tighter leading-tight mb-6"
-            >
-              {config.heroHeadline}
-            </motion.h1>
+              <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6 mt-4">
+                <div className="h-[1px] w-10 bg-primary" />
+                <span className="text-primary font-mono text-xs tracking-widest uppercase">{config.tag}</span>
+              </motion.div>
 
-            <motion.p
-              variants={fadeInUp}
-              className="text-muted-foreground text-lg sm:text-xl leading-relaxed max-w-2xl mb-10"
-            >
-              {config.heroSub}
-            </motion.p>
-
-            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="#pain-points"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
+              <motion.h1
+                variants={fadeInUp}
+                className="text-4xl sm:text-5xl md:text-[3.25rem] font-black tracking-tighter leading-tight mb-6"
               >
-                Scroll Down for Details
-                <ArrowRight className="w-4 h-4" />
-              </a>
-              <a
-                href="mailto:hello@paintlabpro.com?subject=Pilot%20Conversation%20Request"
-                className="inline-flex items-center gap-2 px-8 py-4 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
+                {config.heroHeadline}
+              </motion.h1>
+
+              <motion.p
+                variants={fadeInUp}
+                className="text-muted-foreground text-lg sm:text-xl leading-relaxed max-w-2xl mb-10"
               >
-                Request a Pilot Conversation
-                <ChevronRight className="w-4 h-4" />
-              </a>
+                {config.heroSub}
+              </motion.p>
+
+              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
+                <a
+                  href="#pain-points"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
+                >
+                  Scroll Down for Details
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <a
+                  href="mailto:hello@paintlabpro.com?subject=Pilot%20Conversation%20Request"
+                  className="inline-flex items-center gap-2 px-8 py-4 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
+                >
+                  Request a Pilot Conversation
+                  <ChevronRight className="w-4 h-4" />
+                </a>
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            {/* Facility photo — right column, desktop only */}
+            {detailHeroImage && (
+              <motion.div
+                initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.9, delay: 0.3 }}
+                className="hidden lg:block flex-shrink-0 w-[400px] xl:w-[480px] mt-10 lg:mt-0"
+              >
+                <div className="relative h-[320px] xl:h-[380px] overflow-hidden border border-border/20">
+                  <img
+                    src={detailHeroImage}
+                    alt={config.label}
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-background/50" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex items-center gap-2">
+                    <div className="h-[1px] flex-1 bg-primary/30" />
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-foreground/40">{config.label}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+          </div>
         </div>
       </section>
 
