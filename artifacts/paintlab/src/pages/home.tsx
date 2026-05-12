@@ -360,15 +360,9 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
             <div className="lg:col-span-4">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="sticky top-32">
-                <p className="text-muted-foreground text-lg mb-8">
+                <p className="text-muted-foreground text-lg">
                   The result is a repeatable, predictable experience—projects delivered on time, on budget, and to the exacting standards you expect.
                 </p>
-                <div className="relative w-full aspect-square overflow-hidden">
-                  <img src="/images/handshake-lobby.jpg" alt="Professional meeting in modern office lobby" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/30 pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-l from-background/40 via-transparent to-transparent pointer-events-none" />
-                </div>
               </motion.div>
             </div>
 
