@@ -3,6 +3,7 @@ import { useUser, useClerk } from "@clerk/react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Phone, MessageSquare, Send, FileText, Building2, LogOut, CheckCircle2, Trash2 } from "lucide-react";
+import { submitForm } from "@/lib/submitForm";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -33,6 +34,8 @@ export default function MemberPortal() {
   const [drafts, setDrafts] = useState<SavedDraft[]>([]);
   const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", allowText: false, message: "" });
   const [contactSent, setContactSent] = useState(false);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem("paintlab_drafts");
@@ -47,15 +50,25 @@ export default function MemberPortal() {
     localStorage.setItem("paintlab_drafts", JSON.stringify(updated));
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const body = encodeURIComponent(
-      `Hi PaintLab,\n\nMESSAGE FROM MEMBER PORTAL\n\n` +
-      `Name: ${contactForm.name}\nPhone: ${contactForm.phone}\nEmail: ${contactForm.email}\n` +
-      `OK to text: ${contactForm.allowText ? "Yes" : "No"}\n\nMessage:\n${contactForm.message}`
-    );
-    window.open(`mailto:hello@paintlabpro.com?subject=${encodeURIComponent("PaintLab Member Inquiry")}&body=${body}`, "_blank");
-    setContactSent(true);
+    setContactLoading(true);
+    setContactError(null);
+    const result = await submitForm({
+      form_name: "Member Inquiry",
+      form_source: "Member Portal",
+      name: contactForm.name,
+      phone: contactForm.phone,
+      email: contactForm.email,
+      allow_text: contactForm.allowText ? "Yes" : "No",
+      message: contactForm.message,
+    });
+    setContactLoading(false);
+    if (result.ok) {
+      setContactSent(true);
+    } else {
+      setContactError(result.error);
+    }
   };
 
   const smsBody = encodeURIComponent(`Hi PaintLab team, I'm reaching out from my member portal.`);
@@ -226,9 +239,9 @@ export default function MemberPortal() {
               {contactSent ? (
                 <div className="border border-primary bg-primary/5 p-10 text-center h-full flex flex-col items-center justify-center">
                   <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-2">Message sent.</h3>
-                  <p className="text-muted-foreground text-sm">Your email client opened with your message. We'll be in touch soon.</p>
-                  <button onClick={() => setContactSent(false)} className="mt-6 text-sm text-primary hover:underline">Send another message</button>
+                  <h3 className="text-xl font-bold mb-2">Message received.</h3>
+                  <p className="text-muted-foreground text-sm">Thanks — we received your request and will follow up shortly.</p>
+                  <button onClick={() => { setContactSent(false); setContactError(null); }} className="mt-6 text-sm text-primary hover:underline">Send another message</button>
                 </div>
               ) : (
                 <form onSubmit={handleContactSubmit} className="space-y-4 border border-border bg-background p-8">
@@ -288,12 +301,16 @@ export default function MemberPortal() {
                       className="w-full bg-card border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors resize-none"
                     />
                   </div>
+                  {contactError && (
+                    <p className="text-sm text-destructive border border-destructive/40 bg-destructive/10 px-4 py-3">{contactError}</p>
+                  )}
                   <button
                     type="submit"
-                    className="w-full h-12 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                    disabled={contactLoading}
+                    className="w-full h-12 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
                   >
                     <Send className="w-4 h-4" />
-                    Send Message
+                    {contactLoading ? "Sending…" : "Send Message"}
                   </button>
                 </form>
               )}

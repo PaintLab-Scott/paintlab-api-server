@@ -1,0 +1,84 @@
+Update the Web3Forms implementation so every PAINTLAB form uses one centralized submission handler.
+
+Goal:
+Every form submission should route to hello@paintlabpro.com and include a clear subject line showing the exact source page/form/facility type.
+
+Use the Web3Forms access key stored in Replit Secrets:
+WEB3FORMS_ACCESS_KEY
+
+Use endpoint:
+https://api.web3forms.com/submit
+
+Create a reusable form submission utility/helper that all forms use.
+
+Every submission must include these hidden fields:
+- access_key
+- subject
+- form_name
+- form_source
+- facility_type
+- page_url
+- timestamp
+- user_agent
+- botcheck
+
+Subject line logic:
+Build the subject dynamically using this format:
+
+PAINTLAB | [Form Name] | [Facility Type or Page Name]
+
+Examples:
+- PAINTLAB | Contact Form | Homepage
+- PAINTLAB | Quote Request | Multifamily
+- PAINTLAB | Calculator Lead | Multifamily Residential
+- PAINTLAB | Calculator Lead | Office / Corporate
+- PAINTLAB | Calculator Lead | Retail
+- PAINTLAB | Calculator Lead | Medical / Healthcare
+- PAINTLAB | Calculator Lead | Automotive
+- PAINTLAB | Calculator Lead | Education
+- PAINTLAB | Calculator Lead | Industrial / Warehouse
+- PAINTLAB | Calculator Lead | Gyms / Fitness
+- PAINTLAB | Facility Page Lead | Hospitality
+- PAINTLAB | Facility Page Lead | HOA / Community Associations
+- PAINTLAB | Facility Page Lead | Self Storage
+- PAINTLAB | Facility Page Lead | Senior Living
+
+Implementation requirements:
+- Do not hardcode only a few forms.
+- Find every form component across the app and connect it to the centralized Web3Forms handler.
+- Preserve all existing UI, styling, layout, validation, animations, responsive behavior, and calculator logic.
+- Do not remove any existing fields.
+- Do not break any calculator functionality.
+- Use AJAX/fetch so forms submit without page reloads.
+- Show inline success and error states.
+
+Facility/page detection:
+- If the form is on a calculator page, detect facility type from the calculator route, query params, selected facility type, or page state.
+- If the form is on a facility landing page, detect facility type from the page slug/title.
+- If facility type is unavailable, use the page title or pathname.
+- Always include current page URL.
+
+Success message:
+“Thanks — we received your request and will follow up shortly.”
+
+Email routing:
+All submissions must go to the email tied to the Web3Forms access key:
+hello@paintlabpro.com
+
+Testing:
+After implementation, test submissions from:
+- Homepage contact/CTA form
+- Main contact page
+- Quote request form
+- Pilot conversation form
+- Every facility calculator lead form
+- Every facility landing page form
+- Any footer/newsletter/general inquiry form
+
+Verify:
+- Email arrives at hello@paintlabpro.com
+- Subject line clearly identifies the source
+- Facility type is included when applicable
+- Page URL is included
+- Success/error states work
+- Mobile forms still work

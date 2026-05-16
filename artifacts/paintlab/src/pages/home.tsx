@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
+import { submitForm } from "@/lib/submitForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -197,6 +198,9 @@ const differentiators = [
 
 export default function Home() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteSuccess, setQuoteSuccess] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
 
   const toggleType = (id: string) => {
     setSelectedTypes(prev =>
@@ -494,22 +498,40 @@ export default function Home() {
             </div>
 
             <div className="md:col-span-3 p-10 md:p-12">
-              <form className="space-y-6" onSubmit={(e) => {
+              {quoteSuccess ? (
+                <div className="flex flex-col items-center justify-center h-full py-16 text-center">
+                  <Check className="w-12 h-12 text-primary mb-4" />
+                  <p className="text-lg font-semibold mb-2">Thanks — we received your request and will follow up shortly.</p>
+                  <button onClick={() => { setQuoteSuccess(false); setQuoteError(null); }} className="mt-4 text-sm text-primary hover:underline">Send another request</button>
+                </div>
+              ) : (
+              <form className="space-y-6" onSubmit={async (e) => {
                 e.preventDefault();
+                setQuoteLoading(true);
+                setQuoteError(null);
                 const fd = new FormData(e.currentTarget as HTMLFormElement);
-                const name = fd.get("name") || "";
-                const company = fd.get("company") || "";
-                const email = fd.get("email") || "";
-                const phone = fd.get("phone") || "";
-                const date = fd.get("date") || "";
-                const details = fd.get("details") || "";
+                const name = String(fd.get("name") ?? "");
+                const company = String(fd.get("company") ?? "");
+                const email = String(fd.get("email") ?? "");
+                const phone = String(fd.get("phone") ?? "");
+                const date = String(fd.get("date") ?? "");
+                const details = String(fd.get("details") ?? "");
                 const types = selectedTypes.join(", ") || "Not specified";
-                const body = encodeURIComponent(
-                  `Hi PaintLab Team,\n\nI'd like to request a quote for a commercial painting project.\n\n` +
-                  `Name: ${name}\nCompany: ${company}\nEmail: ${email}\nPhone: ${phone}\n\n` +
-                  `Project Type(s): ${types}\nTarget Start Date: ${date || "Not specified"}\n\nProject Details:\n${details}`
-                );
-                window.open(`mailto:hello@paintlabpro.com?subject=${encodeURIComponent("PaintLab Quote Request")}&body=${body}`, "_blank");
+                const result = await submitForm({
+                  form_name: "Quote Request",
+                  form_source: "Homepage",
+                  facility_type: types !== "Not specified" ? types : undefined,
+                  name, company, email, phone,
+                  project_types: types,
+                  target_start_date: date || "Not specified",
+                  project_details: details,
+                });
+                setQuoteLoading(false);
+                if (result.ok) {
+                  setQuoteSuccess(true);
+                } else {
+                  setQuoteError(result.error);
+                }
               }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -576,10 +598,15 @@ export default function Home() {
                   <Textarea name="details" placeholder="Square footage, timeline, existing conditions..." className="rounded-none bg-background border-border focus-visible:ring-primary min-h-[120px] resize-none" />
                 </div>
 
-                <Button type="submit" className="w-full rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14">
-                  Send
+                {quoteError && (
+                  <p className="text-sm text-destructive border border-destructive/40 bg-destructive/10 px-4 py-3">{quoteError}</p>
+                )}
+
+                <Button type="submit" disabled={quoteLoading} className="w-full rounded-none bg-primary text-background hover:bg-primary/90 font-semibold uppercase tracking-wider h-14 disabled:opacity-60">
+                  {quoteLoading ? "Sending…" : "Send"}
                 </Button>
               </form>
+              )}
             </div>
           </div>
         </div>

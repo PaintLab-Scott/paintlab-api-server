@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useParams } from "wouter";
 import {
   Building2, Briefcase, ShoppingBag, Factory, Building,
   Utensils, Heart, Package, Home, GraduationCap, Activity,
   ArrowRight, ChevronRight, AlertCircle, CheckCircle2,
-  Users, Target, Repeat2, Shield
+  Users, Target, Repeat2, Shield, Send
 } from "lucide-react";
+import { submitForm } from "@/lib/submitForm";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -415,6 +416,31 @@ export default function FacilitySolutionsDetail() {
   const config = CONFIGS.find((c) => c.slug === params.slug);
   const detailHeroImage = config ? (DETAIL_HERO_IMAGES[config.slug] ?? null) : null;
 
+  const [pilotForm, setPilotForm] = useState({ name: "", email: "", phone: "" });
+  const [pilotLoading, setPilotLoading] = useState(false);
+  const [pilotSubmitted, setPilotSubmitted] = useState(false);
+  const [pilotError, setPilotError] = useState<string | null>(null);
+
+  const handlePilotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPilotLoading(true);
+    setPilotError(null);
+    const result = await submitForm({
+      form_name: "Facility Page Lead",
+      form_source: "Facility Solutions Detail Page",
+      facility_type: config?.label ?? "Unknown",
+      name: pilotForm.name,
+      email: pilotForm.email,
+      phone: pilotForm.phone,
+    });
+    setPilotLoading(false);
+    if (result.ok) {
+      setPilotSubmitted(true);
+    } else {
+      setPilotError(result.error);
+    }
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (config) {
@@ -484,7 +510,7 @@ export default function FacilitySolutionsDetail() {
                   <ArrowRight className="w-4 h-4" />
                 </a>
                 <a
-                  href="mailto:hello@paintlabpro.com?subject=Pilot%20Conversation%20Request"
+                  href="#pilot-form"
                   className="inline-flex items-center gap-2 px-8 py-4 border border-border text-foreground font-semibold uppercase tracking-wider text-sm hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
                 >
                   Request a Pilot Conversation
@@ -652,7 +678,7 @@ export default function FacilitySolutionsDetail() {
 
             <motion.div variants={fadeInUp}>
               <a
-                href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
+                href="#pilot-form"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-background font-bold uppercase tracking-wider text-sm hover:bg-primary/90 transition-colors"
               >
                 Explore a Pilot
@@ -726,43 +752,92 @@ export default function FacilitySolutionsDetail() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-      <section className="py-24 bg-background border-t border-border">
-        <div className="container mx-auto px-6 md:px-12 text-center">
+      {/* ── FINAL CTA / PILOT FORM ───────────────────────────────────────── */}
+      <section id="pilot-form" className="py-24 bg-background border-t border-border">
+        <div className="container mx-auto px-6 md:px-12">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
+            className="max-w-2xl mx-auto"
           >
-            <motion.div variants={fadeInUp} className="flex items-center justify-center gap-3 mb-6">
+            <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
               <div className="h-[1px] w-10 bg-primary" />
               <span className="text-primary font-mono text-xs tracking-widest uppercase">Next Step</span>
-              <div className="h-[1px] w-10 bg-primary" />
             </motion.div>
 
-            <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter mb-6 max-w-3xl mx-auto">
+            <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter mb-4">
               {config.finalCtaHeadline}
             </motion.h2>
 
-            <motion.p variants={fadeInUp} className="text-muted-foreground text-lg max-w-xl mx-auto mb-10">
+            <motion.p variants={fadeInUp} className="text-muted-foreground text-lg mb-10">
               No commitment required. We'll define the scope, walk the property, and show you what a professional repaint program looks like before you decide anything.
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="flex justify-center">
-              <a
-                href="mailto:hello@paintlabpro.com?subject=Pilot%20Interest%20-%20PAINTLAB"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold uppercase tracking-wider text-xs hover:bg-primary/90 transition-colors"
-              >
-                Email Our Team
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </motion.div>
+            {pilotSubmitted ? (
+              <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="border border-primary bg-primary/5 p-10 text-center">
+                <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">Request received.</h3>
+                <p className="text-muted-foreground text-sm">Thanks — we received your request and will follow up shortly.</p>
+              </motion.div>
+            ) : (
+              <motion.form variants={fadeInUp} onSubmit={handlePilotSubmit} className="space-y-4 border border-border bg-card p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Your Name</label>
+                    <input
+                      required
+                      type="text"
+                      value={pilotForm.name}
+                      onChange={e => setPilotForm(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Jane Smith"
+                      className="w-full h-11 bg-background border border-border px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      value={pilotForm.phone}
+                      onChange={e => setPilotForm(p => ({ ...p, phone: e.target.value }))}
+                      placeholder="(512) 000-0000"
+                      className="w-full h-11 bg-background border border-border px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Email Address</label>
+                    <input
+                      required
+                      type="email"
+                      value={pilotForm.email}
+                      onChange={e => setPilotForm(p => ({ ...p, email: e.target.value }))}
+                      placeholder="jane@company.com"
+                      className="w-full h-11 bg-background border border-border px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                </div>
 
-            <motion.p variants={fadeInUp} className="text-muted-foreground text-sm mt-8">
-              Or call/text us directly:{" "}
-              <a href="tel:+15124843124" className="text-primary hover:underline font-semibold">(512) 484-3124</a>
-            </motion.p>
+                {pilotError && (
+                  <p className="text-sm text-destructive border border-destructive/40 bg-destructive/10 px-4 py-3">{pilotError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={pilotLoading}
+                  className="w-full h-14 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
+                >
+                  <Send className="w-4 h-4" />
+                  {pilotLoading ? "Sending…" : config.finalCta}
+                </button>
+
+                <p className="text-muted-foreground text-xs text-center pt-1">
+                  Or call/text us directly:{" "}
+                  <a href="tel:+15124843124" className="text-primary hover:underline font-semibold">(512) 484-3124</a>
+                </p>
+              </motion.form>
+            )}
           </motion.div>
         </div>
       </section>

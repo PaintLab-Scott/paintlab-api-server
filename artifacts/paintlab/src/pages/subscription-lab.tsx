@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, CheckCircle2, Phone, MessageSquare, Send, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { submitForm } from "@/lib/submitForm";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -694,6 +695,8 @@ export default function SubscriptionLab() {
   const [optionalExpanded, setOptionalExpanded] = useState(false);
   const [formData, setFormData] = useState({ name: "", propertyName: "", address: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [draftSaved, setDraftSaved] = useState(false);
 
   // ─── MF zone/step data presence ───────────────────────────────────────────
@@ -922,11 +925,28 @@ export default function SubscriptionLab() {
     return lines.join("\n");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const body = encodeURIComponent(`Hi PaintLab Team,\n\nI just configured a subscription plan.\n\nNAME: ${formData.name}\nPROPERTY: ${formData.propertyName}\nADDRESS: ${formData.address}\nPHONE: ${formData.phone}\n\n` + buildBreakdown());
-    window.open(`mailto:hello@paintlabpro.com?subject=${encodeURIComponent(`[PaintLab Subscription] ${formData.propertyName} — ${selectedTier ?? "Inquiry"}`)}&body=${body}`, "_blank");
-    setSubmitted(true);
+    setSubmitLoading(true);
+    setSubmitError(null);
+    const result = await submitForm({
+      form_name: "Calculator Lead",
+      form_source: "Subscription Lab Calculator",
+      facility_type: facilityLabel,
+      name: formData.name,
+      property_name: formData.propertyName,
+      address: formData.address,
+      phone: formData.phone,
+      email: formData.email,
+      selected_tier: selectedTier ?? "Not selected",
+      breakdown: buildBreakdown(),
+    });
+    setSubmitLoading(false);
+    if (result.ok) {
+      setSubmitted(true);
+    } else {
+      setSubmitError(result.error);
+    }
   };
   const smsBody = encodeURIComponent(`I just ran the PaintLab calculator for ${formData.propertyName || "[Property Name]"}. I want to discuss the ${selectedTier ?? "[Selected Tier]"} package.`);
 
@@ -1773,9 +1793,9 @@ export default function SubscriptionLab() {
             {submitted ? (
               <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="border border-primary bg-primary/5 p-8 sm:p-10 text-center">
                 <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-2">Your email is ready.</h3>
-                <p className="text-muted-foreground text-sm">Your email client should have opened with the full breakdown for hello@paintlabpro.com. You can also call or text us directly below.</p>
-                <button onClick={() => setSubmitted(false)} className="mt-6 text-sm text-primary hover:underline">Edit & re-send</button>
+                <h3 className="text-2xl font-bold mb-2">We got it.</h3>
+                <p className="text-muted-foreground text-sm">Thanks — we received your request and will follow up shortly.</p>
+                <button onClick={() => { setSubmitted(false); setSubmitError(null); }} className="mt-6 text-sm text-primary hover:underline">Edit & re-send</button>
               </motion.div>
             ) : (
               <motion.form initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} onSubmit={handleSubmit} className="space-y-4">
@@ -1815,10 +1835,14 @@ export default function SubscriptionLab() {
                   </motion.div>
                 )}
 
+                {submitError && (
+                  <motion.p variants={fadeInUp} className="text-sm text-destructive border border-destructive/40 bg-destructive/10 px-4 py-3">{submitError}</motion.p>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <motion.button variants={fadeInUp} type="submit"
-                    className="flex-1 h-14 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:bg-primary/90 transition-colors">
-                    <Send className="w-4 h-4" /> Send Full Breakdown to PaintLab
+                  <motion.button variants={fadeInUp} type="submit" disabled={submitLoading}
+                    className="flex-1 h-14 bg-primary text-background font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:bg-primary/90 transition-colors disabled:opacity-60">
+                    <Send className="w-4 h-4" /> {submitLoading ? "Sending…" : "Send Full Breakdown to PaintLab"}
                   </motion.button>
                   <motion.button variants={fadeInUp} type="button" onClick={saveDraft}
                     className="h-14 px-6 border border-border text-foreground font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors">
